@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+/* Colours for every screen, from sharkship.in-design.md. Default Tailwind colours are removed. */
+@theme {
+  --color-*: initial;
+  --color-primary: #184fa2;
+  --color-secondary: #e5e5e5;
+  --color-tertiary: #fafafa;
+  --color-neutral: #ffffff;
+  --color-surface: #ffffff;
+  --color-on-surface: #0a0a0a;
+  --color-muted: #184fa21a;
+  --color-accent: #2ea8e6;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  --animate-ticker: ticker 45s linear infinite;
+
+  @keyframes ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+/* Tailwind names for values that change per screen group: font-heading, rounded-card, h-control. */
+@theme inline {
+  --font-heading: var(--theme-font-heading);
+  --font-display: var(--theme-font-display);
+  --font-body: var(--theme-font-body);
+  --radius-control: var(--theme-radius-control);
+  --radius-card: var(--theme-radius-card);
+  --spacing-control: var(--theme-control-height);
+  --spacing-card: var(--theme-card-padding);
+}
+
+/* Login group, from meracourierwala.com-design.md. Manrope's heaviest weight is 800. */
+.theme-auth {
+  --theme-font-heading: var(--font-manrope), system-ui, sans-serif;
+  --theme-font-display: var(--font-manrope), system-ui, sans-serif;
+  --theme-font-body: var(--font-manrope), system-ui, sans-serif;
+  --theme-radius-control: 14px;
+  --theme-radius-card: 26px;
+  --theme-control-height: 48px;
+  --theme-card-padding: 16px;
+}
+
+/* Signed-in group, from sharkship.in-design.md. Phone sizes are raised for touch. */
+.theme-app {
+  --theme-font-heading: var(--font-plex), system-ui, sans-serif;
+  --theme-font-display: var(--font-inter), system-ui, sans-serif;
+  --theme-font-body: var(--font-manrope), system-ui, sans-serif;
+  --theme-radius-control: 8px;
+  --theme-radius-card: 16px;
+  --theme-control-height: 44px;
+  --theme-card-padding: 16px;
+}
+
+@media (min-width: 48rem) {
+  .theme-app {
+    --theme-card-padding: 24px;
+  }
+}
+
+@media (min-width: 64rem) and (pointer: fine) {
+  .theme-app {
+    --theme-control-height: 32px;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-tertiary);
+    color: var(--color-on-surface);
+    font-family: var(--font-manrope), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Below 16px, iOS Safari zooms the page when a field is focused. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
