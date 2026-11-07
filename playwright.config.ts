@@ -1,6 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const gatewayData = { DATA_SOURCE_SHIPMENTS: 'gateway', DATA_SOURCE_TRACKING: 'gateway' };
+const gatewayData = {
+  DATA_SOURCE_SHIPMENTS: 'gateway',
+  DATA_SOURCE_TRACKING: 'gateway',
+  DATA_SOURCE_WEBHOOKS: 'gateway',
+};
 
 export default defineConfig({
   testDir: './e2e',
@@ -46,6 +50,14 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       env: { ...gatewayData, GATEWAY_URL: 'http://localhost:3199' },
+    },
+    {
+      // Wallet and COD in real-data mode, which have no gateway routes yet.
+      command: 'pnpm exec next start -p 3106',
+      url: 'http://localhost:3106/login',
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway' },
     },
   ],
 });
