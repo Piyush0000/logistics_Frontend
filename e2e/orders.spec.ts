@@ -13,8 +13,8 @@ test.describe('Orders screen', () => {
       await expect(page.getByText('Sample data')).toBeVisible();
 
       // Check create button and NDR link
-      await expect(page.getByRole('link', { name: 'Create Shipment' })).toBeVisible();
-      await expect(page.getByRole('link', { name: 'NDR' })).toBeVisible();
+      await expect(page.getByRole('main').getByRole('link', { name: 'Create Shipment' })).toBeVisible();
+      await expect(page.getByRole('main').getByRole('link', { name: 'NDR' })).toBeVisible();
 
       // Status tabs
       await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
@@ -72,7 +72,7 @@ test.describe('Orders screen', () => {
 
       // Check back link
       await page.getByRole('link', { name: 'Back to Orders' }).click();
-      await page.waitForURL('**/orders');
+      await page.waitForURL((url) => url.pathname === '/orders');
     });
 
     test('shows 404 for non-existent shipment', async ({ page }) => {
@@ -179,11 +179,11 @@ test.describe('Orders screen', () => {
       await page.goto('/orders');
 
       // Check create shipment link height
-      const createBox = await page.getByRole('link', { name: 'Create Shipment' }).boundingBox();
+      const createBox = await page.getByRole('main').getByRole('link', { name: 'Create Shipment' }).boundingBox();
       expect(createBox?.height).toBeGreaterThanOrEqual(44);
 
       // Check NDR link height
-      const ndrBox = await page.getByRole('link', { name: 'NDR' }).boundingBox();
+      const ndrBox = await page.getByRole('main').getByRole('link', { name: 'NDR' }).boundingBox();
       expect(ndrBox?.height).toBeGreaterThanOrEqual(44);
 
       // Check order card on phone
