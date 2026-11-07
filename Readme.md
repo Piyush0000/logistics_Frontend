@@ -4,7 +4,7 @@ The web frontend for the Evoc logistics platform. Merchants will use it to manag
 
 The final product name and logo are still to be supplied, so "Evoc Logistics" is a working name.
 
-> **Status:** the login page is done, and the main dashboard is built and awaiting review. Sign-in is a demo, because the backend has no login yet. See [updatesDoc.md](updatesDoc.md) for what has been done so far.
+> **Status:** login and dashboard are done; Orders (shipment list, shipment detail, create shipment) and NDR are built and awaiting review. See [updatesDoc.md](updatesDoc.md) for details.
 
 ## Getting started
 
@@ -91,7 +91,8 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Screen | Design file | Stage | Data | Status |
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
-| Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Built, awaiting review |
+| Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Done |
+| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Built, awaiting review |
 
 Further screens are added one at a time, as directed.
 

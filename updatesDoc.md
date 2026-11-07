@@ -6,10 +6,66 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Stage 2: main dashboard, built and awaiting review |
-| **Waiting on** | Review and sign-off of the dashboard |
+| **Current stage** | Stage 3: Orders & NDR, built and awaiting review |
+| **Waiting on** | Review and sign-off of the Orders and NDR screens |
 | **Next step** | The next UI you direct, with its reference image and design file |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-07: Stage 3 Orders and NDR
+
+The design note was approved. Built Orders management (Shipment list, Shipment detail, Create shipment) and NDR management.
+
+### Done
+
+- Built `/orders` (Shipment List):
+  - Desktop table and mobile card view.
+  - Search by AWB / reference / customer, carrier filter dropdown, status tab filters (Manifested, In Transit, Out for Delivery, Delivered, RTO, Failed).
+  - Pagination controls.
+  - Links to `/orders/create` and `/ndr`.
+  - Supports gateway connection via `DATA_SOURCE_ORDERS=gateway` with mock fallback and Sample data badge.
+- Built `/orders/[id]` (Shipment Detail):
+  - Complete shipment metadata: status badge, carrier badge, origin & delivery address cards, package dimensions & weight, items table, and COD/billing summary.
+  - Full tracking event timeline.
+  - Visibly labelled with Sample data badge (since backend gateway does not have a shipment detail route).
+- Built `/orders/create` (Create Shipment):
+  - Multi-section booking form validating against `@logicore/contracts` (`StandardShipmentRequestSchema`).
+  - Origin & destination addresses (with 6-digit Indian pincode & 10-15 digit phone validation), package dimensions, weight, items list, payment mode (`PREPAID` vs `COD`), and preferred carrier.
+  - Interactive submission with confirmation modal displaying newly generated AWB and direct link to order details.
+  - Visibly labelled with Sample data badge (since gateway `POST /api/v1/shipments` unconditionally returns 503).
+- Built `/ndr` (NDR Management):
+  - 4 KPI summary tiles: Action Required, Re-attempted, NDR Delivered, NDR Returned.
+  - Desktop table and mobile card view listing delivery attempt failures, failure reasons, and attempt counts.
+  - Interactive Action Modal allowing merchants to request re-attempts with instructions or reschedule date, or initiate immediate Return to Origin (RTO).
+  - Visibly labelled with Sample data badge.
+
+### Files added or changed
+
+- Orders: `src/app/(app)/orders/` (`page.tsx`, `filters.tsx`, `orders-table.tsx`, `orders-cards.tsx`, `actions.ts`), `src/app/(app)/orders/[id]/page.tsx`, `src/app/(app)/orders/create/` (`page.tsx`, `create-form.tsx`)
+- NDR: `src/app/(app)/ndr/` (`page.tsx`, `ndr-view.tsx`, `ndr-action-modal.tsx`, `actions.ts`)
+- Components: `src/components/orders/status-badge.tsx`, `src/components/orders/carrier-badge.tsx`
+- Data: `src/lib/data/orders/` (`index.ts`, `gateway.ts`, `mock.ts`, `types.ts`, `orders.test.ts`), `src/lib/data/ndr/` (`index.ts`, `mock.ts`, `types.ts`, `ndr.test.ts`), `src/lib/gateway/schemas/orders.ts` (`orders.test.ts`)
+- Helpers: `src/lib/format/date.ts` (`formatDate`)
+- E2E Tests: `e2e/orders.spec.ts`
+- Documentation: `playwright.config.ts`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+All of these ran from a clean build:
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 113 of 113 passed (14 test files) |
+| `pnpm test:e2e` | 226 passed, 18 skipped |
+| Sideways scrolling | Verified no sideways scrolling at 320x568, 360x640, 390x844, 768x1024, 1366x768, and 1920x1080 across all new screens |
+| Mobile tap targets | All mobile links, cards, and buttons are >= 44px tall |
+| Screenshots | Captured and reviewed desktop and phone screenshots for list, detail, create shipment, and NDR |
+| Colours outside palette | None (Sharkship tokens strictly used) |
+| `Evoc_ships` | Completely untouched and clean |
+
+**Not yet verified:**
+- Live backend gateway with Docker (gateway requires Kafka/Redpanda and `DASHBOARD_MOCK_MODE=true`).
+- Real iOS and Android physical hardware (verified on Playwright Pixel 7 emulation and iPhone SE viewport).
 
 ## 2026-11-05: Stage 2 main dashboard
 

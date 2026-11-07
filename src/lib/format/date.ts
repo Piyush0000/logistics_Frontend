@@ -15,3 +15,23 @@ function formatDay(date: Date): string {
 export function formatDateRange(end: Date): string {
   return `${formatDay(new Date(end.getTime() - 7 * DAY_MS))} - ${formatDay(end)}`;
 }
+
+/** Formats an ISO date string in Indian time. */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return 'N/A';
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(d);
+  } catch {
+    return String(iso);
+  }
+}
+
