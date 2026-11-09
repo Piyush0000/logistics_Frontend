@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, Menu, RefreshCw, WandSparkles } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState, useTransition, type ReactNode, type Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
@@ -56,15 +57,13 @@ function QuickMenu() {
         </button>
       )}
     >
-      <button
-        type="button"
+      <Link
+        href="/orders/create"
         role="menuitem"
-        disabled
-        className="w-full cursor-not-allowed rounded-control px-2 py-1 text-left text-sm text-on-surface/70"
+        className="block w-full rounded-control px-2 py-1.5 text-left text-sm font-medium text-on-surface hover:bg-tertiary hover:text-primary"
       >
         Create shipment
-      </button>
-      <p className="px-2 text-xs text-on-surface/70">Not available yet.</p>
+      </Link>
     </Dropdown>
   );
 }

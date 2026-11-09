@@ -4,7 +4,7 @@ The web frontend for the Evoc logistics platform. Merchants will use it to manag
 
 The final product name and logo are still to be supplied, so "Evoc Logistics" is a working name.
 
-> **Status:** the login page is done, and the main dashboard, Wallet Transactions, COD Remittance and Channel Integrations are built and awaiting review. Sign-in is a demo, because the backend has no login yet. See [updatesDoc.md](updatesDoc.md) for what has been done so far.
+> **Status:** the login page is done, and the main dashboard, Orders & NDR, Wallet Transactions, COD Remittance and Channel Integrations are built and awaiting review. Sign-in is a demo, because the backend has no login yet. See [updatesDoc.md](updatesDoc.md) for what has been done so far.
 
 ## Getting started
 
@@ -94,6 +94,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Built, awaiting review |
+| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Built, awaiting review |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Built, awaiting review. No sidebar link yet |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Built, awaiting review. No sidebar link yet |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Built, awaiting review. No sidebar link yet |

@@ -97,7 +97,8 @@ test.describe('sidebar', () => {
       'aria-current',
       'page',
     );
-    await expect(nav(page).getByRole('button', { name: 'Orders' })).toBeDisabled();
+    await expect(nav(page).getByRole('link', { name: 'Orders' })).toBeVisible();
+    await expect(nav(page).getByRole('button', { name: 'Weight Discrepancy' })).toBeDisabled();
   });
 
   test('shows the user and sign out at the bottom', async ({ page }, testInfo) => {
@@ -176,10 +177,13 @@ test.describe('top bar', () => {
     await expect(wallet).toContainText('₹12,500.00');
   });
 
-  test('offers Create shipment as unavailable in the Quick menu', async ({ page }) => {
+  test('offers Create shipment in the Quick menu', async ({ page }) => {
     await page.getByRole('button', { name: 'Quick' }).click();
 
-    await expect(page.getByRole('menuitem', { name: 'Create shipment' })).toBeDisabled();
+    await expect(page.getByRole('menuitem', { name: 'Create shipment' })).toHaveAttribute(
+      'href',
+      '/orders/create',
+    );
 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('menuitem', { name: 'Create shipment' })).toBeHidden();

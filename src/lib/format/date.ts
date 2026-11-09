@@ -31,7 +31,8 @@ export function formatDateTime(moment: string): string {
 }
 
 /** A date in Indian time, for example 20 Jul 2026. */
-export function formatDate(moment: string): string {
+export function formatDate(moment: string | null | undefined): string {
+  if (!moment) return 'N/A';
   // en-US, because en-GB and en-IN shorten September to Sept.
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kolkata',

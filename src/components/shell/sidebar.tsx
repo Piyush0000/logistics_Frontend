@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
 import { BrandMark } from '@/components/brand-mark';
@@ -30,10 +31,13 @@ interface NavItem {
   hasChildren?: boolean;
 }
 
-// Only Overview exists so far. The rest stay disabled until their screens are built.
+const ACTIVE_ITEMS: (NavItem & { href: string })[] = [
+  { label: 'Overview', href: '/dashboard', icon: ChartColumn },
+  { label: 'Orders', href: '/orders', icon: Package, hasChildren: true },
+  { label: 'NDR', href: '/ndr', icon: Undo2 },
+];
+
 const DISABLED_ITEMS: NavItem[] = [
-  { label: 'Orders', icon: Package, hasChildren: true },
-  { label: 'NDR', icon: Undo2 },
   { label: 'Weight Discrepancy', icon: Weight },
   { label: 'Finances', icon: CreditCard, hasChildren: true },
   { label: 'Buyer Experience', icon: WandSparkles, hasChildren: true },
@@ -60,6 +64,7 @@ export function Sidebar({
   onToggle: () => void;
   onClose: () => void;
 }) {
+  const pathname = usePathname();
   const { name, initials } = userLabel(email);
   // Labels show in the phone menu and the expanded rail, and hide in the collapsed rail.
   const label = open ? '' : 'lg:hidden';
@@ -112,15 +117,29 @@ export function Sidebar({
         aria-label="Main"
         className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 py-2 [scrollbar-width:none]"
       >
-        <Link
-          href="/dashboard"
-          aria-current="page"
-          aria-label="Overview"
-          className={`${ROW} ${collapsedRow} bg-surface font-medium text-primary`}
-        >
-          <ChartColumn aria-hidden="true" className="size-6 shrink-0" />
-          <span className={label}>Overview</span>
-        </Link>
+        {ACTIVE_ITEMS.map(({ label: text, href, icon: Icon, hasChildren }) => {
+          const isActive =
+            href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
+          return (
+            <Link
+              key={text}
+              href={href}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={text}
+              className={`${ROW} ${collapsedRow} ${
+                isActive
+                  ? 'bg-surface font-medium text-primary'
+                  : 'font-medium text-tertiary/90 hover:bg-surface/10 hover:text-tertiary'
+              }`}
+            >
+              <Icon aria-hidden="true" className="size-6 shrink-0" />
+              <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
+              {hasChildren ? (
+                <ChevronDown aria-hidden="true" className={`size-4 shrink-0 ${label}`} />
+              ) : null}
+            </Link>
+          );
+        })}
         {DISABLED_ITEMS.map(({ label: text, icon: Icon, hasChildren }) => (
           <button
             key={text}
