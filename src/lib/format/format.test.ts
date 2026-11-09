@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDateRange } from './date';
+import { formatDate, formatDateRange, formatDateTime, indianDay } from './date';
 import { formatPaise } from './money';
 import { statusLabel } from './status';
 import { userLabel } from './user';
@@ -54,5 +54,23 @@ describe('userLabel', () => {
 
   it('uses two letters for a single name', () => {
     expect(userLabel('ops@example.com').initials).toBe('OP');
+  });
+});
+
+describe('wallet dates', () => {
+  it('shows a date and time in Indian time', () => {
+    expect(formatDateTime('2026-07-30T17:50:33Z')).toBe('30/7/2026, 11:20:33 pm');
+  });
+
+  it('finds the Indian calendar day, which can differ from the UTC one', () => {
+    expect(indianDay('2026-10-29T18:29:00Z')).toBe('2026-10-29');
+    expect(indianDay('2026-10-29T18:31:00Z')).toBe('2026-10-30');
+  });
+});
+
+describe('formatDate', () => {
+  it('shows a short date in Indian time', () => {
+    expect(formatDate('2026-07-20T06:00:00Z')).toBe('20 Jul 2026');
+    expect(formatDate('2026-09-04T19:00:00Z')).toBe('5 Sep 2026');
   });
 });
