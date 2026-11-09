@@ -67,6 +67,210 @@ All of these ran from a clean build:
 - Live backend gateway with Docker (gateway requires Kafka/Redpanda and `DASHBOARD_MOCK_MODE=true`).
 - Real iOS and Android physical hardware (verified on Playwright Pixel 7 emulation and iPhone SE viewport).
 
+## 2026-11-07: Channel Integrations popup fix
+
+Sai Manideep found that every popup on this page closed itself straight away under `pnpm dev`.
+
+### Done
+
+- Fixed the shared popup in `dialog.tsx`. React's dev mode starts each component twice, and the first cleanup closed the popup, which the page took as the person closing it.
+- Available Events can now be clicked, as in the reference. The popup shows that event's payload, buttons to switch event, and Copy Payload.
+- View Sample Payloads now has View Details on each event, which opens the same view.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Reproduced under `pnpm dev` | Create, Sample Payloads, Edit and Delete all disappeared before the fix |
+| After the fix, under `pnpm dev` | All stayed open, including an event opened from Available Events |
+| Wallet and COD under `pnpm dev` | Dropdowns and calendars stayed open, with no browser errors |
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 204 of 204 passed |
+| `pnpm test:e2e` | 344 passed, 21 skipped |
+
+**Why the tests missed it:** browser tests run production builds, and React only starts components twice in dev mode. There is no lasting test for this, because a second `next dev` cannot run beside `pnpm dev` in the same folder. The dev-mode check was a one-off script.
+
+**Lesson:** check new screens under `pnpm dev` as well as the production tests.
+
+## 2026-11-06: Channel Integrations
+
+The design note was approved by Sai Manideep, including the defaults below. This was built on `sai/wallet` with the two Finances screens, so all three share one branch and PR.
+
+### Done
+
+- Built `/channel-integrations` with API Keys and Webhooks tabs.
+- Webhooks can be listed, created, edited and deleted. The form follows the backend's rules: a public HTTPS address and at least one of the three events.
+- The signing secret appears once after creating, with Copy and a warning. It is never stored in the page or the URL.
+- Webhook Information shows the backend's real headers and signing method. Sample Payloads use the backend's real format.
+- Added Delivery history with Retry for failed deliveries, using the merchant retry route. The reference images did not show this, but the backend supports it.
+- The API Keys tab says keys are not available yet, and Create API Key is disabled, so nobody receives a fake key.
+- Webhooks use labelled sample data by default. `DATA_SOURCE_WEBHOOKS=gateway` switches to the real routes.
+
+### Files added or changed
+
+- Page: `src/app/(app)/channel-integrations/`, including `actions.ts`
+- Data: `src/lib/data/webhooks/`, `src/lib/gateway/schemas/webhooks.ts`
+- Tests: `e2e/integrations.spec.ts`, `e2e/gateway.spec.ts`, `e2e/stub-gateway.mjs`, and unit tests beside the logic
+- Also changed: `playwright.config.ts`, `.env.example`
+- No shared files were changed. The gateway client already handled the empty response from a delete.
+
+### Verification
+
+All of these ran from a clean build on 2026-11-06, covering every screen:
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 204 of 204 passed |
+| `pnpm test:e2e` | 338 passed, 21 skipped. The skipped checks only apply to the other screen size |
+| Real-data mode | List, create, edit, delete and retry tested with the stand-in gateway, with no sample label |
+| Backend down | Tested: both cards show the error and Try again, and Create Webhook is hidden |
+| Server actions | Tested: all four refuse a signed-out caller before touching any data |
+| Sideways scrolling | None at 9 sizes, from 320x568 to 1920x1080 |
+| Tap targets on phones | Tabs, buttons, form fields and event switches are at least 44px tall |
+| Screenshots | Reviewed at desktop, phone and 320px wide, plus the create, secret and payload popups and API Keys |
+| Colours outside the palette, or reference brand, in the new code | None |
+| Dev tokens or gateway settings in the browser bundle | None |
+| `Evoc_ships` | Unchanged at commit `c028917` |
+
+Tests were written first and seen failing.
+
+**Not yet verified:**
+- The real gateway and webhooks service, which need Docker and Postgres. The stand-in copies their response shapes from the source.
+- A real webhook arriving at a real address, or a real signature being checked.
+- Real iOS and Android browsers.
+
+### Decisions
+
+- Name and Active are left out, because the backend cannot store or change them. Status is shown as a label.
+- Only the three events the backend accepts are offered: `shipment.created`, `shipment.status.updated` and `shipment.failed`.
+- Download API Documentation is left out, because no document exists.
+- Sample webhooks are kept in server memory, are shared by everyone using that server, and reset on restart.
+- The sidebar stays locked, at Sai's request.
+
+### Pending
+
+- Lead approval for the sidebar links.
+- Backend login. Demo sign-in has no merchant key, so gateway mode works only locally, with a `DEV_WEBHOOK_TOKEN` of at least 32 characters.
+- API key routes from the backend team.
+
+## 2026-11-06: COD Remittance
+
+The design note was approved by Sai Manideep. Sai chose to build this on `sai/wallet` with Wallet Transactions, so both screens share one branch and PR. Nothing has been committed yet.
+
+### Done
+
+- Built `/finances/cod`: heading with Export CSV, four summary cards, filters, the remittance table, rows per page and page arrows.
+- The table becomes a card for each order below 1280px, so phones never scroll sideways.
+- Filters are Status, From Date and To Date, kept in the URL. Dates apply to the collected date, and the summary cards ignore filters.
+- Export CSV downloads every row matching the filters, not only the current page. The route checks the session itself and guards against spreadsheet formulas.
+- Sample exports are labelled in the file name and on the first line of the file.
+- All COD data is labelled sample data. In gateway mode the page shows "not available" with Try again, and the export is off.
+
+### Files added or changed
+
+- Page: `src/app/(app)/finances/cod/`, including `export/route.ts`
+- Data: `src/lib/data/cod/` (`filters.ts`, `types.ts`, `mock.ts`, `gateway.ts`, `csv.ts`, `index.ts`)
+- Helpers: `formatDate` in `src/lib/format/date.ts`
+- Tests: `e2e/cod.spec.ts`, `e2e/gateway.spec.ts`, and unit tests beside the logic
+- Also changed: `playwright.config.ts`, `.env.example`
+- Reused from Wallet Transactions: the dropdown and calendar fields. From the dashboard: `KpiCard` and `DetailCard`
+
+### Verification
+
+All of these ran from a clean build on 2026-11-06, covering both screens:
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 162 of 162 passed |
+| `pnpm test:e2e` | 286 passed, 19 skipped. The skipped checks only apply to the other screen size |
+| Sideways scrolling | None at 9 sizes, from 320x568 to 1920x1080 |
+| Tap targets on phones | Export, fields, Apply, Clear, rows per page and page arrows are at least 44px tall |
+| CSV download | Tested: filtered rows, all pages, sample label and refused when signed out |
+| Screenshots | Reviewed against the reference at desktop, 1024px, phone and 320px wide, plus the open Status list |
+| Colours outside the palette, reference brand or data in the new code | None |
+| Dev tokens or gateway settings in the browser bundle | None |
+| `Evoc_ships` | Unchanged at commit `c028917` |
+
+Tests were written first and seen failing. Two tests were wrong and were corrected: one named the wrong order number, and one compared text in two formats.
+
+**Not yet verified:**
+- Real COD data, because no route exists.
+- The CSV opened in Excel or Google Sheets.
+- Real iOS and Android browsers.
+
+### Decisions
+
+- Status uses Pending and Settled for both the filter and the rows. The reference's filter said Processing while its rows said pending.
+- Next Remittance is the five oldest pending orders, so it differs from Total Remittance Due. This is sample logic until the backend defines a settlement cycle.
+- Rows per page is 10, 20 or 50, because the reference's selector was blank.
+- A deduction of zero is plain text, and real deductions use a red tint with dark text.
+- The sidebar is unchanged, so this page also opens only by URL.
+
+### Pending
+
+- Lead approval for the Finances sidebar links.
+- Reference images for Channel Integrations.
+- Gateway routes for COD, and a per-order remittance list, from the backend team.
+
+## 2026-11-06: Wallet Transactions
+
+The design note was approved by Sai Manideep. Work is on the branch `sai/wallet`. All git steps are run by hand.
+
+### Done
+
+- Built `/finances/wallet`: balance card, filters, transaction list and Previous/Next.
+- Filters are Transaction Type, Debit Type, From Date and To Date. They live in the URL, so refresh and the back button work.
+- The dropdowns and calendar are hand-built, with keyboard support and no new dependencies.
+- Debit Type turns off for credits. A From Date after To Date is stopped with a message, including when typed into the URL. Unknown URL values are ignored.
+- All wallet data is labelled sample data, because the gateway has no wallet routes. In gateway mode the page shows "not available" with Try again, and never sample figures.
+
+### Files added or changed
+
+- Page: `src/app/(app)/finances/wallet/`
+- Data: `src/lib/data/wallet/` (`filters.ts`, `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`)
+- Helpers: `src/lib/format/calendar.ts`, `src/lib/format/date.ts`
+- Tests: `e2e/wallet.spec.ts`, `e2e/gateway.spec.ts`, and unit tests beside the logic
+- `playwright.config.ts` now starts a server on port 3106 with the wallet in gateway mode
+
+### Verification
+
+All of these ran from a clean build on 2026-11-06:
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 133 of 133 passed |
+| `pnpm test:e2e` | 229 passed, 18 skipped. The skipped checks only apply to the other screen size |
+| Sideways scrolling | None at 8 sizes, from 320x568 to 1920x1080, with the calendar open |
+| Tap targets on phones | Fields, Apply, Clear, Next, calendar and list options are at least 44px tall |
+| Screenshots | Reviewed against the reference at desktop, phone and 320px wide, plus the open dropdown and calendar |
+| Colours outside the palette, reference brand or data in the new code | None |
+| Dev tokens or gateway settings in the browser bundle | None |
+| `Evoc_ships` | Unchanged at commit `c028917` |
+
+Tests were written first and seen failing. One browser test was wrong about which month the calendar opens on, and was corrected.
+
+**Not yet verified:**
+- Real wallet data, because no route exists.
+- Real iOS and Android browsers.
+
+### Decisions
+
+- The sidebar is shared code and needs the lead's approval, so it is unchanged. The page opens only by URL, and the sidebar still highlights Overview.
+- Recharge is left out, because the top bar is shared and no payment route exists.
+- RTO Freight was added as an eighth debit type. The reference's rows are RTO charges, but the visible part of its list has no such type.
+- The calendar uses Previous and Next month buttons. The reference's month dropdown was not built.
+- Clear is a labelled button, in place of the reference's trash icon.
+- Amounts use dark text on a tinted pill, for contrast.
+
+### Pending
+
+- Lead approval for the sidebar change.
+- The full debit type list.
+- Reference images for COD Remittance and Channel Integrations.
+
 ## 2026-11-05: Stage 2 main dashboard
 
 The design note was approved, including the status mapping, the disabled date filter and the Quick menu. A third image was supplied as the sidebar reference, replacing the proposed sidebar list.
