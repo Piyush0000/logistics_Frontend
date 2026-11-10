@@ -10,7 +10,7 @@ import { getDemoSession } from '@/lib/auth/session';
 import { b2bService } from '@/lib/data/b2b';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { walletService } from '@/lib/data/wallet';
-import { parsePage, parseText } from '@/lib/url-params';
+import { buildPageHref, parsePage, parseText } from '@/lib/url-params';
 import { B2bCards } from './b2b-cards';
 import { B2bTable } from './b2b-table';
 import { CreateB2bButton } from './create-b2b-dialog';
@@ -35,12 +35,7 @@ export default async function B2bShipmentsPage({ searchParams }: B2bPageProps) {
     pickupAddressService().list(),
   ]);
 
-  const buildHref = (next: number) => {
-    const query = new URLSearchParams();
-    if (search) query.set('search', search);
-    query.set('page', String(next));
-    return `/orders/b2b?${query.toString()}`;
-  };
+  const buildHref = (next: number) => buildPageHref('/orders/b2b', { search }, next);
 
   return (
     <AppShell email={session.email} wallet={wallet}>

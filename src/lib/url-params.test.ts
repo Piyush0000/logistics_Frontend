@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEnum, parseLimit, parsePage, parseText } from './url-params';
+import { buildPageHref, parseEnum, parseLimit, parsePage, parseText } from './url-params';
 
 describe('parsePage', () => {
   it('accepts whole numbers of 1 or more and falls back to 1', () => {
@@ -37,5 +37,25 @@ describe('parseText', () => {
     expect(parseText('abcdef', 3)).toBe('abc');
     expect(parseText(undefined)).toBe('');
     expect(parseText(['a'])).toBe('');
+  });
+});
+
+describe('buildPageHref', () => {
+  it('drops the page parameter for page 1', () => {
+    expect(buildPageHref('/orders', { status: 'DELIVERED' }, 1)).toBe('/orders?status=DELIVERED');
+    expect(buildPageHref('/orders', {}, 1)).toBe('/orders');
+  });
+
+  it('sets the page parameter above page 1', () => {
+    expect(buildPageHref('/orders/b2b', {}, 3)).toBe('/orders/b2b?page=3');
+  });
+
+  it('drops empty and missing values and keeps the others in order', () => {
+    const params = { status: 'IN_TRANSIT', carrier: '', search: undefined, q: 'a b' };
+    expect(buildPageHref('/orders/b2c', params, 2)).toBe('/orders/b2c?status=IN_TRANSIT&q=a+b&page=2');
+  });
+
+  it('ignores a page value already in the params', () => {
+    expect(buildPageHref('/x', { page: '5', search: 'a' }, 2)).toBe('/x?search=a&page=2');
   });
 });

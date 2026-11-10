@@ -109,7 +109,10 @@ function CreateB2bForm({
     count: toNumber(box.count),
   }));
   const invoicePaise = Math.round(toNumber(invoiceValue) * 100);
-  const total = totalWeightKg(numericBoxes);
+  // A row still being typed (empty or not a number) is left out of the total.
+  const total = totalWeightKg(
+    numericBoxes.filter((box) => Number.isFinite(box.weightKg) && Number.isFinite(box.count)),
+  );
 
   const setBox = (index: number, field: keyof BoxDraft, value: string) =>
     setBoxes((current) =>

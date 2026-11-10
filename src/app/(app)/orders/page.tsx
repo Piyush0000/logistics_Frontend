@@ -7,6 +7,7 @@ import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
 import { walletService } from '@/lib/data/wallet';
+import { buildPageHref } from '@/lib/url-params';
 import { OrderFilters } from './filters';
 import { OrdersCards } from './orders-cards';
 import { OrdersTable } from './orders-table';
@@ -43,14 +44,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
   const totalPages = ordersResult.ok ? Math.ceil(ordersResult.data.total / limit) || 1 : 1;
 
-  const createPaginationLink = (newPage: number) => {
-    const p = new URLSearchParams();
-    if (params.status) p.set('status', params.status);
-    if (params.carrier) p.set('carrier', params.carrier);
-    if (params.search) p.set('search', params.search);
-    p.set('page', String(newPage));
-    return `/orders?${p.toString()}`;
-  };
+  const createPaginationLink = (newPage: number) =>
+    buildPageHref('/orders', { status: params.status, carrier: params.carrier, search: params.search }, newPage);
 
   return (
     <AppShell email={session.email} wallet={wallet}>

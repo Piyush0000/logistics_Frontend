@@ -10,7 +10,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
 import { walletService } from '@/lib/data/wallet';
-import { parseEnum, parsePage, parseText } from '@/lib/url-params';
+import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params';
 import { OrderFilters } from '../filters';
 import { OrdersCards } from '../orders-cards';
 import { OrdersTable } from '../orders-table';
@@ -50,14 +50,8 @@ export default async function B2cShipmentsPage({ searchParams }: B2cPageProps) {
   ]);
 
   const pageCount = result.ok ? Math.max(1, Math.ceil(result.data.total / LIMIT)) : 1;
-  const buildHref = (next: number) => {
-    const query = new URLSearchParams();
-    if (status) query.set('status', status);
-    if (carrier) query.set('carrier', carrier);
-    if (search) query.set('search', search);
-    query.set('page', String(next));
-    return `/orders/b2c?${query.toString()}`;
-  };
+  const buildHref = (next: number) =>
+    buildPageHref('/orders/b2c', { status, carrier, search }, next);
 
   return (
     <AppShell email={session.email} wallet={wallet}>

@@ -25,3 +25,21 @@ export function parseEnum<T extends string>(value: unknown, allowed: readonly T[
 export function parseText(value: unknown, max = 100): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
+
+/**
+ * A list page's link: `pathname` with every non-empty param except `page`, then `page` when it
+ * is above 1. Pass `params` in the order they should appear.
+ */
+export function buildPageHref(
+  pathname: string,
+  params: Record<string, string | undefined>,
+  page: number,
+): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value && key !== 'page') query.set(key, value);
+  }
+  if (page > 1) query.set('page', String(page));
+  const text = query.toString();
+  return text ? `${pathname}?${text}` : pathname;
+}

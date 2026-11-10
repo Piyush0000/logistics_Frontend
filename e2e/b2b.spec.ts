@@ -152,6 +152,16 @@ test.describe('create dialog', () => {
     await open(page);
   });
 
+  test('shows a zero total before anything is typed', async ({ page }) => {
+    const form = await openDialog(page);
+    await expect(form.getByTestId('total-weight')).toHaveText('Total weight: 0 kg');
+
+    await form.getByRole('button', { name: 'Add box' }).click();
+    await fillBox(form.getByTestId('box-row').first(), { l: '40', w: '30', h: '20', kg: '2.5', count: '4' });
+    await expect(form.getByTestId('total-weight')).toHaveText('Total weight: 10 kg');
+    await expect(form.getByTestId('total-weight')).not.toContainText('NaN');
+  });
+
   test('totals box weight live', async ({ page }) => {
     const form = await openDialog(page);
     await fillBox(form.getByTestId('box-row').first(), { l: '40', w: '30', h: '20', kg: '2.5', count: '4' });
