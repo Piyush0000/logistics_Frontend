@@ -107,7 +107,8 @@ test.describe('sidebar', () => {
       'page',
     );
     await expect(nav(page).getByRole('button', { name: 'Shipping Management' })).toBeVisible();
-    await expect(nav(page).getByRole('button', { name: 'Home', exact: true })).toBeDisabled();
+    await expect(nav(page).getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/home');
+    await expect(nav(page).getByRole('button', { name: 'Reports', exact: true })).toBeDisabled();
   });
 
   test('opens the group for the current page', async ({ page }, testInfo) => {

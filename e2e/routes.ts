@@ -6,6 +6,7 @@
 
 /** Signed-in routes, inside the app shell. */
 export const APP_ROUTES = [
+  '/home',
   '/dashboard',
   '/orders',
   '/orders/create',

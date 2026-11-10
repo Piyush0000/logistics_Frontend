@@ -6,11 +6,54 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 and 2 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 3 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 2 |
-| **Next step** | Task 3: Home |
+| **Waiting on** | Review of Task 3 |
+| **Next step** | Task 4: connect All Shipments and Create Shipment |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 3, Home
+
+The Home screen is built at `/home`: greeting, four quick actions, four stat tiles, a setup checklist and the five latest shipments. Home is now live in the sidebar.
+
+### Done
+
+- Greeting "Welcome, <name>", from the signed-in email.
+- Quick actions to Create Shipment, Track a Shipment, Recharge Wallet (`/finances/wallet?recharge=1`) and Rate Calculator. Two per row on phones, four across on desktop.
+- Tiles: Wallet Balance, In Transit, NDR Action Required, Delivered. Each tile has its own data source, so one failure shows its error in that tile only.
+- "Get started" checklist with "2 of 4 done" and a link per step, and "Recent shipments" with five rows linking to `/orders/<awb>`, or "No shipments yet." with "Create your first shipment".
+- New data feature `src/lib/data/onboarding/`. Gateway mode returns "not available", as the backend has no route. `DATA_SOURCE_ONBOARDING` is in `.env.example` and the port 3106 test server.
+- In gateway mode the NDR tile is shown as unavailable, because NDR has no gateway route.
+- Sign-in still lands on `/dashboard`. Home is reached from the sidebar.
+
+### Files changed
+
+- New: `src/app/(app)/home/` (`page.tsx`, `loading.tsx`, `quick-actions.tsx`, `onboarding-checklist.tsx`, `recent-shipments.tsx`, `stat-card.tsx`), `src/lib/data/onboarding/` (types, mock, gateway, index, test), `e2e/home.spec.ts`
+- Changed: `src/components/shell/nav-config.ts` (Home live), `e2e/routes.ts`, `e2e/gateway.spec.ts` (3 Home tests), `e2e/dashboard.spec.ts` (sidebar test now checks Reports, not Home, as the disabled example), `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Unit tests before the code | Failed, modules missing |
+| Home browser tests before the page | 8 failed, as expected |
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 236 passed |
+| D2 full browser run | 438 passed, 25 skipped (single-size tests), 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | /home HTTP 200, h1 Home, BROWSER ERRORS: none |
+| D4 screenshots (desktop, phone, 320px) | Reviewed. Found the wallet amount and "Rate Calculator" splitting mid-word at 320px, fixed, and pinned by a test |
+| D5 palette check | No output |
+| D6 secret and brand check | No output |
+| D7 backend check | Clean, HEAD aace603 |
+
+### Decisions
+
+- Links to screens that do not exist yet (Rate Calculator, tracking, Company, Pickup Addresses) do not prefetch. Their prefetch never finishes, which kept the page from ever going quiet in browser tests.
+- Tests check the link addresses, not the destinations, which come in Tasks 16, 17, 25 and 27.
+- The Recharge link's `recharge=1` is ignored until Task 11.
+
+### Not verified
+
+- Gateway mode with a real backend, as before.
 
 ## 2026-11-10: Task 2, new sidebar menu and shared building blocks
 

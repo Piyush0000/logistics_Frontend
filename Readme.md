@@ -83,6 +83,7 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | Sign-in | `DATA_SOURCE_SESSION` | No |
 | KPI cards, NDR | `DATA_SOURCE_OVERVIEW` | No |
 | Wallet balance and transactions | `DATA_SOURCE_WALLET` | No |
+| Home setup checklist | `DATA_SOURCE_ONBOARDING` | No |
 | COD remittance | `DATA_SOURCE_COD` | No |
 
 In sample mode, AWB search knows `DEMOEK001` and `DEMODL002`.
@@ -100,6 +101,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Screen | Design file | Stage | Data | Status |
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
+| Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main |
 | Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Merged to main |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |

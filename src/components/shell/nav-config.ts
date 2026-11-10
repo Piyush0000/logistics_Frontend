@@ -55,7 +55,7 @@ export interface NavGroup {
 }
 
 export const NAV: NavGroup[] = [
-  { label: 'Home', icon: House, href: '/home', status: 'planned' },
+  { label: 'Home', icon: House, href: '/home', status: 'live' },
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard', status: 'live' },
   {
     label: 'Shipping Management',

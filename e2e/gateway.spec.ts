@@ -185,3 +185,51 @@ test.describe('webhooks with the gateway down', () => {
     await expect(page.getByRole('button', { name: 'Create Webhook' })).toHaveCount(0);
   });
 });
+
+test.describe('home with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows live shipment counts from the gateway', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    await expect(page.getByTestId('stat-in-transit')).toContainText('3');
+    await expect(page.getByTestId('stat-in-transit').getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('stat-delivered')).toContainText('5');
+    const recent = page.getByTestId('recent-shipments-card');
+    await expect(recent.getByTestId('recent-shipment')).toHaveAttribute('href', '/orders/LIVE123');
+    await expect(recent.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('home with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('keeps Home working when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    const recent = page.getByTestId('recent-shipments-card');
+    await expect(recent.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(recent.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByTestId('stat-in-transit').getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(page.getByTestId('checklist-card').getByText('2 of 4 done')).toBeVisible();
+    await expect(page.getByTestId('quick-actions')).toBeVisible();
+  });
+});
+
+test.describe('home with no wallet or setup route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows wallet and setup steps as unavailable, never as sample data', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    for (const id of ['stat-wallet', 'checklist-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+      await expect(card.getByText('Sample data')).toBeHidden();
+    }
+  });
+});
