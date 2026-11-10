@@ -30,7 +30,7 @@ The sidebar now shows the menu from the new reference, with sub-menus, in the ex
 
 - New: `src/components/shell/nav-config.ts`, `nav-config.test.ts`, `src/components/ui/page-header.tsx`, `data-card.tsx`, `empty-state.tsx`, `stat-tile.tsx`, `pagination.tsx`, `src/lib/url-params.ts`, `url-params.test.ts`, `src/lib/csv.ts`, `e2e/screen-checks.ts`, `e2e/routes.ts`, `scripts/dev-smoke.mjs`, `scripts/screenshots.mjs`
 - Moved: `channel-integrations/dialog.tsx`, `finances/wallet/select-field.tsx`, `date-field.tsx`, `field-styles.ts` to `src/components/ui/`, with import lines updated in the 10 files that use them
-- Changed: `src/components/shell/sidebar.tsx`, `src/lib/data/cod/csv.ts`, `e2e/dashboard.spec.ts`, `Readme.md`, `updatesDoc.md`
+- Changed: `src/components/shell/sidebar.tsx`, `src/lib/data/cod/csv.ts`, `e2e/dashboard.spec.ts`, `e2e/stub-gateway.mjs` (unused parameter only), `Readme.md`, `updatesDoc.md`
 
 ### Verification
 
@@ -38,7 +38,7 @@ The sidebar now shows the menu from the new reference, with sub-menus, in the ex
 |---|---|
 | New unit tests before the code | Failed, modules missing |
 | New sidebar browser tests before the code | 10 failed, as expected |
-| `pnpm lint` | 0 errors, 1 warning: `_url` unused in `e2e/stub-gateway.mjs`, from Task 1 |
+| `pnpm lint` | 0 errors, 0 warnings, after removing the unused `_url` parameter in `e2e/stub-gateway.mjs` (fix round 1). Gateway project re-run: 14 passed |
 | `pnpm typecheck` | Passed |
 | `pnpm test` | 233 of 233 passed (24 test files) |
 | `pnpm build && pnpm test:e2e` | 413 passed, 23 skipped, 0 failed. Wallet, COD and Channel Integrations specs passed unchanged |

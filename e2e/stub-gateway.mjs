@@ -47,8 +47,8 @@ const SHIPMENT_LIST_ITEM = {
   stuck: false,
 };
 
-// Later tasks add query filters here, read from url.searchParams.
-function handleShipmentList(res, _url) {
+// Later tasks add query filters here: pass `url` in and read url.searchParams.
+function handleShipmentList(res) {
   return send(res, 200, { items: [SHIPMENT_LIST_ITEM], page: 1, limit: 50, total: 1 });
 }
 
@@ -140,7 +140,7 @@ createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const path = url.pathname;
   if (path.startsWith(WEBHOOKS_PATH)) return handleWebhooks(req, res, path);
-  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(res, url);
+  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(res);
   if (req.url === '/health') return send(res, 200, { status: 'ok' });
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);
   if (req.url === '/api/v1/shipments/LIVE123/tracking') return send(res, 200, TRACKING);
