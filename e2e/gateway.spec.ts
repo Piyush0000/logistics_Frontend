@@ -221,11 +221,11 @@ test.describe('home with the gateway down', () => {
 test.describe('home with no wallet or setup route', () => {
   test.use({ baseURL: 'http://localhost:3106' });
 
-  test('shows wallet and setup steps as unavailable, never as sample data', async ({ page }) => {
+  test('shows wallet, NDR and setup steps as unavailable, never as sample data', async ({ page }) => {
     await signIn(page);
     await page.goto('/home');
 
-    for (const id of ['stat-wallet', 'checklist-card']) {
+    for (const id of ['stat-wallet', 'stat-ndr', 'checklist-card']) {
       const card = page.getByTestId(id);
       await expect(card.getByText('This data is not available yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();

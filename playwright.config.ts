@@ -61,7 +61,7 @@ export default defineConfig({
       url: 'http://localhost:3106/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway' },
+      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway' },
     },
   ],
 });
