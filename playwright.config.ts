@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const gatewayData = {
   DATA_SOURCE_SHIPMENTS: 'gateway',
+  DATA_SOURCE_ORDERS: 'gateway',
   DATA_SOURCE_TRACKING: 'gateway',
   DATA_SOURCE_WEBHOOKS: 'gateway',
 };

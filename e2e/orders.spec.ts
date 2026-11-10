@@ -18,18 +18,27 @@ test.describe('Orders screen', () => {
 
       // Status tabs
       await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
-      await expect(page.getByRole('tab', { name: 'Delivered' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Delivered', exact: true })).toBeVisible();
       await expect(page.getByRole('tab', { name: 'In Transit' })).toBeVisible();
     });
 
     test('filters list by status tabs', async ({ page }, testInfo) => {
       await page.goto('/orders');
-      await page.getByRole('tab', { name: 'Delivered' }).click();
+      await page.getByRole('tab', { name: 'Delivered', exact: true }).click();
       await page.waitForURL('**/orders?status=DELIVERED');
 
       // Check that delivered item appears and others are filtered
       const container = testInfo.project.name === 'phone' ? page.getByTestId('order-card') : page.getByTestId('order-row');
       await expect(container.filter({ hasText: 'DEMOEK003' })).toBeVisible();
+    });
+
+    test('separates RTO in progress from RTO delivered', async ({ page }) => {
+      await page.goto('/orders');
+      await page.getByRole('tab', { name: 'RTO in progress' }).click();
+      await page.waitForURL('**/orders?status=RTO_INITIATED');
+
+      await page.getByRole('tab', { name: 'RTO delivered' }).click();
+      await page.waitForURL('**/orders?status=RTO_DELIVERED');
     });
 
     test('filters list by carrier dropdown', async ({ page }, testInfo) => {

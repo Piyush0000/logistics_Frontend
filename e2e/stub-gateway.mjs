@@ -34,6 +34,24 @@ const TRACKING = {
   ],
 };
 
+const SHIPMENT_LIST_PATH = '/api/v1/shipments';
+
+const SHIPMENT_LIST_ITEM = {
+  shipment_id: TRACKING.shipment_id,
+  reference_id: 'REF-LIVE-1',
+  carrier: 'ekart',
+  awb: 'LIVE123',
+  status: 'DELIVERED',
+  created_at: '2026-10-23T08:00:00.000Z',
+  last_status_at: '2026-10-23T10:00:00.000Z',
+  stuck: false,
+};
+
+// Later tasks add query filters here, read from url.searchParams.
+function handleShipmentList(res, _url) {
+  return send(res, 200, { items: [SHIPMENT_LIST_ITEM], page: 1, limit: 50, total: 1 });
+}
+
 const WEBHOOKS_PATH = '/api/v1/webhooks';
 const NOW = '2026-10-23T10:00:00.000Z';
 
@@ -119,8 +137,10 @@ async function handleWebhooks(req, res, path) {
 }
 
 createServer((req, res) => {
-  const path = new URL(req.url, 'http://localhost').pathname;
+  const url = new URL(req.url, 'http://localhost');
+  const path = url.pathname;
   if (path.startsWith(WEBHOOKS_PATH)) return handleWebhooks(req, res, path);
+  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(res, url);
   if (req.url === '/health') return send(res, 200, { status: 'ok' });
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);
   if (req.url === '/api/v1/shipments/LIVE123/tracking') return send(res, 200, TRACKING);

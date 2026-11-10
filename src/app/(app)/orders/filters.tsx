@@ -11,7 +11,8 @@ const STATUS_TABS = [
   { label: 'In Transit', value: 'IN_TRANSIT' },
   { label: 'Out for Delivery', value: 'OUT_FOR_DELIVERY' },
   { label: 'Delivered', value: 'DELIVERED' },
-  { label: 'RTO', value: 'RTO_INITIATED' },
+  { label: 'RTO in progress', value: 'RTO_INITIATED' },
+  { label: 'RTO delivered', value: 'RTO_DELIVERED' },
   { label: 'Failed', value: 'FAILED' },
 ];
 

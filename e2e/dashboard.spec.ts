@@ -177,6 +177,11 @@ test.describe('top bar', () => {
     await expect(wallet).toContainText('₹12,500.00');
   });
 
+  test('opens the wallet from the top bar balance', async ({ page }) => {
+    await page.getByTestId('wallet').click();
+    await expect(page).toHaveURL(/\/finances\/wallet$/);
+  });
+
   test('offers Create shipment in the Quick menu', async ({ page }) => {
     await page.getByRole('button', { name: 'Quick' }).click();
 

@@ -71,6 +71,12 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         {/* Filter Bar */}
         <OrderFilters />
 
+        {ordersResult.source === 'gateway' && params.search ? (
+          <p data-testid="search-scope-note" className="text-xs text-on-surface/70">
+            Search covers the shipments on this page only.
+          </p>
+        ) : null}
+
         {/* Orders Content */}
         {!ordersResult.ok ? (
           <div

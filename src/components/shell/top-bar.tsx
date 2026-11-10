@@ -74,7 +74,8 @@ function Wallet({ wallet }: { wallet: DataResult<WalletBalance> }) {
 
   return (
     <div className="flex">
-      <div
+      <Link
+        href="/finances/wallet"
         data-testid="wallet"
         className="flex h-control flex-col items-end justify-center rounded-l-control bg-primary px-3 text-tertiary lg:flex-row lg:items-center lg:gap-2"
       >
@@ -84,7 +85,7 @@ function Wallet({ wallet }: { wallet: DataResult<WalletBalance> }) {
         {wallet.source === 'mock' ? (
           <span className="text-[10px] leading-3 text-tertiary/80">Sample</span>
         ) : null}
-      </div>
+      </Link>
       <button
         type="button"
         aria-label="Refresh balance"

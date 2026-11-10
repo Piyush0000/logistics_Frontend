@@ -33,6 +33,18 @@ test.describe('with the gateway answering', () => {
   });
 });
 
+test.describe('orders search with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('says gateway search covers this page only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders?search=LIVE');
+
+    await expect(page.getByText('Search covers the shipments on this page only.')).toBeVisible();
+    await expect(page.getByText('LIVE123').first()).toBeVisible();
+  });
+});
+
 test.describe('with the gateway down', () => {
   test.use({ baseURL: 'http://localhost:3105' });
 

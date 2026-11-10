@@ -6,10 +6,45 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Stage 3: Orders & NDR, built and awaiting review |
-| **Waiting on** | Review and sign-off of the Orders and NDR screens |
-| **Next step** | The next UI you direct, with its reference image and design file |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Task 1 of 37 is done |
+| **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
+| **Waiting on** | Review of Task 1, then Task 2 |
+| **Next step** | Task 2: shared test helpers and scripts |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 1, sync fixes after the merges
+
+Fixed small inconsistencies found in the 2026-11-09 check of the three merged pull requests.
+
+### Done
+
+- The wallet amount in the top bar now links to `/finances/wallet`.
+- The Orders tab "RTO" is now two tabs: "RTO in progress" (`RTO_INITIATED`) and "RTO delivered" (`RTO_DELIVERED`).
+- With the gateway as the source and a search set, Orders says "Search covers the shipments on this page only.", because the gateway list has no search parameter.
+- `.env.example` lists `DATA_SOURCE_ORDERS` and `DATA_SOURCE_NDR`.
+- `Readme.md` marks the merged screens "Merged to main" and lists `DATA_SOURCE_ORDERS`.
+- The design spec has a new section 11, "Navigation and scope addendum (2026-11-10)", with the decisions, navigation map and backend table.
+- Tests: wallet link, RTO tabs and the search note. The stand-in gateway now answers `GET /api/v1/shipments` with one `LIVE123` record, and `DATA_SOURCE_ORDERS` is in `gatewayData`.
+- The two older Orders tests now ask for the "Delivered" tab by its exact name, because "RTO delivered" also contains that word. They check the same things as before.
+
+### Files changed
+
+`src/components/shell/top-bar.tsx`, `src/app/(app)/orders/filters.tsx`, `src/app/(app)/orders/page.tsx`, `.env.example`, `Readme.md`, `updatesDoc.md`, `docs/superpowers/specs/2026-11-04-frontend-design.md`, `playwright.config.ts`, `e2e/stub-gateway.mjs`, `e2e/dashboard.spec.ts`, `e2e/orders.spec.ts`, `e2e/gateway.spec.ts`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| New tests before the fix | 5 failed, as expected |
+| `pnpm lint`, `pnpm typecheck` | Passed |
+| `pnpm test` | 221 of 221 passed (22 test files) |
+| `pnpm build && pnpm test:e2e` | First run: 402 passed, 22 skipped, 4 failed (the two Orders tests above, ambiguous tab name). After the fix, `e2e/orders.spec.ts` alone: 59 passed, 1 skipped. Gateway project passed in the full run |
+| Colours outside palette | None |
+| Secrets in `.next/static` | None |
+| Brand names in `src` | Only design-file comments |
+| `Evoc_ships` | Clean, at `aace603` |
+
+**Not run:** `scripts/dev-smoke.mjs` and `scripts/screenshots.mjs` do not exist yet. Task 2 creates them. The full e2e suite was not re-run after the two-line test fix.
 
 ## 2026-11-07: Stage 3 Orders and NDR
 
