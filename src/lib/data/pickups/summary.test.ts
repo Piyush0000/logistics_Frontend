@@ -45,4 +45,19 @@ describe('summarizePickups', () => {
     expect(s.scheduledToday).toBe(2);
     expect(s.days.at(-1)?.label).toBe('11 Nov');
   });
+
+  it('leaves cancelled pickups out of the tiles and the chart', () => {
+    const s = summarizePickups([pickup('c', '2026-11-11', 'cancelled')], 0, TODAY);
+    expect(s.scheduledToday).toBe(0);
+    expect(s.pickedUpToday).toBe(0);
+    expect(s.days.at(-1)?.value).toBe(0);
+  });
+
+  it('reads a timestamp pickup date as an Indian day', () => {
+    // 18:45 UTC on 10 Nov is 00:15 on 11 Nov in India, so it counts as 11 Nov.
+    const s = summarizePickups([pickup('t', '2026-11-10T18:45:00Z', 'scheduled')], 0, TODAY);
+    expect(s.scheduledToday).toBe(1);
+    expect(s.days.at(-1)?.value).toBe(1);
+    expect(s.days.at(-2)?.value).toBe(0);
+  });
 });

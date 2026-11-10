@@ -53,14 +53,39 @@ test.describe('pickups tab', () => {
   test('shows the tiles, the sample label and a 7-day chart', async ({ page }) => {
     const card = page.getByTestId('pickups-card');
     await expect(card.getByText('Sample data')).toBeVisible();
-    // The sample list is shared by every test on the server, and the pickups spec schedules new
-    // pickups for today, so the counts are checked as numbers, not exact values.
-    await expect(card.getByTestId('tile-Scheduled today')).toContainText(/Scheduled today[1-9][0-9]*$/);
-    await expect(card.getByTestId('tile-Picked up today')).toContainText(/Picked up today[0-9]+$/);
+    await expect(card.getByTestId('tile-Scheduled today')).toBeVisible();
+    await expect(card.getByTestId('tile-Picked up today')).toBeVisible();
     await expect(card.getByTestId('tile-Pending pickup')).toBeVisible();
     await expect(card.getByRole('img', { name: /^Pickups in the last 7 days\./ })).toBeVisible();
     await expect(card.locator('[data-bar]')).toHaveCount(7);
     await expect(card.getByRole('table')).toHaveCount(1);
+  });
+
+  test('keeps the tiles, the chart and the pickups page consistent in one render', async ({ page, context }, testInfo) => {
+    // Other specs add pickups to the shared sample list, so only relations that hold within one
+    // render are checked here. Exact values are covered by the summarizePickups unit tests.
+    const card = page.getByTestId('pickups-card');
+    const tile = async (name: string) => {
+      const text = (await card.getByTestId(`tile-${name}`).innerText()).replace(name, '');
+      const match = text.match(/\d+/);
+      expect(match, `${name} tile shows a whole number`).not.toBeNull();
+      return Number(match![0]);
+    };
+    const scheduled = await tile('Scheduled today');
+    const pickedUp = await tile('Picked up today');
+    const pending = await tile('Pending pickup');
+
+    const values = await card.locator('table tbody tr td').allInnerTexts();
+    expect(values).toHaveLength(7);
+    for (const value of values) expect(value).toMatch(/^\d+$/);
+    expect(Number(values[6])).toBe(scheduled + pickedUp);
+
+    // Open the pickups page in the same test and compare Pending with its Ready to ship list.
+    const other = await context.newPage();
+    await other.goto('/orders/pickups');
+    const rows = testInfo.project.name === 'phone' ? other.getByTestId('ready-item') : other.getByTestId('ready-row');
+    await expect(rows.first()).toBeVisible();
+    expect(await rows.count()).toBe(pending);
   });
 
   test('does not scroll sideways at any size', async ({ page }) => {
