@@ -6,11 +6,45 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 4 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 5 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 4 |
-| **Next step** | Task 5: B2C Shipments |
+| **Waiting on** | Review of Task 5 |
+| **Next step** | Task 6: B2B Shipments |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 5, B2C Shipments
+
+`/orders/b2c` is the shipment list scoped to single-parcel shipments. Every shipment the backend holds today is single-parcel, so in gateway mode it is the gateway list.
+
+### Done
+
+- New screen with the title, a description line, a "Create B2C shipment" action to `/orders/create`, the shared filters, the table on desktop and cards on phones, in a card with its own sample label and error with Try again. Empty message: "No B2C shipments match these filters."
+- URL input is parsed with `url-params`: a bad `page`, `status` or `carrier` is ignored and search is cut to 100 characters, so the page never errors.
+- Gateway mode adds the note "Search covers the shipments on this page only." when a search is active.
+- `filters.tsx` now pushes to the current path instead of a fixed `/orders` (the only change to it), so the same filters work on both screens.
+- B2C Shipments is live in the sidebar. All Shipments is not marked current on this page.
+
+### Files changed
+
+- New: `src/app/(app)/orders/b2c/page.tsx`, `loading.tsx`; `e2e/b2c.spec.ts`
+- Changed: `src/app/(app)/orders/filters.tsx`, `src/components/shell/nav-config.ts`, `nav-config.test.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 243 passed |
+| D2 full browser run | 463 passed, 26 skipped (single-size tests), 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route HTTP 200 with an h1, BROWSER ERRORS: none |
+| D4 screenshots (desktop, phone, 320px) | Reviewed /orders/b2c. The filter bar still has its own "Create Shipment" button beside the header's "Create B2C shipment" |
+| D5 palette check | No output |
+| D6 secret check | Nothing in `.next/static` |
+| D7 backend | status clean, HEAD aace603 |
+
+### Decisions and not verified
+
+- The filter bar's own "Create Shipment" button was left as is, because the filters file may change only to use the current path.
+- The wrap test uses a long email and a 100-character search. There is no long AWB in the sample data, so that case is not covered.
 
 ## 2026-11-10: Task 4, connect All Shipments, Shipment Detail and Create Shipment
 

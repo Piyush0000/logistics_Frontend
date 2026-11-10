@@ -58,6 +58,16 @@ describe('isActivePath', () => {
   });
 });
 
+describe('B2C Shipments', () => {
+  it('is live and does not make All Shipments current', () => {
+    const group = NAV.find((entry) => entry.label === 'Shipping Management');
+    const b2c = group?.children?.find((item) => item.label === 'B2C Shipments');
+    expect(b2c?.status).toBe('live');
+    expect(isActivePath('/orders/b2c', '/orders/b2c')).toBe(true);
+    expect(isActivePath('/orders', '/orders/b2c')).toBe(false);
+  });
+});
+
 describe('activeGroupLabel', () => {
   it('marks All Shipments active for an order detail page', () => {
     expect(activeGroupLabel('/orders/DEMOEK001')).toBe('Shipping Management');

@@ -2,7 +2,7 @@
 
 import { Filter, Plus, Search, Undo2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
 const STATUS_TABS = [
@@ -27,6 +27,7 @@ const CARRIERS = [
 
 export function OrderFilters() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
@@ -43,7 +44,7 @@ export function OrderFilters() {
     }
     params.delete('page'); // Reset to page 1
     startTransition(() => {
-      router.push(`/orders?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`);
     });
   };
 

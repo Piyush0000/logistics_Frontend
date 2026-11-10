@@ -279,3 +279,37 @@ test.describe('shipments with the gateway down', () => {
     await expect(page.getByTestId('destination-card')).toBeVisible();
   });
 });
+
+test.describe('B2C shipments with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows gateway shipments with no sample label', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c');
+    const card = page.getByTestId('b2c-card');
+
+    await expect(card.getByText('LIVE123').first()).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('says gateway search covers this page only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c?search=LIVE');
+
+    await expect(page.getByText('Search covers the shipments on this page only.')).toBeVisible();
+  });
+});
+
+test.describe('B2C shipments with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows the list error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c');
+    const card = page.getByTestId('b2c-card');
+
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'B2C Shipments' })).toBeVisible();
+  });
+});

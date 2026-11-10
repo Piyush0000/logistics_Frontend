@@ -106,6 +106,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today); facts on the detail page and NDR are sample data | Merged to main |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
+| B2C Shipments, at `/orders/b2c` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 5 | The All Shipments list, scoped to single-parcel shipments. Sample by default; uses the gateway list when set (every gateway shipment is single-parcel) | Done. In the sidebar under Shipping Management |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.
