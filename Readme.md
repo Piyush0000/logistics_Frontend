@@ -77,8 +77,8 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | Feature | Variable | Gateway route today |
 |---|---|---|
 | Shipment counts | `DATA_SOURCE_SHIPMENTS` | Yes, but the gateway serves only its own mock data for now |
-| Shipment list in Orders | `DATA_SOURCE_ORDERS` | Yes, same limits as shipment counts. The gateway list has no search, so search covers the loaded page only |
-| AWB search | `DATA_SOURCE_TRACKING` | Yes, needs tracking-engine |
+| Shipment list and booking in Orders | `DATA_SOURCE_ORDERS` | List: yes, same limits as shipment counts, and search covers the loaded page only. Booking: the route exists but answers 503 until merchant authentication is set up, so the form says booking is not available. No detail route, so shipment facts stay sample data |
+| AWB search and shipment timeline | `DATA_SOURCE_TRACKING` | Yes, needs tracking-engine |
 | Webhooks and delivery history | `DATA_SOURCE_WEBHOOKS` | Yes, needs the webhooks service and Postgres |
 | Sign-in | `DATA_SOURCE_SESSION` | No |
 | KPI cards, NDR | `DATA_SOURCE_OVERVIEW` | No |
@@ -103,7 +103,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
 | Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main |
-| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Merged to main |
+| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today); facts on the detail page and NDR are sample data | Merged to main |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |

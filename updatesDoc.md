@@ -6,11 +6,52 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 3 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 4 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 3 |
-| **Next step** | Task 4: connect All Shipments and Create Shipment |
+| **Waiting on** | Review of Task 4 |
+| **Next step** | Task 5: B2C Shipments |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 4, connect All Shipments, Shipment Detail and Create Shipment
+
+Create Shipment now posts to the gateway in gateway mode, and the shipment page shows the live tracking timeline.
+
+### Done
+
+- Creating a shipment posts to `POST /api/v1/shipments` with the merchant credential and no `merchant_id`. A 202 becomes a result with no AWB yet. The gateway answers 503 today, so the form shows "Booking is not available yet: <gateway message>" and keeps every field the merchant typed.
+- The success screen shows "AWB will appear once the courier confirms." when there is no AWB. Mock mode still returns an AWB and looks the same.
+- The form keeps one idempotency key for the life of the page and sends it as a hidden field, so a retry after a failure reuses it. The key is made on the server per page load.
+- The shipment page loads its timeline from the tracking route (`trackingService().getTimeline`), newest event first, in its own card with its own error and Try again. Shipment facts (addresses, items) stay sample data in gateway mode, because the gateway has no detail route. A shipment the gateway knows but the sample data does not shows its AWB, status, carrier and timeline, and says address and package details are not available yet.
+- The sample label on the shipment and create pages now shows only when that data is sample data.
+- Stand-in gateway: POST answers 503 with the real message, and LIVE123 has a second, older event (In transit, Pune).
+
+### Files changed
+
+- Changed: `src/lib/data/orders/gateway.ts`, `types.ts`, `orders.test.ts`; `src/lib/data/tracking/` (`gateway.ts`, `mock.ts`, `types.ts`, `index.ts`, new `tracking.test.ts`); `src/lib/gateway/schemas/shipments.ts`, `orders.ts`; `src/app/(app)/orders/[id]/page.tsx`, `orders/create/create-form.tsx`, `orders/create/page.tsx`, `orders/actions.ts`; `e2e/orders.spec.ts`, `e2e/gateway.spec.ts`, `e2e/stub-gateway.mjs`; `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Unit tests before the code | 5 failed, functions missing |
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 242 passed |
+| D2 full browser run | 443 passed, 25 skipped (single-size tests), 0 failed. An earlier run under heavy machine load had 2 timeouts, both passing on rerun |
+| D3 `node scripts/dev-smoke.mjs` | Every route HTTP 200 with an h1, BROWSER ERRORS: none |
+| D4 screenshots (desktop, phone, 320px) | Reviewed /orders/DEMOEK001 and /orders/create. The timeline card title is a little larger than the other card titles, as it uses the shared card |
+| D5 palette check | No output |
+| D6 secret and brand check | No output |
+| D7 backend check | Clean, HEAD aace603 |
+
+### Decisions
+
+- `createShipment` result `awb` is `string | null`. The mock still returns a string.
+- The existing shipment-page test now uses `.first()` on "Sample data", because the timeline card shows its own badge in mock mode.
+- The create page and form take the idempotency key as a prop made on the server, because making it in the browser caused a hydration mismatch or a lint error.
+- The success link for a booking with no AWB goes to All Shipments, with no prefetch.
+
+### Not verified
+
+- Booking against a real backend: the gateway has no merchant authentication yet, so the 202 mapping is tested only against the stand-in and unit tests.
 
 ## 2026-11-10: Task 3, Home
 

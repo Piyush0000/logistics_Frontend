@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -5,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
+import { resolveDataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import { CreateShipmentForm } from './create-form';
 
@@ -28,7 +30,7 @@ export default async function CreateShipmentPage() {
             <ArrowLeft className="size-4" />
             <span>Back to Orders</span>
           </Link>
-          <SampleBadge />
+          {resolveDataSource('orders') === 'mock' ? <SampleBadge /> : null}
         </div>
 
         {/* Title */}
@@ -40,7 +42,7 @@ export default async function CreateShipmentPage() {
         </div>
 
         {/* Booking Form */}
-        <CreateShipmentForm />
+        <CreateShipmentForm idempotencyKey={`idem-${randomUUID()}`} />
       </div>
     </AppShell>
   );

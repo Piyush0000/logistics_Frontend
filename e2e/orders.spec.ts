@@ -67,7 +67,7 @@ test.describe('Orders screen', () => {
       await page.goto('/orders/DEMOEK001');
 
       await expect(page.getByRole('heading', { level: 1, name: 'DEMOEK001' })).toBeVisible();
-      await expect(page.getByText('Sample data')).toBeVisible();
+      await expect(page.getByText('Sample data').first()).toBeVisible();
 
       // Check sections
       await expect(page.getByTestId('timeline-card')).toBeVisible();
@@ -111,6 +111,30 @@ test.describe('Orders screen', () => {
       await expect(page.getByTestId('create-success')).toBeVisible();
       await expect(page.getByText('Shipment Booked Successfully!')).toBeVisible();
       await expect(page.getByRole('link', { name: 'View Shipment Details' })).toBeVisible();
+    });
+  });
+
+  test.describe('create shipment retries', () => {
+    test('reuses the idempotency key on retry', async ({ page }) => {
+      await page.goto('/orders/create');
+      const key = page.getByTestId('idempotency-key');
+      const before = await key.inputValue();
+      expect(before).toMatch(/^idem-/);
+
+      // A pincode that is too short is refused, which forces a failure.
+      await page.getByLabel('Customer Name *').fill('Edited Buyer');
+      await page.locator('#destination_pincode').fill('12');
+      await page.getByTestId('submit-shipment').click();
+      await expect(page.getByText('Please check the form for errors')).toBeVisible();
+      await expect(page.getByLabel('Customer Name *')).toHaveValue('Edited Buyer');
+      const afterFirst = await key.inputValue();
+
+      await page.getByTestId('submit-shipment').click();
+      await expect(page.getByText('Please check the form for errors')).toBeVisible();
+      const afterSecond = await key.inputValue();
+
+      expect(afterFirst).toBe(before);
+      expect(afterSecond).toBe(before);
     });
   });
 

@@ -27,3 +27,15 @@ export const TrackingSchema = z.object({
   last_event_at: z.string().nullable(),
   timeline: z.array(z.object({ location: z.string().nullable() })),
 });
+
+/** The same route with every timeline field. The timeline runs oldest to newest. */
+export const TrackingDetailSchema = TrackingSchema.extend({
+  timeline: z.array(
+    z.object({
+      status: z.string(),
+      raw_status: z.string().nullable(),
+      location: z.string().nullable(),
+      occurred_at: z.string(),
+    }),
+  ),
+});

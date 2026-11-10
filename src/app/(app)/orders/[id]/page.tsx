@@ -1,7 +1,6 @@
 import {
   ArrowLeft,
   CheckCircle2,
-  Clock,
   CreditCard,
   MapPin,
   Package,
@@ -10,14 +9,17 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { DataCard } from '@/components/ui/data-card';
 import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
+import { trackingService } from '@/lib/data/tracking';
 import { walletService } from '@/lib/data/wallet';
-import { formatDate } from '@/lib/format/date';
+import { formatDate, formatDateTime } from '@/lib/format/date';
+import { statusLabel } from '@/lib/format/status';
 import { formatPaise } from '@/lib/format/money';
 
 export const metadata: Metadata = { title: 'Shipment Detail | Evoc Logistics' };
@@ -31,18 +33,72 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   if (!session) redirect('/login');
 
   const { id } = await params;
-  const [wallet, detailResult] = await Promise.all([
+  const [wallet, detailResult, timelineResult] = await Promise.all([
     walletService().getBalance(),
     ordersService().getOrderDetail(id),
+    trackingService().getTimeline(id),
   ]);
 
-  if (!detailResult.ok) {
-    if (detailResult.error.kind === 'not_found') {
-      notFound();
-    }
+  // The gateway has no detail route, so a shipment it knows may have no shipment facts here.
+  const order = detailResult.ok ? detailResult.data : null;
+  const tracking = timelineResult.ok ? timelineResult.data : null;
+  if (!order && !timelineResult.ok && timelineResult.error.kind === 'not_found') {
+    notFound();
   }
 
-  const order = detailResult.ok ? detailResult.data : null;
+  const timelineCard = (
+    <DataCard testId="timeline-card" title="Tracking Timeline" result={timelineResult}>
+      {(tracking) =>
+        tracking.timeline.length === 0 ? (
+          <p className="text-sm text-on-surface/70">No tracking events yet.</p>
+        ) : (
+          <ol className="grid gap-4">
+            {tracking.timeline.map((event, index) => {
+              const isLatest = index === 0;
+              return (
+                <li key={`${event.occurredAt}-${index}`} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`grid size-7 shrink-0 place-items-center rounded-full border ${
+                        isLatest
+                          ? 'border-primary bg-primary text-tertiary'
+                          : 'border-secondary bg-tertiary text-on-surface/50'
+                      }`}
+                    >
+                      <CheckCircle2 className="size-4" />
+                    </div>
+                    {index < tracking.timeline.length - 1 ? (
+                      <div className="w-0.5 grow bg-secondary" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 pb-4">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="text-sm font-semibold text-on-surface">
+                        {statusLabel(event.status)}
+                      </span>
+                      {event.location ? (
+                        <span className="break-words text-xs text-on-surface/60">
+                          at {event.location}
+                        </span>
+                      ) : null}
+                    </div>
+                    {event.rawStatus && event.rawStatus !== statusLabel(event.status) ? (
+                      <p className="mt-0.5 break-words text-xs text-on-surface/80">
+                        {event.rawStatus}
+                      </p>
+                    ) : null}
+                    <span className="mt-1 block text-[11px] text-on-surface/50">
+                      {formatDateTime(event.occurredAt)}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )
+      }
+    </DataCard>
+  );
 
   return (
     <AppShell email={session.email} wallet={wallet}>
@@ -56,17 +112,30 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <ArrowLeft className="size-4" />
             <span>Back to Orders</span>
           </Link>
-          <SampleBadge />
+          {order && detailResult.source === 'mock' ? <SampleBadge /> : null}
         </div>
 
         {!order ? (
-          <div
-            data-testid="order-detail-error"
-            className="rounded-card border border-error/30 bg-error/10 p-6 text-center text-error"
-          >
-            <p className="font-semibold">Failed to load shipment details</p>
-            <p className="mt-1 text-xs">{detailResult.ok ? '' : detailResult.error.message}</p>
-          </div>
+          <>
+            <div
+              data-testid="order-header-card"
+              className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-secondary bg-surface p-card"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="break-all font-mono text-xl font-bold tracking-tight text-on-surface sm:text-2xl">
+                    {tracking?.awb ?? id}
+                  </h1>
+                  {tracking ? <StatusBadge status={tracking.status} size="md" /> : null}
+                </div>
+                <p className="mt-1 text-xs text-on-surface/70">
+                  Address and package details are not available yet.
+                </p>
+              </div>
+              {tracking ? <CarrierBadge carrier={tracking.carrier} /> : null}
+            </div>
+            {timelineCard}
+          </>
         ) : (
           <>
             {/* Header Card */}
@@ -101,56 +170,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Left Column (2 spans): Tracking Timeline & Items */}
               <div className="grid gap-6 lg:col-span-2">
-                {/* Timeline Card */}
-                <div
-                  data-testid="timeline-card"
-                  className="rounded-card border border-secondary bg-surface p-card"
-                >
-                  <div className="flex items-center gap-2 border-b border-secondary pb-3 font-heading text-base font-semibold">
-                    <Clock className="size-5 text-primary" />
-                    <h2>Tracking Timeline</h2>
-                  </div>
-
-                  <div className="mt-4 grid gap-4">
-                    {order.timeline.map((event, index) => {
-                      const isLatest = index === order.timeline.length - 1;
-                      return (
-                        <div key={index} className="flex gap-3">
-                          <div className="flex flex-col items-center">
-                            <div
-                              className={`grid size-7 shrink-0 place-items-center rounded-full border ${
-                                isLatest
-                                  ? 'border-primary bg-primary text-tertiary'
-                                  : 'border-secondary bg-tertiary text-on-surface/50'
-                              }`}
-                            >
-                              <CheckCircle2 className="size-4" />
-                            </div>
-                            {index < order.timeline.length - 1 ? (
-                              <div className="w-0.5 grow bg-secondary" />
-                            ) : null}
-                          </div>
-                          <div className="pb-4">
-                            <div className="flex flex-wrap items-baseline gap-2">
-                              <span className="text-sm font-semibold text-on-surface">
-                                {event.status}
-                              </span>
-                              {event.location ? (
-                                <span className="text-xs text-on-surface/60">
-                                  at {event.location}
-                                </span>
-                              ) : null}
-                            </div>
-                            <p className="mt-0.5 text-xs text-on-surface/80">{event.description}</p>
-                            <span className="mt-1 block text-[11px] text-on-surface/50">
-                              {formatDate(event.timestamp)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                {timelineCard}
 
                 {/* Package Items Card */}
                 <div

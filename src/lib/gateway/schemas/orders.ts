@@ -22,3 +22,11 @@ export const ShipmentListResponseSchema = z.object({
 
 export type ShipmentListResponse = z.output<typeof ShipmentListResponseSchema>;
 
+
+/** POST /api/v1/shipments answers 202 once the request is stored. The AWB comes later. */
+export const CreateShipmentResponseSchema = z.object({
+  shipment_id: z.string().uuid(),
+  carrier: z.string(),
+  status: z.string(),
+  duplicate: z.boolean().optional(),
+});

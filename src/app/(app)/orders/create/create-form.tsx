@@ -9,11 +9,15 @@ const INITIAL_STATE: CreateShipmentFormState = {
   ok: false,
 };
 
-export function CreateShipmentForm() {
+/** `idempotencyKey` is made once per page load, so retries of this form reuse it. */
+export function CreateShipmentForm({ idempotencyKey }: { idempotencyKey: string }) {
   const [state, formAction, pending] = useActionState(createShipmentAction, INITIAL_STATE);
   const [paymentType, setPaymentType] = useState<'COD' | 'PREPAID'>('PREPAID');
 
-  if (state.ok && state.createdAwb) {
+  // A submitted form resets its fields, so the fields start from what was sent.
+  const v = (name: string, fallback: string) => state.values?.[name] ?? fallback;
+
+  if (state.ok) {
     return (
       <div
         data-testid="create-success"
@@ -26,22 +30,31 @@ export function CreateShipmentForm() {
           Shipment Booked Successfully!
         </h2>
         <p className="mt-1 text-sm text-on-surface/70">
-          Your shipment manifest has been generated (Sample Simulation).
+          {state.createdAwb
+            ? "Your shipment manifest has been generated (Sample Simulation)."
+            : "The booking request was accepted."}
         </p>
 
         <div className="my-6 rounded-control border border-secondary bg-tertiary p-4">
           <span className="text-xs text-on-surface/60">Air Waybill Number (AWB)</span>
-          <div className="mt-1 font-mono text-2xl font-bold text-primary">
-            {state.createdAwb}
-          </div>
+          {state.createdAwb ? (
+            <div className="mt-1 break-all font-mono text-2xl font-bold text-primary">
+              {state.createdAwb}
+            </div>
+          ) : (
+            <p data-testid="awb-pending" className="mt-1 text-sm font-medium text-on-surface">
+              AWB will appear once the courier confirms.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap justify-center gap-3">
           <Link
-            href={`/orders/${state.createdAwb}`}
+            href={state.createdAwb ? `/orders/${state.createdAwb}` : "/orders"}
+            prefetch={false}
             className="inline-flex h-control min-h-[44px] items-center gap-1.5 rounded-control bg-primary px-5 text-sm font-medium text-tertiary hover:bg-primary/90"
           >
-            <span>View Shipment Details</span>
+            <span>{state.createdAwb ? "View Shipment Details" : "View All Shipments"}</span>
             <ChevronRight className="size-4" />
           </Link>
           <button
@@ -60,6 +73,7 @@ export function CreateShipmentForm() {
 
   return (
     <form action={formAction} data-testid="create-shipment-form" className="grid gap-6">
+      <input type="hidden" name="idempotency_key" value={idempotencyKey} readOnly data-testid="idempotency-key" />
       {state.message && !state.ok ? (
         <div className="rounded-control border border-error/40 bg-error/10 p-3 text-sm text-error">
           {state.message}
@@ -83,7 +97,7 @@ export function CreateShipmentForm() {
                 id="origin_name"
                 name="origin_name"
                 required
-                defaultValue="Bengaluru Central Hub"
+                defaultValue={v("origin_name", "Bengaluru Central Hub")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('origin.name') ? (
@@ -101,7 +115,7 @@ export function CreateShipmentForm() {
                   name="origin_phone"
                   type="tel"
                   required
-                  defaultValue="9876543210"
+                  defaultValue={v("origin_phone", "9876543210")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('origin.phone') ? (
@@ -117,7 +131,7 @@ export function CreateShipmentForm() {
                   name="origin_pincode"
                   required
                   maxLength={6}
-                  defaultValue="560100"
+                  defaultValue={v("origin_pincode", "560100")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('origin.pincode') ? (
@@ -134,7 +148,7 @@ export function CreateShipmentForm() {
                 id="origin_line1"
                 name="origin_line1"
                 required
-                defaultValue="Plot 42, Electronic City Phase 1"
+                defaultValue={v("origin_line1", "Plot 42, Electronic City Phase 1")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('origin.line1') ? (
@@ -151,7 +165,7 @@ export function CreateShipmentForm() {
                   id="origin_city"
                   name="origin_city"
                   required
-                  defaultValue="Bengaluru"
+                  defaultValue={v("origin_city", "Bengaluru")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -163,7 +177,7 @@ export function CreateShipmentForm() {
                   id="origin_state"
                   name="origin_state"
                   required
-                  defaultValue="Karnataka"
+                  defaultValue={v("origin_state", "Karnataka")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -188,7 +202,7 @@ export function CreateShipmentForm() {
                 name="destination_name"
                 required
                 placeholder="e.g. Rahul Sharma"
-                defaultValue="Amit Patel"
+                defaultValue={v("destination_name", "Amit Patel")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('destination.name') ? (
@@ -207,7 +221,7 @@ export function CreateShipmentForm() {
                   type="tel"
                   required
                   placeholder="9876543210"
-                  defaultValue="9823456789"
+                  defaultValue={v("destination_phone", "9823456789")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('destination.phone') ? (
@@ -224,7 +238,7 @@ export function CreateShipmentForm() {
                   required
                   maxLength={6}
                   placeholder="400001"
-                  defaultValue="400050"
+                  defaultValue={v("destination_pincode", "400050")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('destination.pincode') ? (
@@ -242,7 +256,7 @@ export function CreateShipmentForm() {
                 name="destination_line1"
                 required
                 placeholder="House / Flat, Street name"
-                defaultValue="102 Bandra West Hill Road"
+                defaultValue={v("destination_line1", "102 Bandra West Hill Road")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('destination.line1') ? (
@@ -259,7 +273,7 @@ export function CreateShipmentForm() {
                   id="destination_city"
                   name="destination_city"
                   required
-                  defaultValue="Mumbai"
+                  defaultValue={v("destination_city", "Mumbai")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -271,7 +285,7 @@ export function CreateShipmentForm() {
                   id="destination_state"
                   name="destination_state"
                   required
-                  defaultValue="Maharashtra"
+                  defaultValue={v("destination_state", "Maharashtra")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -300,7 +314,7 @@ export function CreateShipmentForm() {
                 step="0.01"
                 min="0.05"
                 required
-                defaultValue="0.5"
+                defaultValue={v("weight_kg", "0.5")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('weight_kg') ? (
@@ -319,7 +333,7 @@ export function CreateShipmentForm() {
                   type="number"
                   step="0.1"
                   required
-                  defaultValue="15"
+                  defaultValue={v("length_cm", "15")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -333,7 +347,7 @@ export function CreateShipmentForm() {
                   type="number"
                   step="0.1"
                   required
-                  defaultValue="10"
+                  defaultValue={v("width_cm", "10")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -347,7 +361,7 @@ export function CreateShipmentForm() {
                   type="number"
                   step="0.1"
                   required
-                  defaultValue="5"
+                  defaultValue={v("height_cm", "5")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -362,7 +376,7 @@ export function CreateShipmentForm() {
                     name="item_name"
                     required
                     placeholder="Product Name *"
-                    defaultValue="Wireless Headphones"
+                    defaultValue={v("item_name", "Wireless Headphones")}
                     className="h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -372,7 +386,7 @@ export function CreateShipmentForm() {
                     type="number"
                     min="1"
                     required
-                    defaultValue="1"
+                    defaultValue={v("item_quantity", "1")}
                     placeholder="Qty"
                     className="h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                   />
@@ -384,7 +398,7 @@ export function CreateShipmentForm() {
                   type="number"
                   min="0"
                   required
-                  defaultValue="1999"
+                  defaultValue={v("item_unit_price", "1999")}
                   placeholder="Unit Price (INR) *"
                   className="h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
@@ -439,7 +453,7 @@ export function CreateShipmentForm() {
                   type="number"
                   min="1"
                   required
-                  defaultValue="1999"
+                  defaultValue={v("cod_amount", "1999")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('cod_amount') ? (
@@ -455,7 +469,7 @@ export function CreateShipmentForm() {
               <select
                 id="preferred_carrier"
                 name="preferred_carrier"
-                defaultValue="delhivery"
+                defaultValue={v("preferred_carrier", "delhivery")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               >
                 <option value="delhivery">Delhivery</option>
@@ -474,7 +488,7 @@ export function CreateShipmentForm() {
                 id="reference_id"
                 name="reference_id"
                 placeholder="e.g. ORDER-99482"
-                defaultValue="ORD-SAMPLE-101"
+                defaultValue={v("reference_id", "ORD-SAMPLE-101")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
             </div>

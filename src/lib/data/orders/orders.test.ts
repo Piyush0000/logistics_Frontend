@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ordersService } from './index';
-import { fetchOrdersList } from './gateway';
+import { fetchOrdersList, postShipment } from './gateway';
 import { mockOrdersService } from './mock';
 
 let handler: (req: IncomingMessage, res: ServerResponse) => void;
@@ -186,3 +186,107 @@ describe('ordersService resolution', () => {
   });
 });
 
+
+const NEW_SHIPMENT = {
+  idempotency_key: 'idem-test-123456',
+  reference_id: 'REF-LIVE-9',
+  merchant_id: 'must-not-be-sent',
+  origin: {
+    name: 'Warehouse 1',
+    phone: '9876543210',
+    line1: '123 MG Road',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    country: 'IN',
+    pincode: '560001',
+  },
+  destination: {
+    name: 'Rahul Sharma',
+    phone: '9123456780',
+    line1: '45 Park Street',
+    city: 'Kolkata',
+    state: 'West Bengal',
+    country: 'IN',
+    pincode: '700016',
+  },
+  weight_kg: 1.5,
+  dimensions: { length_cm: 20, width_cm: 15, height_cm: 10 },
+  items: [{ name: 'Wireless Mouse', quantity: 1, unit_price: 999 }],
+  payment_type: 'PREPAID',
+  cod_amount: 0,
+} as unknown as Parameters<typeof postShipment>[0];
+
+describe('postShipment (gateway)', () => {
+  it('posts the shipment without merchant_id and with the bearer token', async () => {
+    let method = '';
+    let url = '';
+    let auth = '';
+    let body: Record<string, unknown> = {};
+    handler = (req, res) => {
+      method = req.method ?? '';
+      url = req.url ?? '';
+      auth = req.headers.authorization ?? '';
+      let text = '';
+      req.on('data', (chunk) => (text += chunk));
+      req.on('end', () => {
+        body = JSON.parse(text);
+        json(res, 202, {
+          shipment_id: '10000000-0000-4000-8000-000000000009',
+          carrier: 'delhivery',
+          status: 'CREATE_REQUESTED',
+        });
+      });
+    };
+
+    await postShipment(NEW_SHIPMENT, 'demo-merchant-001');
+
+    expect(method).toBe('POST');
+    expect(url).toBe('/api/v1/shipments');
+    expect(auth).toBe('Bearer demo-merchant-001');
+    expect(body).not.toHaveProperty('merchant_id');
+    expect(body.idempotency_key).toBe('idem-test-123456');
+  });
+
+  it('maps a 202 to a result with no AWB yet', async () => {
+    handler = (_req, res) =>
+      json(res, 202, {
+        shipment_id: '10000000-0000-4000-8000-000000000009',
+        carrier: 'delhivery',
+        status: 'CREATE_REQUESTED',
+        duplicate: true,
+      });
+
+    const result = await postShipment(NEW_SHIPMENT, 'demo-merchant-001');
+
+    expect(result).toMatchObject({
+      ok: true,
+      source: 'gateway',
+      data: {
+        shipment_id: '10000000-0000-4000-8000-000000000009',
+        carrier: 'delhivery',
+        status: 'CREATE_REQUESTED',
+        awb: null,
+        reference_id: 'REF-LIVE-9',
+      },
+    });
+  });
+
+  it('passes the 503 message through as unavailable', async () => {
+    handler = (_req, res) =>
+      json(res, 503, {
+        message: 'Shipment creation is disabled until merchant authentication is configured',
+        error: 'Service Unavailable',
+        statusCode: 503,
+      });
+
+    const result = await postShipment(NEW_SHIPMENT, 'demo-merchant-001');
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.source).toBe('gateway');
+    expect(result.error.kind).toBe('unavailable');
+    expect(result.error.message).toBe(
+      'Shipment creation is disabled until merchant authentication is configured',
+    );
+  });
+});

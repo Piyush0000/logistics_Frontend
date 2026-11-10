@@ -60,7 +60,8 @@ export type CreateShipmentInput = StandardShipmentRequestInput;
 export interface CreateShipmentResult {
   shipment_id: string;
   reference_id: string;
-  awb: string;
+  /** Null until the courier confirms the booking. */
+  awb: string | null;
   carrier: CarrierName;
   status: NormalizedStatus;
   created_at: string;

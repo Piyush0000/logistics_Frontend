@@ -24,6 +24,14 @@ const TRACKING = {
   stuck: false,
   timeline: [
     {
+      event_id: '0',
+      status: 'IN_TRANSIT',
+      raw_status: 'In Transit',
+      location: 'Pune',
+      occurred_at: '2026-10-22T09:00:00.000Z',
+      source: 'webhook',
+    },
+    {
       event_id: '1',
       status: 'DELIVERED',
       raw_status: 'Delivered',
@@ -140,6 +148,14 @@ createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const path = url.pathname;
   if (path.startsWith(WEBHOOKS_PATH)) return handleWebhooks(req, res, path);
+  // The real gateway keeps booking closed until merchant authentication exists.
+  if (path === SHIPMENT_LIST_PATH && req.method === 'POST') {
+    return send(res, 503, {
+      message: 'Shipment creation is disabled until merchant authentication is configured',
+      error: 'Service Unavailable',
+      statusCode: 503,
+    });
+  }
   if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(res);
   if (req.url === '/health') return send(res, 200, { status: 'ok' });
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);

@@ -9,7 +9,11 @@ export interface CreateShipmentFormState {
   ok: boolean;
   message?: string;
   fieldErrors?: Record<string, string>;
-  createdAwb?: string;
+  /** What was sent, so a failed form keeps every field. */
+  values?: Record<string, string>;
+  createdAwb?: string | null;
+  /** The shipment id, for a booking that has no AWB yet. */
+  createdShipmentId?: string;
 }
 
 export async function createShipmentAction(
@@ -18,6 +22,11 @@ export async function createShipmentAction(
 ): Promise<CreateShipmentFormState> {
   const session = await getDemoSession();
   if (!session) redirect('/login');
+
+  const values: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string" && key !== "idempotency_key") values[key] = value;
+  }
 
   const rawData = {
     idempotency_key: (formData.get('idempotency_key') as string) || `idem-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -74,20 +83,24 @@ export async function createShipmentAction(
       ok: false,
       message: 'Please check the form for errors',
       fieldErrors,
+      values,
     };
   }
 
   const result = await ordersService().createShipment(parsed.data);
   if (!result.ok) {
+    const message = result.error.message || "Failed to create shipment";
     return {
       ok: false,
-      message: result.error.message || 'Failed to create shipment',
+      message: result.error.kind === "unavailable" ? `Booking is not available yet: ${message}` : message,
+      values,
     };
   }
 
   return {
     ok: true,
     createdAwb: result.data.awb,
+    createdShipmentId: result.data.shipment_id,
   };
 }
 

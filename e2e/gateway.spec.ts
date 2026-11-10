@@ -233,3 +233,49 @@ test.describe('home with no wallet or setup route', () => {
     }
   });
 });
+
+test.describe('shipments with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows the gateway timeline on a shipment', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/LIVE123');
+
+    const card = page.getByTestId('timeline-card');
+    await expect(card.getByText('Jaipur')).toBeVisible();
+    await expect(card.getByText('Pune')).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    // Newest event first.
+    await expect(card.getByRole('listitem').first()).toContainText('Jaipur');
+  });
+
+  test('explains that booking is unavailable and keeps the form', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/create');
+    await page.getByLabel('Customer Name *').fill('Edited Buyer');
+    await page.getByTestId('submit-shipment').click();
+
+    await expect(
+      page.getByText(
+        'Booking is not available yet: Shipment creation is disabled until merchant authentication is configured',
+      ),
+    ).toBeVisible();
+    await expect(page.getByLabel('Customer Name *')).toHaveValue('Edited Buyer');
+    await expect(page.getByTestId('create-success')).toHaveCount(0);
+  });
+});
+
+test.describe('shipments with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows the timeline error but keeps shipment facts', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/DEMOEK001');
+
+    const card = page.getByTestId('timeline-card');
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'DEMOEK001' })).toBeVisible();
+    await expect(page.getByTestId('destination-card')).toBeVisible();
+  });
+});
