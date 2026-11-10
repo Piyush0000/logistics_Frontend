@@ -1,4 +1,3 @@
-import { randomInt } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './helpers';
 import { expectNoSidewaysScroll, expectSignedOutRedirect, expectTapTargets, SIZES } from './screen-checks';
@@ -196,8 +195,11 @@ test.describe('scheduling', () => {
   });
 
   test('schedules a pickup and lists it', async ({ page }, testInfo) => {
-    // Desktop and phone runs share one sample store, so each run uses its own window to find its row.
-    const start = `${String(randomInt(0, 12)).padStart(2, '0')}:${String(randomInt(0, 60)).padStart(2, '0')}`;
+    // Desktop and phone runs (and --repeat-each and retries) share one sample store, so each run
+    // uses its own window to find its row: desktop starts before 06:00, phone from 06:00.
+    const run = testInfo.repeatEachIndex * (testInfo.project.retries + 1) + testInfo.retry;
+    const minutes = (testInfo.project.name === 'phone' ? 360 : 0) + (run % 360);
+    const start = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
     const window = `${start} to 23:59`;
 
     await select(page, BLUEDART).check();

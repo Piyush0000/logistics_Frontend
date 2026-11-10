@@ -8,7 +8,7 @@ import {
   MAX_NOTE_LENGTH,
   MIN_NOTE_LENGTH,
 } from './input';
-import { mockWeightService as mock, SAMPLE_DISCREPANCIES } from './mock';
+import { ANSWERABLE_TEST_ROWS, mockWeightService as mock, SAMPLE_DISCREPANCIES } from './mock';
 
 const image = { name: 'parcel.jpg', type: 'image/jpeg', size: 200_000 };
 const note = 'The parcel was weighed on our scale at 0.5 kg.';
@@ -77,6 +77,18 @@ describe('sample data', () => {
     expect(SAMPLE_DISCREPANCIES.some((row) => row.awb.length >= 20)).toBe(true);
     expect(SAMPLE_DISCREPANCIES.some((row) => row.extraChargePaise >= 1_00_00_000_00)).toBe(true);
   });
+
+  it('ends with open rows inside their window, wd-015 to wd-038, for browser tests to answer', () => {
+    const rows = SAMPLE_DISCREPANCIES.slice(14);
+    expect(rows).toHaveLength(ANSWERABLE_TEST_ROWS);
+    expect(rows[0]).toMatchObject({ id: 'wd-015', awb: 'DEMOWT015' });
+    expect(rows.at(-1)).toMatchObject({ id: 'wd-038', awb: 'DEMOWT038' });
+    for (const row of rows) {
+      expect(row.status).toBe('open');
+      expect(isResponseWindowClosed(row.respondBy)).toBe(false);
+      expect(row.chargedKg).toBeGreaterThan(row.declaredKg);
+    }
+  });
 });
 
 describe('mockWeightService', () => {
@@ -85,7 +97,7 @@ describe('mockWeightService', () => {
     expect(result.ok && result.source).toBe('mock');
     if (!result.ok) return;
     expect(result.data.items).toHaveLength(10);
-    expect(result.data.pageCount).toBe(2);
+    expect(result.data.pageCount).toBe(4);
     const times = result.data.items.map((row) => row.raisedAt);
     expect([...times].sort().reverse()).toEqual(times);
   });
@@ -106,7 +118,7 @@ describe('mockWeightService', () => {
 
   it('clamps a page past the end', async () => {
     const result = await mock.listDiscrepancies({ page: 99 });
-    expect(result.ok && result.data.page).toBe(2);
+    expect(result.ok && result.data.page).toBe(4);
   });
 
   it('accepts an open row once, then refuses a second answer', async () => {

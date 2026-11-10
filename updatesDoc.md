@@ -12,6 +12,36 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | **Next step** | Task 21: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+## 2026-11-11: Fix, weight dispute tests that could run only once per server
+
+### What failed
+
+In the Task 20 full run, two `e2e/weight.spec.ts` dispute tests failed on desktop and passed alone. Two clean full runs here did not show it again. Running the spec with `--repeat-each=5` failed the same two tests every time after the first run: "marks a row disputed after submitting" and "accepts a charge", 16 failures, each a click timeout on the row's Dispute or Accept button.
+
+### Root cause
+
+Each of those tests answered a fixed sample row (DEMOWT002 to DEMOWT005). Answering is permanent, and the in-memory store lives as long as the test server. So any second run of a test on the same server (a repeat, a retry, or a second run against the same server) found its row already answered, with no button to click. The tests could run only once per server.
+
+### Fix
+
+- The sample now ends with 24 open rows, wd-015 to wd-038 (`ANSWERABLE_TEST_ROWS` in `src/lib/data/weight/mock.ts`). Page 1 is unchanged.
+- Each run of the two tests takes its own row from those, by project, repeat and retry, and finds it with the AWB search. No assertion was weakened.
+- Unit tests now expect 4 pages and check the new rows are open and inside their window.
+- `e2e/orders.spec.ts`, NDR reattempt: desktop acts on DEMODL002 and phone on DEMODH006, instead of the first Reattempt button.
+- `e2e/pickups.spec.ts`, schedule a pickup: the window start comes from the project and run (desktop before 06:00, phone from 06:00), not a random time.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Weight spec, `--repeat-each=5`, desktop and phone, before the fix | 16 failed, 164 passed, 10 skipped |
+| Weight spec, `--repeat-each=5`, desktop and phone, after the fix | 180 passed, 10 skipped, 0 failed |
+| Weight spec, desktop and phone, 5 runs in a row | 36 passed, 2 skipped, each run |
+| Pickups "schedules a pickup", `--repeat-each=5`, both projects | 10 passed |
+| Orders and pickups specs, both projects, 5 runs in a row | 98 passed, 4 skipped, each run |
+| Full `pnpm test:e2e` | 839 passed, 49 skipped, 0 failed |
+| Lint, typecheck, unit tests | 0 warnings, 0 errors, 53 files, 506 tests passed |
+
 ## 2026-11-11: Task 20, Dashboard tab navigation, bar chart and Pickups tab
 
 `/dashboard?tab=<id>` now selects a tab. Overview and Pickups are built; the other tabs stay disabled.

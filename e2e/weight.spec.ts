@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { signIn } from './helpers';
 import { expectNoSidewaysScroll, expectSignedOutRedirect, expectTapTargets, SIZES } from './screen-checks';
 
@@ -6,15 +6,30 @@ const WEIGHT = '/reconciliation/weight';
 const LONG_AWB = 'DEMOLONGAWBWEIGHT001';
 const MB = 1024 * 1024;
 
-// The sample store is shared by the desktop and phone runs, so each mutating test acts on a row
-// that no other test touches. wd-001 (long values) and wd-006 are only read or left unanswered.
-const DISPUTE_ROW = { desktop: 'DEMOWT002', phone: 'DEMOWT003' } as const;
-const ACCEPT_ROW = { desktop: 'DEMOWT004', phone: 'DEMOWT005' } as const;
+// Only read or left unanswered: wd-001 (long values), wd-006 and wd-007.
 const FREE_ROW = 'DEMOWT006';
 const CLOSED_ROW = 'DEMOWT007';
 
 const projectOf = (testInfo: { project: { name: string } }) =>
   testInfo.project.name === 'phone' ? 'phone' : 'desktop';
+
+// Answering a row is permanent, and every run on one server (desktop, phone, --repeat-each and
+// retries) shares the sample store. So each run of a test that answers a row takes its own row
+// from the open rows the sample keeps for this, wd-015 to wd-038 (ANSWERABLE_TEST_ROWS in
+// src/lib/data/weight/mock.ts), and finds it by AWB.
+const FIRST_ANSWERABLE = 15;
+const ANSWERABLE_ROWS = 24;
+const ANSWERING_TESTS = ['dispute', 'accept'] as const;
+
+function answerableRow(testInfo: TestInfo, kind: (typeof ANSWERING_TESTS)[number]) {
+  const run = testInfo.repeatEachIndex * (testInfo.project.retries + 1) + testInfo.retry;
+  const lane = run * 2 + (projectOf(testInfo) === 'phone' ? 1 : 0);
+  const slot = lane * ANSWERING_TESTS.length + ANSWERING_TESTS.indexOf(kind);
+  if (slot >= ANSWERABLE_ROWS) {
+    throw new Error(`Run ${run} needs answerable sample row ${slot + 1}, but the sample has ${ANSWERABLE_ROWS}.`);
+  }
+  return `DEMOWT${String(FIRST_ANSWERABLE + slot).padStart(3, '0')}`;
+}
 
 function rows(page: Page, projectName: string) {
   return projectName === 'phone' ? page.getByTestId('weight-item') : page.getByTestId('weight-row');
@@ -231,8 +246,8 @@ test.describe('dispute', () => {
 
   test('marks a row disputed after submitting', async ({ page }, testInfo) => {
     const project = projectOf(testInfo);
-    const awb = DISPUTE_ROW[project];
-    await open(page);
+    const awb = answerableRow(testInfo, 'dispute');
+    await open(page, `${WEIGHT}?q=${awb}`);
     const dialog = await openDispute(page, project, awb);
 
     await dialog.getByLabel('Note').fill('The parcel was weighed at 0.5 kg when packed.');
@@ -251,8 +266,8 @@ test.describe('dispute', () => {
 
   test('accepts a charge', async ({ page }, testInfo) => {
     const project = projectOf(testInfo);
-    const awb = ACCEPT_ROW[project];
-    await open(page);
+    const awb = answerableRow(testInfo, 'accept');
+    await open(page, `${WEIGHT}?q=${awb}`);
 
     await rowFor(page, project, awb).getByRole('button', { name: 'Accept' }).click();
 

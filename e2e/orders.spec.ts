@@ -151,10 +151,16 @@ test.describe('Orders screen', () => {
       await expect(page.getByTestId('ndr-kpis').getByText('NDR Returned')).toBeVisible();
     });
 
-    test('opens action modal for reattempt and logs action', async ({ page }) => {
+    test('opens action modal for reattempt and logs action', async ({ page }, testInfo) => {
       await page.goto('/ndr');
 
-      const reattemptBtn = page.getByRole('button', { name: 'Reattempt' }).first();
+      // Desktop and phone runs share the sample store, and only its two "action required" rows
+      // have the buttons, so each run acts on its own row.
+      const phone = testInfo.project.name === 'phone';
+      const row = page
+        .getByTestId(phone ? 'ndr-card' : 'ndr-row')
+        .filter({ hasText: phone ? 'DEMODH006' : 'DEMODL002' });
+      const reattemptBtn = row.getByRole('button', { name: 'Reattempt' });
       await expect(reattemptBtn).toBeVisible();
       await reattemptBtn.click();
 

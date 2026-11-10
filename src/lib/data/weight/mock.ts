@@ -23,9 +23,15 @@ interface Seed {
   extraChargePaise: number;
 }
 
+/**
+ * Open rows at the end of the list for browser tests to accept or dispute. Answering a row is
+ * permanent, and every test run on one server shares this store, so each run answers a row of
+ * its own (see e2e/weight.spec.ts). wd-015 to wd-038.
+ */
+export const ANSWERABLE_TEST_ROWS = 24;
+
 // Newest first. wd-001 has a 20-character AWB and an extra charge above one crore rupees, so
-// screens are tested with long values. wd-002 to wd-005 are acted on by browser tests, one row
-// each, because desktop and phone runs share this store. Invented figures, none of them real.
+// screens are tested with long values. Invented figures, none of them real.
 const SEEDS: Seed[] = [
   { awb: 'DEMOLONGAWBWEIGHT001', status: 'open', days: 6, declaredKg: 0.5, chargedKg: 12_500, extraChargePaise: 1_00_00_000_00 },
   { status: 'open', days: 6, declaredKg: 0.5, chargedKg: 1, extraChargePaise: 4_800 },
@@ -41,6 +47,16 @@ const SEEDS: Seed[] = [
   { status: 'accepted', days: -8, declaredKg: 2.5, chargedKg: 4, extraChargePaise: 12_900 },
   { status: 'resolved', days: -10, declaredKg: 0.6, chargedKg: 1, extraChargePaise: 3_100 },
   { status: 'resolved', days: -14, declaredKg: 5, chargedKg: 6, extraChargePaise: 7_800 },
+  ...Array.from({ length: ANSWERABLE_TEST_ROWS }, (_, n): Seed => {
+    const declaredKg = 0.5 + (n % 4) * 0.5;
+    return {
+      status: 'open',
+      days: 4 + (n % 3),
+      declaredKg,
+      chargedKg: declaredKg + 0.5 + (n % 2) * 0.5,
+      extraChargePaise: 4_000 + n * 150,
+    };
+  }),
 ];
 
 export const SAMPLE_DISCREPANCIES: WeightDiscrepancy[] = SEEDS.map((seed, index) => {
