@@ -106,7 +106,7 @@ export const NAV: NavGroup[] = [
     icon: BriefcaseBusiness,
     dividerBefore: true,
     children: [
-      { label: 'Rate Card', href: '/tools/rate-card', status: 'planned', icon: FileSpreadsheet },
+      { label: 'Rate Card', href: '/tools/rate-card', status: 'live', icon: FileSpreadsheet },
       {
         label: 'Rate Calculator',
         href: '/tools/rate-calculator',

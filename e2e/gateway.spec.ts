@@ -561,3 +561,22 @@ test.describe('weight settings with no route', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Weight settings' })).toBeVisible();
   });
 });
+
+test.describe('rate card with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows rates as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/rate-card', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('rates-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('rate-row')).toHaveCount(0);
+    await expect(page.getByTestId('rate-item')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Rate card' })).toBeVisible();
+    // The zone legend is plain text, so it still explains the zones.
+    await expect(page.getByTestId('zone-legend')).toBeVisible();
+  });
+});

@@ -6,11 +6,49 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 14 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 15 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 14 |
-| **Next step** | Task 15: Tools, Rate Card |
+| **Waiting on** | Review of Task 15 |
+| **Next step** | Task 16: Tools, Rate Calculator |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 15, Rate card
+
+`/tools/rate-card` is a read-only table of shipping prices by courier and zone. The backend keeps rate cards in order-engine memory and has no route, so the data is sample, and gateway mode shows it as unavailable.
+
+### Done
+
+- New `src/lib/data/rates/` (types, mock, gateway, index, tests). `ratesService()` follows `DATA_SOURCE_RATES`. `RatesService` has `getRateCard()` only; Task 16 adds `quote()` to this folder.
+- Fields mirror the backend `RateCard` model: base weight, base price, price per extra 500 g, COD fee percent and minimum COD fee, in paise and kilograms.
+- Sample: one row for every carrier in `CARRIERS` and every zone A to E (A within city, B within state, C metro to metro, D rest of India, E special). Prices for zones A to D and for four carriers are copied from the backend seed rates. Zone E and Blue Dart have no seed, so those values are invented.
+- Page: carrier filter (`?carrier=`, an unknown value shows every carrier), a table on desktop, one card per carrier on phones, and a zone legend. Money uses `formatPaise`; COD fee shows as a percentage with the minimum.
+- Sidebar Rate Card is live. Route added to `e2e/routes.ts`. `DATA_SOURCE_RATES` is on the port 3106 server and in `.env.example`.
+
+### Files changed
+
+- New: `src/lib/data/rates/*`, `src/app/(app)/tools/rate-card/{page,loading,rate-table,rate-filter}.tsx`, `e2e/rate-card.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts}`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Browser: 19 failed, the page did not exist. Unit: the mock test failed with 20 rows against 25 when a zone was dropped |
+| D1 lint, typecheck, unit tests | 0 errors, 45 files, 434 tests passed |
+| D2 full browser run | 725 passed, 45 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | `/tools/rate-card` 200 with an h1. BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed. No cut-off or sideways scroll |
+| D5 palette, D6 secrets and brand | No output |
+| D7 backend | Clean, aace603 |
+
+### Decisions
+
+- The rates hold no free text, so "wraps long values" checks the widest figures at 320px.
+- The unit test was written with the code and checked by breaking the mock, not run before it existed.
+
+### Not verified
+
+- The empty state in a browser, because the sample always has rows for every carrier.
 
 ## 2026-11-10: Task 14, Weight settings
 
