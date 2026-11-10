@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { BULK_COLUMNS } from '../src/lib/bulk-shipments';
-import { signIn } from './helpers';
+import { e2eUrl, signIn } from './helpers';
 
 test.describe('with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows gateway numbers with no sample label', async ({ page }) => {
     await signIn(page);
@@ -35,7 +35,7 @@ test.describe('with the gateway answering', () => {
 });
 
 test.describe('orders search with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('says gateway search covers this page only', async ({ page }) => {
     await signIn(page);
@@ -47,7 +47,7 @@ test.describe('orders search with the gateway answering', () => {
 });
 
 test.describe('with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('explains the failure and offers a retry', async ({ page }) => {
     await signIn(page);
@@ -79,7 +79,7 @@ test.describe('with the gateway down', () => {
 });
 
 test.describe('with no wallet or COD route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows the wallet as unavailable, never as sample data', async ({ page }) => {
     await signIn(page);
@@ -116,7 +116,7 @@ test.describe('with no wallet or COD route', () => {
 });
 
 test.describe('webhooks with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   const open = async (page: Page) => {
     await signIn(page);
@@ -171,7 +171,7 @@ test.describe('webhooks with the gateway answering', () => {
 });
 
 test.describe('webhooks with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('explains the failure and offers a retry', async ({ page }) => {
     await signIn(page);
@@ -188,7 +188,7 @@ test.describe('webhooks with the gateway down', () => {
 });
 
 test.describe('home with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows live shipment counts from the gateway', async ({ page }) => {
     await signIn(page);
@@ -204,7 +204,7 @@ test.describe('home with the gateway answering', () => {
 });
 
 test.describe('home with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('keeps Home working when the gateway is down', async ({ page }) => {
     await signIn(page);
@@ -220,7 +220,7 @@ test.describe('home with the gateway down', () => {
 });
 
 test.describe('home with no wallet or setup route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows wallet, NDR and setup steps as unavailable, never as sample data', async ({ page }) => {
     await signIn(page);
@@ -236,7 +236,7 @@ test.describe('home with no wallet or setup route', () => {
 });
 
 test.describe('shipments with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows the gateway timeline on a shipment', async ({ page }) => {
     await signIn(page);
@@ -267,7 +267,7 @@ test.describe('shipments with the gateway answering', () => {
 });
 
 test.describe('shipments with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows the timeline error but keeps shipment facts', async ({ page }) => {
     await signIn(page);
@@ -282,7 +282,7 @@ test.describe('shipments with the gateway down', () => {
 });
 
 test.describe('B2C shipments with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows gateway shipments with no sample label', async ({ page }) => {
     await signIn(page);
@@ -302,7 +302,7 @@ test.describe('B2C shipments with the gateway answering', () => {
 });
 
 test.describe('B2C shipments with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows the list error when the gateway is down', async ({ page }) => {
     await signIn(page);
@@ -316,7 +316,7 @@ test.describe('B2C shipments with the gateway down', () => {
 });
 
 test.describe('B2B with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows B2B as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -331,7 +331,7 @@ test.describe('B2B with no route', () => {
 });
 
 test.describe('bulk upload with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows the booking-unavailable message per row', async ({ page }) => {
     await signIn(page);
@@ -362,7 +362,7 @@ test.describe('bulk upload with the gateway answering', () => {
 });
 
 test.describe('pickups with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('lists manifested gateway shipments as ready to ship', async ({ page }) => {
     await signIn(page);
@@ -378,7 +378,7 @@ test.describe('pickups with the gateway answering', () => {
 });
 
 test.describe('pickups with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows the ready list error but keeps the page', async ({ page }) => {
     await signIn(page);
@@ -393,7 +393,7 @@ test.describe('pickups with the gateway down', () => {
 });
 
 test.describe('pickups with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows pickups as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -418,7 +418,7 @@ test.describe('pickups with no route', () => {
 });
 
 test.describe('invoices with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows invoices as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -442,7 +442,7 @@ test.describe('invoices with no route', () => {
 });
 
 test.describe('NDR with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows NDR as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -459,7 +459,7 @@ test.describe('NDR with no route', () => {
 });
 
 test.describe('RTO with the stand-in gateway', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows gateway RTO shipments', async ({ page }) => {
     await signIn(page);
@@ -496,7 +496,7 @@ test.describe('RTO with the stand-in gateway', () => {
 });
 
 test.describe('RTO with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows the error when the gateway is down', async ({ page }) => {
     await signIn(page);
@@ -513,7 +513,7 @@ test.describe('RTO with the gateway down', () => {
 });
 
 test.describe('wallet recharge with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows recharge as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -528,7 +528,7 @@ test.describe('wallet recharge with no route', () => {
 });
 
 test.describe('weight with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows weight as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -546,7 +546,7 @@ test.describe('weight with no route', () => {
 });
 
 test.describe('weight settings with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows presets as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -563,7 +563,7 @@ test.describe('weight settings with no route', () => {
 });
 
 test.describe('rate card with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows rates as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -582,7 +582,7 @@ test.describe('rate card with no route', () => {
 });
 
 test.describe('rate calculator with no route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows quotes as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -605,7 +605,7 @@ test.describe('rate calculator with no route', () => {
 });
 
 test.describe('order tracking with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows the gateway timeline for LIVE123', async ({ page }) => {
     await signIn(page);
@@ -630,7 +630,7 @@ test.describe('order tracking with the gateway answering', () => {
 });
 
 test.describe('order tracking with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows the error when the gateway is down', async ({ page }) => {
     await signIn(page);
@@ -649,7 +649,7 @@ test.describe('order tracking with the gateway down', () => {
 });
 
 test.describe('public tracking with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows the gateway timeline', async ({ page }) => {
     const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
@@ -670,7 +670,7 @@ test.describe('public tracking with the gateway answering', () => {
 });
 
 test.describe('public tracking with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('shows a clear error, not a 404', async ({ page }) => {
     const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
@@ -682,7 +682,7 @@ test.describe('public tracking with the gateway down', () => {
 });
 
 test.describe('reports with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   const RANGE = 'from=2026-10-01&to=2026-10-31';
 
@@ -709,7 +709,7 @@ test.describe('reports with the gateway answering', () => {
 });
 
 test.describe('reports with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('returns 503 with a plain message for shipments', async ({ page }) => {
     await signIn(page);
@@ -722,7 +722,7 @@ test.describe('reports with the gateway down', () => {
 });
 
 test.describe('reports with no COD, wallet or NDR route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('returns 503 for COD in gateway mode', async ({ page }) => {
     await signIn(page);
@@ -737,7 +737,7 @@ test.describe('reports with no COD, wallet or NDR route', () => {
 });
 
 test.describe('dashboard pickups tab with no pickups route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows pickups as unavailable in gateway mode', async ({ page }) => {
     await signIn(page);

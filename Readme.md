@@ -41,6 +41,7 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 | `pnpm contracts:update` | Repacks `@logicore/contracts` from the backend into `vendor/` |
 | `node scripts/dev-smoke.mjs` | Opens every route in `e2e/routes.ts` under `next dev` on port 3107 and fails on any browser error. Stop `pnpm dev` first: Next.js allows one `next dev` per folder |
 | `node scripts/screenshots.mjs [--menu] [route ...]` | Saves desktop, phone and 320px screenshots to `test-results/screenshots/`, from the build on port 3102. Run `pnpm build` first. In Git Bash, prefix `MSYS_NO_PATHCONV=1` so routes stay as typed |
+| `E2E_PORT_OFFSET=200 pnpm test:e2e` | Shifts every browser-test and script port (3101 to 3107, 3199) by the offset, so two runs can share a machine. Unset means 0 |
 
 ## How it connects to the backend
 

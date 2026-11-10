@@ -1,4 +1,5 @@
 import { addDays } from '../../format/calendar';
+import { indianDay } from '../../format/date';
 import type { ApiError } from '../../gateway/errors';
 import { mockOrdersService } from '../orders/mock';
 import { mockPickupAddressService } from '../pickup-addresses/mock';
@@ -14,12 +15,14 @@ import {
 const COURIERS = ['ekart', 'delhivery', 'bluedart', 'shadowfax', 'dhl'];
 const LABELS = ['Bengaluru warehouse', 'Gurugram store'];
 
-// Newest first. The first one has a 20-character AWB and a long address label, so screens are
+// Dated from today's Indian day when the server starts, so the dashboard's Today tiles and chart
+// stay meaningful every day. Newest first. The first one has a 20-character AWB and a long address label, so screens are
 // tested with long values.
+const TODAY = indianDay(new Date());
 const SEED: Pickup[] = [
   {
     id: 'pk-001',
-    pickupDate: '2026-11-12',
+    pickupDate: addDays(TODAY, 1),
     window: { start: '10:00', end: '14:00' },
     carrier: 'delhivery',
     addressLabel: 'Bhubaneswar regional distribution hub',
@@ -31,7 +34,7 @@ const SEED: Pickup[] = [
     const status = index % 5 === 4 ? 'cancelled' : index < 2 ? 'scheduled' : 'picked_up';
     return {
       id: `pk-${String(number).padStart(3, '0')}`,
-      pickupDate: addDays('2026-11-11', -index),
+      pickupDate: addDays(TODAY, -index),
       window: index % 3 === 2 ? null : { start: '09:30', end: '12:30' },
       carrier: COURIERS[index % COURIERS.length]!,
       addressLabel: LABELS[index % LABELS.length]!,

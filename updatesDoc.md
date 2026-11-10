@@ -12,6 +12,12 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | **Next step** | Task 21: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+## 2026-11-11: Task 20, fix round 1
+
+- Browser tests can now run beside another run: set `E2E_PORT_OFFSET` (default 0) to shift every test port. The gateway project passed with an offset of 200.
+- The Pickups tile browser test now checks relations within one render: the chart's last bar equals Scheduled today plus Picked up today, the hidden table has 7 whole-number rows, and Pending pickup equals the rows in Ready to ship on `/orders/pickups`. Exact values stay in the `summarizePickups` unit tests, which now also cover cancelled-today pickups and a timestamp near Indian midnight.
+- The sample pickups are dated from today's Indian day instead of a fixed 11 Nov, so the Today tiles and chart stay meaningful every day. No existing date expectation needed to change.
+
 ## 2026-11-11: Fix, weight dispute tests that could run only once per server
 
 ### What failed
