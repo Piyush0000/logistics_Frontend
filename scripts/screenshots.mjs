@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, devices } from '@playwright/test';
 
-const PORT = 3102;
+const PORT = 3102 + Number(process.env.E2E_PORT_OFFSET ?? 0);
 const BASE = `http://localhost:${PORT}`;
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const NEXT_BIN = join(ROOT, 'node_modules', 'next', 'dist', 'bin', 'next');

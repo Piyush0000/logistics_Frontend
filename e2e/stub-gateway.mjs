@@ -192,4 +192,4 @@ createServer((req, res) => {
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);
   if (req.url === '/api/v1/shipments/LIVE123/tracking') return send(res, 200, TRACKING);
   return send(res, 404, { message: 'Not Found', statusCode: 404 });
-}).listen(3103);
+}).listen(3103 + Number(process.env.E2E_PORT_OFFSET ?? 0));
