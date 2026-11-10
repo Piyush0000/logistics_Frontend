@@ -6,11 +6,52 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 12 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 13 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 12 |
-| **Next step** | Task 13: Reconciliation, Weight |
+| **Waiting on** | Review of Task 13 |
+| **Next step** | Task 14: Reconciliation, Weight Settings |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 13, Weight discrepancies
+
+`/reconciliation/weight` shows couriers' weight disputes: declared against charged weight and the extra charge. A merchant can accept a charge or dispute it with a note and photos. The backend has no route, so the data is sample, and gateway mode shows it as unavailable.
+
+### Done
+
+- New `src/lib/data/weight/` (types, input, mock, gateway, index, tests). `weightService()` follows `DATA_SOURCE_WEIGHT`.
+- Sample: 14 rows covering open, disputed, accepted and resolved. Two open rows are past their response window. One row has a 20-character AWB and an extra charge of ₹1,00,00,000.00. Dates are set relative to today, so the windows stay correct.
+- Page: summary tiles (Open, Disputed, Extra charges pending), a filter (`?status=`, `?q=` for part of an AWB) and a list with pages through `buildPageHref`. Table on desktop, cards on phones. Empty message: "No weight discrepancies match these filters. Clear the filters to see them all."
+- Dispute: note of 10 to 1,000 characters and 1 to 3 images, JPG or PNG, up to 5 MB each. Checked in the browser and again in the server action, which receives only name, type and size. The mock stores no file content.
+- "Response window closed" compares `respondBy` with today in Indian time. The last day is still open. `isResponseWindowClosed(respondBy, now)` takes the clock as a parameter. Closed rows have no Dispute button, and the mock refuses a dispute on them. Accept stays available.
+- Accept and dispute are server actions that check the session first.
+- Sidebar Weight is live. Route added to `e2e/routes.ts`. `DATA_SOURCE_WEIGHT` is on the port 3106 server and in `.env.example`.
+
+### Files changed
+
+- New: `src/lib/data/weight/*`, `src/app/(app)/reconciliation/weight/{page,loading,discrepancy-table,discrepancy-status,dispute-dialog,weight-filter,actions}.tsx|ts` and `actions.test.ts`, `e2e/weight.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts,dashboard.spec.ts}`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+- `e2e/dashboard.spec.ts`: "shows planned items as unavailable" no longer hard-codes its example. It takes the first planned child item in `NAV` and its group, and fails with a clear message if none is left. Same three assertions.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: modules missing. Browser: every weight test failed, the page did not exist |
+| D1 lint, typecheck, unit tests | 0 errors, 41 files, 397 tests passed |
+| D2 full browser run | 677 passed, 39 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route 200 with an h1, including `/reconciliation/weight`. BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed. No cut-off or sideways scroll |
+| D5 palette, D6 secrets and brand | No output (brand matches are design-file comments only) |
+| D7 backend | Clean, aace603 |
+
+### Decisions
+
+- An AWB search (`?q=`) was added to the filter. Every status has sample rows, so no status filter can be empty, and the empty-state test needs a filter that matches nothing.
+- `respondBy` is a YYYY-MM-DD day in Indian time, not a timestamp.
+- Each mutating browser test acts on its own row (desktop and phone use different rows), because the mock store is shared.
+
+### Not verified
+- Real file upload. Only file metadata is sent, by design.
 
 ## 2026-11-10: Task 12, Invoices
 

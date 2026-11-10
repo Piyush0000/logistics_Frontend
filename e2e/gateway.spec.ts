@@ -526,3 +526,21 @@ test.describe('wallet recharge with no route', () => {
     await expect(dialog.getByText('No payment was taken')).toBeHidden();
   });
 });
+
+test.describe('weight with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows weight as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/reconciliation/weight', { waitUntil: 'networkidle' });
+
+    for (const id of ['weight-summary', 'weight-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('weight-row')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Weight discrepancies' })).toBeVisible();
+  });
+});

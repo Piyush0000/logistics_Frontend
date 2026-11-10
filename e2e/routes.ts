@@ -23,6 +23,7 @@ export const APP_ROUTES = [
   '/finances/cod',
   '/finances/invoices',
   '/finances/invoices/inv-2026-10',
+  '/reconciliation/weight',
   '/channel-integrations',
 ] as const;
 

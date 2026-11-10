@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { NAV } from '../src/components/shell/nav-config';
 import { DEMO_EMAIL, signIn } from './helpers';
 
 const NAV_GROUPS = [
@@ -166,12 +167,19 @@ test.describe('sidebar', () => {
   });
 
   test('shows planned items as unavailable', async ({ page }, testInfo) => {
-    await openSidebar(page, testInfo.project.name === 'phone');
-    await nav(page).getByRole('button', { name: 'Reconciliation' }).click();
+    // Takes whichever child item is still planned, so building a screen never breaks this test.
+    const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
+    const planned = group?.children?.find((item) => item.status === 'planned');
+    if (!group || !planned) {
+      throw new Error('No planned child item is left in NAV, so this test has nothing to check.');
+    }
 
-    const weight = nav(page).getByRole('button', { name: 'Weight', exact: true });
-    await expect(weight).toBeDisabled();
-    await expect(weight).toHaveAttribute('title', 'Weight is not available yet');
+    await openSidebar(page, testInfo.project.name === 'phone');
+    await nav(page).getByRole('button', { name: group.label }).click();
+
+    const item = nav(page).getByRole('button', { name: planned.label, exact: true });
+    await expect(item).toBeDisabled();
+    await expect(item).toHaveAttribute('title', `${planned.label} is not available yet`);
   });
 
   test('shows the user and sign out at the bottom', async ({ page }, testInfo) => {
