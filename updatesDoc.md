@@ -12,6 +12,29 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | **Next step** | Task 19: Reports |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+## 2026-11-11: Fix, flaky weight settings test
+
+### What failed
+
+`e2e/weight-settings.spec.ts` "keeps exactly one default preset" (desktop) failed now and then when the whole file ran. Reproduced 2 times in 13 runs: `strict mode violation: getByRole('button', { name: 'Cancel' }) resolved to 3 elements`.
+
+### Root cause
+
+The mock store was not at fault. The test closed the edit dialog with a page-wide `getByRole('button', { name: 'Cancel' })`. That match is a substring match. The "asks first and keeps the preset on cancel" test runs at the same time and adds a preset called "Cancel desktop" or "Cancel phone" to the shared store. That row's "Edit Cancel desktop" and "Delete Cancel desktop" buttons matched too. The failure snapshot shows the "Cancel desktop" row on the page. A one-off test that added "Cancel desktop" first failed the same way every time with the old lookup and passed with the new one.
+
+### Fix
+
+The test now finds Cancel, Save preset and the default checkbox inside the "Edit package preset" dialog, by exact name, and waits for the dialog to close. No assertion was weakened.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Weight settings spec, desktop and phone, 5 runs in a row | 27 passed, 3 skipped, each run |
+| Weight settings spec, desktop only | 14 passed, 1 skipped |
+| Full `pnpm test:e2e` | 792 passed, 47 skipped, 0 failed |
+| Lint, typecheck, unit tests | 0 warnings, 0 errors, 48 files, 474 tests passed |
+
 ## 2026-11-11: Task 18, Public tracking page
 
 `/track/[awb]` is the page a buyer opens from a shared link. It needs no sign-in and has no app shell.

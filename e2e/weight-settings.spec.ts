@@ -261,10 +261,14 @@ test('keeps exactly one default preset', async ({ page }, testInfo) => {
   await confirm.getByRole('button', { name: 'Cancel' }).click();
   await expect(rowFor(page, project, SEED_DEFAULT)).toBeVisible();
 
-  // The default checkbox on the default preset is locked on.
+  // The default checkbox on the default preset is locked on. Buttons are looked up inside the
+  // dialog by exact name: rows other tests add (such as "Cancel phone") carry "Edit Cancel ..."
+  // buttons that a page-wide "Cancel" lookup would also match.
+  const edit = page.getByRole('dialog', { name: 'Edit package preset' });
   await rowFor(page, project, SEED_DEFAULT).getByRole('button', { name: `Edit ${SEED_DEFAULT}` }).click();
-  await expect(page.getByLabel('Make this the default preset')).toBeDisabled();
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(edit.getByLabel('Make this the default preset')).toBeDisabled();
+  await edit.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(edit).toBeHidden();
 
   // A new default takes the label from the old one.
   await page.getByRole('button', { name: 'Add preset' }).click();
@@ -278,8 +282,9 @@ test('keeps exactly one default preset', async ({ page }, testInfo) => {
 
   // Put the sample default back and remove the candidate.
   await rowFor(page, project, SEED_DEFAULT).getByRole('button', { name: `Edit ${SEED_DEFAULT}` }).click();
-  await page.getByLabel('Make this the default preset').check();
-  await page.getByRole('button', { name: 'Save preset' }).click();
+  await edit.getByLabel('Make this the default preset').check();
+  await edit.getByRole('button', { name: 'Save preset', exact: true }).click();
+  await expect(edit).toBeHidden();
   await expect(defaults).toContainText(SEED_DEFAULT);
   await expect(defaults).toHaveCount(1);
   await deletePreset(page, project, name);
