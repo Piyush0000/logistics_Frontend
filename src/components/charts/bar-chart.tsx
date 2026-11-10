@@ -111,23 +111,26 @@ export function BarChart({
           );
         })}
       </svg>
-      <table className="sr-only">
-        <caption>{label}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{categoryLabel}</th>
-            <th scope="col">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((d, index) => (
-            <tr key={`${d.label}-${index}`}>
-              <th scope="row">{full(d)}</th>
-              <td>{format(d.value)}</td>
+      {/* sr-only on a div: overflow hidden does not clip a table, so long row headers would widen the page. */}
+      <div className="sr-only">
+        <table>
+          <caption>{label}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{categoryLabel}</th>
+              <th scope="col">Value</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((d, index) => (
+              <tr key={`${d.label}-${index}`}>
+                <th scope="row">{full(d)}</th>
+                <td>{format(d.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

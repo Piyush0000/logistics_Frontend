@@ -28,7 +28,7 @@ describe('BarChart', () => {
 
   it('puts every value in a hidden table and as a value label', () => {
     const html = render();
-    expect(html).toContain('<table class="sr-only"');
+    expect(html).toContain('<div class="sr-only"><table>');
     expect(html.match(/<tr>/g)).toHaveLength(8);
     expect(html.match(/data-value-label=/g)).toHaveLength(7);
   });
