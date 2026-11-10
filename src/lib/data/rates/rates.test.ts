@@ -32,6 +32,14 @@ describe('mock rate card', () => {
     }
   });
 
+  it('describes zones the way the backend decides them', () => {
+    expect(ZONE_LABELS.A.description).toBe('Pickup and delivery pincodes start with the same three digits, so both are in the same city or district area.');
+    expect(ZONE_LABELS.B.description).toBe('Pickup and delivery are in the same state, but not in the same city or district area.');
+    expect(ZONE_LABELS.C.description).toBe('Pickup and delivery are in different states, and both pincodes are in a major metro area.');
+    expect(ZONE_LABELS.D.description).toBe('Any other route within India.');
+    expect(ZONE_LABELS.E.description).toBe("A sample zone for remote areas. The courier network doesn't define it yet.");
+  });
+
   it('describes every zone', () => {
     for (const zone of ZONES) expect(ZONE_LABELS[zone].name.length).toBeGreaterThan(0);
   });
