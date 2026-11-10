@@ -5,6 +5,7 @@ const gatewayData = {
   DATA_SOURCE_ORDERS: 'gateway',
   DATA_SOURCE_TRACKING: 'gateway',
   DATA_SOURCE_WEBHOOKS: 'gateway',
+  DATA_SOURCE_PICKUPS: 'gateway',
 };
 
 export default defineConfig({
@@ -61,7 +62,7 @@ export default defineConfig({
       url: 'http://localhost:3106/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway' },
+      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway', DATA_SOURCE_PICKUPS: 'gateway' },
     },
   ],
 });

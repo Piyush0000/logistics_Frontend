@@ -55,9 +55,20 @@ const SHIPMENT_LIST_ITEM = {
   stuck: false,
 };
 
-// Later tasks add query filters here: pass `url` in and read url.searchParams.
-function handleShipmentList(res) {
-  return send(res, 200, { items: [SHIPMENT_LIST_ITEM], page: 1, limit: 50, total: 1 });
+// With no status, the one DELIVERED shipment that earlier tests rely on. With MANIFESTED, two
+// shipments for the same carrier. Any other status has none, as the real list route filters on it.
+const MANIFESTED_ITEMS = ['LIVE201', 'LIVE202'].map((awb, index) => ({
+  ...SHIPMENT_LIST_ITEM,
+  shipment_id: `10000000-0000-4000-8000-00000000020${index + 1}`,
+  reference_id: `REF-${awb}`,
+  awb,
+  status: 'MANIFESTED',
+}));
+
+function handleShipmentList(url, res) {
+  const status = url.searchParams.get('status');
+  const items = !status ? [SHIPMENT_LIST_ITEM] : status === 'MANIFESTED' ? MANIFESTED_ITEMS : [];
+  return send(res, 200, { items, page: 1, limit: 50, total: items.length });
 }
 
 const WEBHOOKS_PATH = '/api/v1/webhooks';
@@ -156,7 +167,7 @@ createServer((req, res) => {
       statusCode: 503,
     });
   }
-  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(res);
+  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(url, res);
   if (req.url === '/health') return send(res, 200, { status: 'ok' });
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);
   if (req.url === '/api/v1/shipments/LIVE123/tracking') return send(res, 200, TRACKING);

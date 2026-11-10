@@ -13,6 +13,8 @@ export const APP_ROUTES = [
   '/orders/b2b',
   '/orders/create',
   '/orders/bulk',
+  '/orders/pickups',
+  '/orders/pickups/manifest-print/pk-001',
   '/orders/DEMOEK001',
   '/ndr',
   '/finances/wallet',

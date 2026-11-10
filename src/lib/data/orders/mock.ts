@@ -388,6 +388,48 @@ const INITIAL_MOCK_ORDERS: OrderDetail[] = [
       },
     ],
   },
+  {
+    shipment_id: '10000000-0000-4000-8000-000000000009',
+    reference_id: 'DEMO-009',
+    carrier: 'ekart',
+    awb: 'DEMOEK009',
+    status: 'MANIFESTED',
+    created_at: '2026-10-15T09:00:00.000Z',
+    last_status_at: '2026-10-15T09:05:00.000Z',
+    stuck: false,
+    origin: {
+      name: 'Central Hub',
+      phone: '9876543210',
+      line1: 'Plot 42, Electronic City',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      country: 'IN',
+      pincode: '560100',
+    },
+    destination: {
+      name: 'Sunita Verma',
+      phone: '9812345670',
+      line1: '8 Residency Road',
+      city: 'Mysuru',
+      state: 'Karnataka',
+      country: 'IN',
+      pincode: '570001',
+    },
+    weight_kg: 0.9,
+    dimensions: { length_cm: 20, width_cm: 15, height_cm: 8 },
+    items: [{ name: 'Cotton Kurta', quantity: 1, unit_price: 1299 }],
+    payment_type: 'PREPAID',
+    cod_amount: 0,
+    total_amount_paise: 129900,
+    timeline: [
+      {
+        status: 'MANIFESTED',
+        location: 'Bengaluru Hub',
+        timestamp: '2026-10-15T09:05:00.000Z',
+        description: 'Shipment data received and package manifested',
+      },
+    ],
+  },
 ];
 
 // In-memory store for newly created demo shipments

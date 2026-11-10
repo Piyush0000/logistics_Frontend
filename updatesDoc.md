@@ -6,11 +6,48 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 7 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 8 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 7 |
-| **Next step** | Task 8: Pickups & Manifests |
+| **Waiting on** | Review of Task 8 |
+| **Next step** | Task 9: NDR connection |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 8, Pickups & Manifests
+
+`/orders/pickups` lists shipments ready to ship (MANIFESTED), schedules a courier pickup for selected ones, lists scheduled pickups and opens a printable manifest.
+
+### Done
+
+- Ready to ship card with checkboxes and Select all (table on desktop, cards on phones). Schedule pickup opens a dialog with date, optional window and a saved pickup address (default preselected).
+- Rules, in `src/lib/data/pickups/input.ts`: one courier per pickup (`Select shipments from one courier per pickup.`), date from today to 7 days ahead in Indian time, window end after start, 1 to 100 AWBs. The action and the mock service both check them.
+- Scheduled pickups card, 10 per page, with Print manifest per row. The manifest is at `/orders/pickups/manifest-print/[id]`: signed-in only, AWB table, signature lines, `Sample manifest` banner in mock mode, buttons hidden when printing.
+- Gateway mode: ready-to-ship reads `GET /api/v1/shipments?status=MANIFESTED&page=1&limit=100` through `ordersService()`. Pickups list, scheduling and the manifest are `notAvailable()`, so scheduling controls are not offered.
+- Stand-in gateway list now filters on `status`: none gives the LIVE123 DELIVERED record, MANIFESTED gives LIVE201 and LIVE202, other statuses give none.
+- Nav entry is live; `/orders/pickups` and a sample manifest are in `e2e/routes.ts`; `DATA_SOURCE_PICKUPS` is in `.env.example` and on ports 3104, 3105 and 3106.
+
+### Files changed
+
+- New: `src/app/(app)/orders/pickups/` (`page.tsx`, `loading.tsx`, `ready-to-ship.tsx`, `schedule-dialog.tsx`, `pickup-list.tsx`, `actions.ts`, `actions.test.ts`, `manifest-print/[id]/page.tsx`, `print-button.tsx`); `src/lib/data/pickups/` (types, input, format, mock, gateway, index, test); `e2e/pickups.spec.ts`
+- Changed: `src/lib/data/orders/mock.ts` (one more MANIFESTED sample, DEMOEK009, so two couriers are ready), `src/components/orders/carrier-badge.tsx` (exports `carrierLabel`), `nav-config.ts`, `e2e/routes.ts`, `e2e/stub-gateway.mjs`, `e2e/gateway.spec.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 318 passed |
+| D2 full browser run | 564 passed, 31 skipped (single-size tests), 0 failed (before the final back-link fix); pickups spec re-run after it: 37 passed, 3 skipped |
+| D3 `node scripts/dev-smoke.mjs` | Every route HTTP 200 with an h1, including the pickups pages. BROWSER ERRORS: none |
+| D4 screenshots | Reviewed pickups (desktop, phone, 320px) and the manifest (desktop, 320px). Found the Back link unstyled, fixed and pinned by a tap-target test |
+| D5 palette check | No output |
+| D6 secret and brand check | No output |
+| D7 backend check | `status --porcelain` empty, HEAD `aace603` |
+
+### Decisions and not verified
+
+- `PickupService` gained `getPickup(id)` for the manifest page.
+- The manifest page does not use the app shell, so there is no sidebar to hide when printing. Unknown ids show the not-found page, but with status 200 because the loading screen starts the response first.
+- Sample ready-to-ship list does not shrink after scheduling, so sample runs can keep scheduling.
+- Not verified: a real print dialog (print media was emulated), and an empty ready-to-ship list in the browser (no way to produce one in sample data).
 
 ## 2026-11-10: Task 7, Bulk Upload
 

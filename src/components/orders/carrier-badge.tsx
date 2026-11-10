@@ -12,8 +12,13 @@ const CARRIER_LABELS: Record<string, string> = {
   dhl: 'DHL',
 };
 
+/** A carrier's display name, for text that is not a badge. */
+export function carrierLabel(carrier: string): string {
+  return CARRIER_LABELS[carrier.toLowerCase()] || carrier.toUpperCase();
+}
+
 export function CarrierBadge({ carrier }: CarrierBadgeProps) {
-  const label = CARRIER_LABELS[carrier.toLowerCase()] || carrier.toUpperCase();
+  const label = carrierLabel(carrier);
 
   return (
     <span

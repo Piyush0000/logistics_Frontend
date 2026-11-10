@@ -360,3 +360,59 @@ test.describe('bulk upload with the gateway answering', () => {
     await expect(page.getByText('0 booked, 2 not booked')).toBeVisible();
   });
 });
+
+test.describe('pickups with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('lists manifested gateway shipments as ready to ship', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups');
+    const card = page.getByTestId('ready-card');
+
+    await expect(card.getByText('LIVE201').first()).toBeVisible();
+    await expect(card.getByText('LIVE202').first()).toBeVisible();
+    // The stand-in keeps the DELIVERED shipment out, because it is not manifested.
+    await expect(card.getByText('LIVE123')).toHaveCount(0);
+    await expect(card.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('pickups with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows the ready list error but keeps the page', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups');
+    const card = page.getByTestId('ready-card');
+
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Pickups & Manifests' })).toBeVisible();
+    await expect(page.getByTestId('pickups-card')).toBeVisible();
+  });
+});
+
+test.describe('pickups with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows pickups as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('pickups-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    // Scheduling needs the pickup routes, so it is not offered.
+    await expect(page.getByRole('button', { name: 'Schedule pickup' })).toHaveCount(0);
+    await expect(page.getByRole('checkbox')).toHaveCount(0);
+  });
+
+  test('refuses the manifest page as unavailable', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups/manifest-print/pk-001');
+
+    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByTestId('sample-manifest')).toHaveCount(0);
+  });
+});
