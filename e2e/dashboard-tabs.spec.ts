@@ -36,9 +36,9 @@ test.describe('dashboard tabs', () => {
   });
 
   test('keeps tabs that are not built disabled', async ({ page }) => {
-    await page.goto('/dashboard?tab=ndr');
+    await page.goto('/dashboard?tab=delivered');
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    for (const name of TABS.slice(2)) {
+    for (const name of TABS.slice(4)) {
       await expect(page.getByRole('tab', { name })).toBeDisabled();
     }
   });
@@ -105,6 +105,72 @@ test.describe('pickups tab', () => {
     await expectTapTargets(page, [
       page.getByRole('tab', { name: 'Overview' }),
       page.getByRole('tab', { name: 'Pickups' }),
+    ]);
+  });
+});
+
+test.describe('NDR tab', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/dashboard?tab=ndr');
+    await expect(page.getByTestId('ndr-tab-card')).toBeVisible();
+  });
+
+  test('NDR tab shows reasons and links to NDR', async ({ page }) => {
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
+    await expect(page.getByRole('tab', { name: 'NDR' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'NDR' })).toHaveAttribute('href', '/dashboard?tab=ndr');
+    const card = page.getByTestId('ndr-tab-card');
+    await expect(card.getByText('Sample data')).toBeVisible();
+    for (const label of ['NDR Order', 'Re-attempted', 'NDR Delivered', 'NDR Returned']) {
+      await expect(card.getByTestId(`tile-${label}`)).toBeVisible();
+    }
+    await expect(card.getByRole('img', { name: /^NDR reasons\./ })).toBeVisible();
+    expect(await card.locator('[data-bar]').count()).toBeGreaterThan(0);
+    await expect(page.getByTestId('kpi-cards')).toBeHidden();
+    await card.getByRole('link', { name: 'View all NDR' }).click();
+    await page.waitForURL('**/ndr');
+  });
+
+  test('does not scroll sideways at any size', async ({ page }) => {
+    await expectNoSidewaysScroll(page, SIZES);
+  });
+
+  test('keeps tap targets touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await expectTapTargets(page, [
+      page.getByRole('tab', { name: 'NDR' }),
+      page.getByRole('link', { name: 'View all NDR' }),
+    ]);
+  });
+});
+
+test.describe('RTO tab', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/dashboard?tab=rto');
+    await expect(page.getByTestId('rto-tab-card')).toBeVisible();
+  });
+
+  test('shows counts, a courier chart and a link to RTO', async ({ page }) => {
+    await expect(page.getByRole('tab', { name: 'RTO' })).toHaveAttribute('aria-selected', 'true');
+    const card = page.getByTestId('rto-tab-card');
+    await expect(card.getByText('Sample data')).toBeVisible();
+    await expect(card.getByTestId('tile-RTO in progress')).toContainText('3');
+    await expect(card.getByTestId('tile-RTO delivered')).toContainText('2');
+    await expect(card.getByRole('img', { name: /^RTO by courier\./ })).toBeVisible();
+    await expect(card.locator('[data-bar]')).toHaveCount(4);
+    await card.getByRole('link', { name: 'View all RTO' }).click();
+    await page.waitForURL('**/rto');
+  });
+
+  test('does not scroll sideways at any size', async ({ page }) => {
+    await expectNoSidewaysScroll(page, SIZES);
+  });
+
+  test('keeps tap targets touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await expectTapTargets(page, [
+      page.getByRole('tab', { name: 'RTO' }),
+      page.getByRole('link', { name: 'View all RTO' }),
     ]);
   });
 });

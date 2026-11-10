@@ -9,6 +9,8 @@ export const APP_ROUTES = [
   '/home',
   '/dashboard',
   '/dashboard?tab=pickups',
+  '/dashboard?tab=ndr',
+  '/dashboard?tab=rto',
   '/orders',
   '/orders/b2c',
   '/orders/b2b',
