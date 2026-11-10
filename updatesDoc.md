@@ -6,11 +6,51 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 15 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 16 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 15 |
-| **Next step** | Task 16: Tools, Rate Calculator |
+| **Waiting on** | Review of Task 16 |
+| **Next step** | Task 17: Tools, Order Tracking |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 16, Rate calculator
+
+`/tools/rate-calculator` compares courier quotes for a parcel, cheapest first. The backend has no rates or serviceability route, so quotes are sample data, and gateway mode shows them as unavailable.
+
+### Done
+
+- `RatesService` gains `quote()` in `src/lib/data/rates/`. The mock prices from the mock rate card row for the zone, so it agrees with the Rate Card screen. The gateway returns `notAvailable()`.
+- `quote.ts`: `resolveZone` (mirrors the backend's, never imports it), `priceInPaise` (base price, plus each started 500 g above the base weight, plus the COD fee, never below the minimum) and `sortQuotes` (cheapest first, not serviceable last).
+- `input.ts`: `parseQuoteInput` checks `ServiceabilityRequestSchema` and `DimensionsSchema`, then converts to camelCase for `chargeableWeightKg`. Pincodes must be 6 digits and not start with 0, and COD needs an amount.
+- `quoteAction` checks the session first, then validates on the server.
+- Sample reach: Shadowfax does not deliver to pincodes starting 78 or 79, Ekart not to 19, and DHL has no COD.
+- Page: form, and quotes with chargeable weight, delivery days and a Ship with this link to `/orders/create?carrier=<name>`. Sidebar item is live.
+
+### Files changed
+
+- New: `src/lib/data/rates/{quote,quote.test,input}.ts`, `src/app/(app)/tools/rate-calculator/*`, `e2e/rate-calculator.spec.ts`
+- Changed: `src/lib/data/rates/{types,mock,gateway,index,rates.test}.ts`, `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts}`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: 6 mock quote tests failed (`quote` is not a function). Browser: 21 failed, the page did not exist |
+| D1 lint, typecheck, unit tests | 0 errors, 47 files, 457 tests passed |
+| D2 full browser run | 747 passed, 46 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | `/tools/rate-calculator` 200 with an h1. BROWSER ERRORS: none |
+| D4 screenshots | Desktop and phone empty state reviewed (tools-rate-calculator-*.png). Quotes layout is covered by the 8-size scroll test |
+| D5 palette, D6 secrets and brand | No output |
+| D7 backend | Clean, aace603 |
+
+### Decisions
+
+- The action tests were written after the action, so they were not run red first.
+- The page takes no URL parameters, so there is no bad URL input test.
+- The action result carries optional field errors beside the message in the brief.
+
+### Not verified
+
+- Quote cards were not screenshotted.
 
 ## 2026-11-10: Task 15, Rate card
 

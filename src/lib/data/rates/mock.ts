@@ -1,6 +1,8 @@
 import { CARRIERS, type CarrierName } from '@logicore/contracts';
+import { chargeableWeightKg } from '@/lib/volumetric';
 import { fromMock } from '../source';
-import { ZONES, type RateCardRow, type RatesService, type Zone } from './types';
+import { priceInPaise, resolveZone } from './quote';
+import { ZONES, type RateCardRow, type RateQuote, type RatesService, type Zone } from './types';
 
 interface CarrierRates {
   /** Base price and each extra 500 g, in paise, for zones A to E. */
@@ -32,8 +34,44 @@ export const SAMPLE_RATE_CARD: RateCardRow[] = CARRIERS.flatMap((carrier) =>
   })),
 );
 
+// Sample reach: some couriers do not deliver to these destination pincode prefixes (north-east, Jammu and Kashmir).
+const NO_DELIVERY_PREFIXES: Partial<Record<CarrierName, string[]>> = {
+  shadowfax: ['78', '79'],
+  ekart: ['19'],
+};
+// The backend's DHL adapter has no cash on delivery.
+const NO_COD: CarrierName[] = ['dhl'];
+// Sample delivery days for zones A to E, plus a day for the slower couriers.
+const ZONE_DAYS: Record<Zone, number> = { A: 1, B: 2, C: 3, D: 4, E: 6 };
+const EXTRA_DAYS: Partial<Record<CarrierName, number>> = { shadowfax: 1, ekart: 1 };
+
 export const mockRatesService: RatesService = {
   async getRateCard() {
     return fromMock(SAMPLE_RATE_CARD.map((row) => ({ ...row })));
+  },
+
+  async quote(input) {
+    const zone = resolveZone(input.originPincode, input.destinationPincode);
+    const chargeableKg = chargeableWeightKg(input.weightKg, input.dimensions);
+    const isCod = input.paymentType === 'COD';
+
+    const quotes: RateQuote[] = CARRIERS.map((carrier) => {
+      const codAvailable = !NO_COD.includes(carrier);
+      const reaches = !(NO_DELIVERY_PREFIXES[carrier] ?? []).some((prefix) => input.destinationPincode.startsWith(prefix));
+      const serviceable = reaches && (codAvailable || !isCod);
+      const row = SAMPLE_RATE_CARD.find((r) => r.carrier === carrier && r.zone === zone);
+      if (!serviceable || !row) {
+        return { carrier, serviceable: false, codAvailable, estimatedDays: null, chargePaise: null, chargeableWeightKg: chargeableKg };
+      }
+      return {
+        carrier,
+        serviceable: true,
+        codAvailable,
+        estimatedDays: ZONE_DAYS[zone] + (EXTRA_DAYS[carrier] ?? 0),
+        chargePaise: priceInPaise(row, chargeableKg, isCod ? input.codAmountPaise ?? 0 : undefined),
+        chargeableWeightKg: chargeableKg,
+      };
+    });
+    return fromMock(quotes);
   },
 };

@@ -110,7 +110,7 @@ export const NAV: NavGroup[] = [
       {
         label: 'Rate Calculator',
         href: '/tools/rate-calculator',
-        status: 'planned',
+        status: 'live',
         icon: Calculator,
       },
       { label: 'Order Tracking', href: '/tools/tracking', status: 'planned', icon: MapPinned },

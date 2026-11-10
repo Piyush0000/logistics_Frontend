@@ -56,6 +56,22 @@ describe('gateway rate card', () => {
     });
   });
 
+  it('has no quote either, because the backend has no serviceability route', async () => {
+    expect(
+      await gatewayRatesService.quote({
+        originPincode: '110001',
+        destinationPincode: '400001',
+        weightKg: 1,
+        dimensions: { lengthCm: 10, widthCm: 10, heightCm: 10 },
+        paymentType: 'PREPAID',
+      }),
+    ).toEqual({
+      ok: false,
+      source: 'gateway',
+      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+    });
+  });
+
   it('is picked by DATA_SOURCE_RATES', () => {
     vi.stubEnv('DATA_SOURCE_RATES', 'gateway');
     expect(ratesService()).toBe(gatewayRatesService);

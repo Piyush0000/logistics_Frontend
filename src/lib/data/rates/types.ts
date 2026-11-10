@@ -1,4 +1,5 @@
-import type { CarrierName } from '@logicore/contracts';
+import type { CarrierName, PaymentType } from '@logicore/contracts';
+import type { PackageDimensions } from '@/lib/volumetric';
 import type { DataResult } from '../source';
 
 export const ZONES = ['A', 'B', 'C', 'D', 'E'] as const;
@@ -24,6 +25,29 @@ export interface RateCardRow {
   minCodFeePaise: number;
 }
 
+/** What a merchant asks a quote for. Money is paise and sizes are centimetres. */
+export interface QuoteInput {
+  originPincode: string;
+  destinationPincode: string;
+  weightKg: number;
+  dimensions: PackageDimensions;
+  paymentType: PaymentType;
+  /** The amount to collect, in paise. Only set for COD. */
+  codAmountPaise?: number;
+}
+
+/** One courier's answer. Mirrors the backend's serviceability result, with the price in paise. */
+export interface RateQuote {
+  carrier: CarrierName;
+  serviceable: boolean;
+  codAvailable: boolean;
+  estimatedDays: number | null;
+  chargePaise: number | null;
+  chargeableWeightKg: number;
+}
+
 export interface RatesService {
   getRateCard(): Promise<DataResult<RateCardRow[]>>;
+  /** One quote for every courier, in no particular order. */
+  quote(input: QuoteInput): Promise<DataResult<RateQuote[]>>;
 }
