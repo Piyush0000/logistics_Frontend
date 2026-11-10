@@ -6,11 +6,40 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 20 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 21 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 20 |
-| **Next step** | Task 21: next dashboard tab |
+| **Waiting on** | Review of Task 21 |
+| **Next step** | Task 22: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 21, Dashboard NDR and RTO tabs
+
+`/dashboard?tab=ndr` and `/dashboard?tab=rto` are built. Delivered, Revenue and SMS stay disabled.
+
+### Done
+
+- NDR tab: the four NDR figures from `ndrService().getNdrDashboard()`, a bar chart of NDR reasons, and a `View all NDR` link to `/ndr`. In gateway mode it shows "This data is not available yet." with Try again and no sample label.
+- RTO tab: in-progress and delivered counts from `rtoService().getSummary()`, a bar chart of RTO shipments by courier, and a `View all RTO` link to `/rto`. The chart counts page 1 (up to 50) of each stage's list. Any failing source turns the one card into the error with Try again.
+- Pure, unit-tested aggregations: `ndrReasonCounts` (`src/lib/data/ndr/reasons.ts`: top five reasons, the rest as Other, short axis labels) and `rtoByCourier` (`src/lib/data/rto/courier.ts`).
+- `dashboard/page.tsx` is now one shell (wallet, ticker, heading, tab bar) that switches only the tab body. The Overview body moved unchanged to `tabs/overview-tab.tsx`. Every existing Overview test passes unchanged.
+- Tests: in `e2e/dashboard.spec.ts` only the list of disabled tabs changed (now Delivered, Revenue, SMS). In `e2e/dashboard-tabs.spec.ts` the "not built" test now opens `?tab=delivered`, since NDR is built. Routes added to `e2e/routes.ts`.
+
+### Decisions
+
+- Axis labels for NDR reasons are shortened ("Requested…", "Door locked") so they fit at 320px. The full reason stays in the data.
+
+### Verification (port offset 400)
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck` | 0 errors |
+| `pnpm test` | 56 files, 516 tests passed |
+| dashboard and dashboard-tabs specs, desktop and phone | 98 passed, 10 skipped (one-size tests) |
+| `--project=gateway` | 55 passed |
+| `node scripts/dev-smoke.mjs` | every route HTTP 200, BROWSER ERRORS: none |
+| Palette, secret and backend checks | no output; Evoc_ships clean at `aace603` |
+
+Not re-run after the last label change: the full `pnpm test:e2e`. Only the two tab specs and the gateway project were re-run.
 
 ## 2026-11-11: Task 20, fix round 1
 

@@ -750,3 +750,47 @@ test.describe('dashboard pickups tab with no pickups route', () => {
     await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+test.describe('dashboard NDR tab with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=ndr');
+    const card = page.getByTestId('ndr-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'NDR' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard RTO tab with the stand-in gateway', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('RTO tab shows counts from gateway stats', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=rto');
+    const card = page.getByTestId('rto-tab-card');
+    await expect(card.getByTestId('tile-RTO in progress')).toContainText('6');
+    await expect(card.getByTestId('tile-RTO delivered')).toContainText('7');
+    await expect(card.getByRole('img', { name: /^RTO by courier\./ })).toBeVisible();
+    // The stand-in list route returns one record per stage while its stats say 6 and 7.
+    await expect(card.getByTestId('rto-chart-note')).toHaveText('Based on 2 of 13 RTO shipments.');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('dashboard RTO tab with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error in the tab card only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=rto');
+    const card = page.getByTestId('rto-tab-card');
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'RTO' })).toHaveAttribute('aria-selected', 'true');
+  });
+});

@@ -1,7 +1,12 @@
 export interface BarDatum {
+  /** Shown on the axis. */
   label: string;
+  /** The full text, for the summary, the bar's title and the table. Defaults to `label`. */
+  fullLabel?: string;
   value: number;
 }
+
+const full = (d: BarDatum) => d.fullLabel ?? d.label;
 
 const WIDTH = 320;
 const HEIGHT = 190;
@@ -17,9 +22,9 @@ export function chartSummary(
   format: (n: number) => string = String,
 ): string {
   if (data.length === 0) return `${label}. No data.`;
-  const series = data.map((d) => `${d.label}: ${format(d.value)}`).join(', ');
+  const series = data.map((d) => `${full(d)}: ${format(d.value)}`).join(', ');
   const top = data.reduce((best, d) => (d.value > best.value ? d : best), data[0]!);
-  const highest = top.value > 0 ? ` Highest: ${top.label}, ${format(top.value)}.` : '';
+  const highest = top.value > 0 ? ` Highest: ${full(top)}, ${format(top.value)}.` : '';
   return `${label}. ${series}.${highest}`;
 }
 
@@ -37,10 +42,13 @@ export function BarChart({
   label,
   data,
   format = String,
+  categoryLabel = 'Day',
 }: {
   label: string;
   data: BarDatum[];
   format?: (n: number) => string;
+  /** The hidden table's first column heading. */
+  categoryLabel?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   const plotHeight = HEIGHT - TOP - BOTTOM;
@@ -72,11 +80,11 @@ export function BarChart({
             <g key={`${d.label}-${index}`} aria-hidden="true">
               {height > 0 ? (
                 <path data-bar={d.label} d={barPath(x, baseline - height, barWidth, height)} className="fill-primary">
-                  <title>{`${d.label}: ${format(d.value)}`}</title>
+                  <title>{`${full(d)}: ${format(d.value)}`}</title>
                 </path>
               ) : (
                 <rect data-bar={d.label} x={x} y={baseline - 1} width={barWidth} height={1} className="fill-primary">
-                  <title>{`${d.label}: ${format(d.value)}`}</title>
+                  <title>{`${full(d)}: ${format(d.value)}`}</title>
                 </rect>
               )}
               <text
@@ -107,14 +115,14 @@ export function BarChart({
         <caption>{label}</caption>
         <thead>
           <tr>
-            <th scope="col">Day</th>
+            <th scope="col">{categoryLabel}</th>
             <th scope="col">Value</th>
           </tr>
         </thead>
         <tbody>
           {data.map((d, index) => (
             <tr key={`${d.label}-${index}`}>
-              <th scope="row">{d.label}</th>
+              <th scope="row">{full(d)}</th>
               <td>{format(d.value)}</td>
             </tr>
           ))}

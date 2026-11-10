@@ -40,7 +40,7 @@ test.describe('overview', () => {
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByRole('tab', { name: 'Pickups' })).toBeEnabled();
     await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('href', '/dashboard?tab=pickups');
-    for (const name of ['NDR', 'RTO', 'Delivered', 'Revenue', 'SMS']) {
+    for (const name of ['Delivered', 'Revenue', 'SMS']) {
       await expect(page.getByRole('tab', { name })).toBeDisabled();
     }
   });
