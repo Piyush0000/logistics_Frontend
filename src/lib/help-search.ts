@@ -1,5 +1,8 @@
 import type { HelpArticle } from '@/content/help/articles';
 
+/** The longest search text, used by the search box and by `?q=`, so the two agree. */
+export const HELP_QUERY_MAX = 100;
+
 const words = (text: string) => text.toLowerCase().split(/\s+/).filter(Boolean);
 
 function bodyText(article: HelpArticle): string {

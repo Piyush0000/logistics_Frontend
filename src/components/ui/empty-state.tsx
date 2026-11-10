@@ -7,7 +7,7 @@ export function EmptyState({
   action,
 }: {
   message: string;
-  action?: { label: string; href: string };
+  action?: { label: string; href: string; prefetch?: boolean };
 }) {
   return (
     <div
@@ -21,6 +21,7 @@ export function EmptyState({
       {action ? (
         <Link
           href={action.href}
+          prefetch={action.prefetch}
           className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control"
         >
           {action.label}

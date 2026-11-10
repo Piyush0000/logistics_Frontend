@@ -120,3 +120,14 @@ test('returns not found for an unknown article', async ({ page }) => {
   const response = await page.goto(`${ROUTE}/no-such-article`);
   expect(response?.status()).toBe(404);
 });
+
+test('keeps typed search text when a topic is chosen', async ({ page }) => {
+  await open(page);
+  const box = page.getByRole('searchbox', { name: 'Search help articles' });
+  await box.fill('wallet');
+  await page.getByRole('link', { name: 'Billing', exact: true }).click();
+  await expect(page).toHaveURL(/category=billing/);
+  await expect(page).toHaveURL(/q=wallet/);
+  await expect(box).toHaveValue('wallet');
+  await expect(page.getByTestId('help-article').first()).toContainText('wallet');
+});

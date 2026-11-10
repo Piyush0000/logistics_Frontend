@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/ui/page-header';
 import { ARTICLES, HELP_CATEGORY_VALUES } from '@/content/help/articles';
+import { HELP_QUERY_MAX } from '@/lib/help-search';
 import { getDemoSession } from '@/lib/auth/session';
 import { walletService } from '@/lib/data/wallet';
 import { parseEnum, parseText } from '@/lib/url-params';
@@ -34,7 +35,7 @@ export default async function HelpPage({ searchParams }: HelpPageProps) {
           key={category ?? 'all'}
           articles={ARTICLES}
           category={category}
-          initialQuery={parseText(params.q)}
+          initialQuery={parseText(params.q, HELP_QUERY_MAX)}
         />
       </div>
     </AppShell>

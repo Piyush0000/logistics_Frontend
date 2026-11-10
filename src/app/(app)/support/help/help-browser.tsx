@@ -10,13 +10,22 @@ import {
   type HelpArticle,
   type HelpCategory,
 } from '@/content/help/articles';
-import { searchArticles } from '@/lib/help-search';
+import { HELP_QUERY_MAX as QUERY_MAX, searchArticles } from '@/lib/help-search';
 
 export const TICKET_HREF = '/support/tickets?new=1';
 const PATH = '/support/help';
 
 const CHIP = 'inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium lg:h-control';
 const CHIP_ON = 'border-primary bg-primary text-tertiary';
+
+function topicHref(category: HelpCategory | undefined, query: string): string {
+  const params = new URLSearchParams();
+  if (category) params.set('category', category);
+  const q = query.trim();
+  if (q) params.set('q', q);
+  const text = params.toString();
+  return text ? `${PATH}?${text}` : PATH;
+}
 
 /** The search box, the topic links and the article list. Typing filters the list at once. */
 export function HelpBrowser({
@@ -48,7 +57,7 @@ export function HelpBrowser({
             type="search"
             name="q"
             value={query}
-            maxLength={100}
+            maxLength={QUERY_MAX}
             autoComplete="off"
             placeholder="Try wallet or pickup"
             onChange={(event) => setQuery(event.target.value)}
@@ -57,7 +66,7 @@ export function HelpBrowser({
         </div>
         <nav aria-label="Topics" className="mt-4 flex flex-wrap gap-2">
           <Link
-            href={PATH}
+            href={topicHref(undefined, query)}
             aria-current={category ? undefined : 'page'}
             className={`${CHIP} ${category ? 'border-secondary' : CHIP_ON}`}
           >
@@ -66,7 +75,7 @@ export function HelpBrowser({
           {HELP_CATEGORIES.map((item) => (
             <Link
               key={item.value}
-              href={`${PATH}?category=${item.value}`}
+              href={topicHref(item.value, query)}
               aria-current={category === item.value ? 'page' : undefined}
               className={`${CHIP} ${category === item.value ? CHIP_ON : 'border-secondary'}`}
             >
@@ -83,7 +92,8 @@ export function HelpBrowser({
       {results.length === 0 ? (
         <EmptyState
           message="No articles match your search. Try a shorter word, or raise a ticket and we will help."
-          action={{ label: 'Raise a ticket', href: TICKET_HREF }}
+          // The tickets screen is not built yet, so Next must not try to prefetch it.
+          action={{ label: 'Raise a ticket', href: TICKET_HREF, prefetch: false }}
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
