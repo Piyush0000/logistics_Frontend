@@ -163,6 +163,38 @@ test.describe('bulk upload', () => {
     await expect(page.getByText('1 booked')).toHaveCount(0);
   });
 
+  test('previews a valid file of exactly 1 MB', async ({ page }, testInfo) => {
+    // The largest allowed file: 2 shipment rows plus blank lines, which are skipped. With the default
+    // 1 MB server action limit the request is rejected, because it is a little larger than the file.
+    const rows = [HEADER, row(), row()].join('\n') + '\n';
+    const buffer = Buffer.from(rows + '\n'.repeat(1024 * 1024 - rows.length));
+    expect(buffer.length).toBe(1024 * 1024);
+    await page.getByLabel('Shipment file').setInputFiles({ name: 'large.csv', mimeType: 'text/csv', buffer });
+    await expect(page.getByText('2 valid, 0 invalid')).toBeVisible();
+    await expect(previewRows(page, testInfo.project.name)).toHaveCount(2);
+    await expect(page.getByTestId('bulk-error')).toHaveCount(0);
+  });
+
+  test('sending the same file twice books each shipment once', async ({ page }, testInfo) => {
+    const refs = [`BULK-${randomUUID().slice(0, 8)}`, `BULK-${randomUUID().slice(0, 8)}`];
+    const upload = file('twice.csv', ...refs.map((reference_id) => row({ reference_id })));
+    const results = resultRows(page, testInfo.project.name);
+    const awbs: string[][] = [];
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await page.getByLabel('Shipment file').setInputFiles(upload);
+      await page.getByRole('button', { name: 'Submit 2 valid rows' }).click();
+      await expect(page.getByText('2 booked, 0 not booked')).toBeVisible();
+      awbs.push(await results.allTextContents());
+      await page.getByRole('button', { name: 'Upload another file' }).click();
+    }
+    expect(awbs[1]).toEqual(awbs[0]);
+    for (const ref of refs) {
+      await page.goto(`/orders?search=${ref}`);
+      const list = testInfo.project.name === 'phone' ? page.getByTestId('order-card') : page.getByTestId('order-row');
+      await expect(list).toHaveCount(1);
+    }
+  });
+
   test('does not scroll sideways at any size', async ({ page }) => {
     await page.getByLabel('Shipment file').setInputFiles(file('a.csv', row(), row({ origin_pincode: 'x' })));
     await expect(page.getByText('1 valid, 1 invalid')).toBeVisible();

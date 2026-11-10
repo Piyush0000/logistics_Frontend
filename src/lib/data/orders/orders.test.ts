@@ -94,6 +94,28 @@ describe('mockOrdersService', () => {
     expect(result.error.kind).toBe('not_found');
   });
 
+  it('returns the original shipment when the same idempotency key arrives again', async () => {
+    const input = {
+      idempotency_key: 'idem-repeat-987654',
+      reference_id: 'REF-REPEAT-001',
+      origin: { name: 'W', phone: '9876543210', line1: '1 Road', city: 'Pune', state: 'MH', country: 'IN', pincode: '411001' },
+      destination: { name: 'R', phone: '9123456780', line1: '2 Road', city: 'Pune', state: 'MH', country: 'IN', pincode: '411002' },
+      weight_kg: 1,
+      dimensions: { length_cm: 10, width_cm: 10, height_cm: 10 },
+      items: [{ name: 'Item', quantity: 1, unit_price: 100 }],
+      payment_type: 'PREPAID' as const,
+      cod_amount: 0,
+    };
+    const before = await mockOrdersService.listOrders({ limit: 100 });
+    const first = await mockOrdersService.createShipment(input);
+    const second = await mockOrdersService.createShipment(input);
+    const after = await mockOrdersService.listOrders({ limit: 100 });
+    expect(first.ok && second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    expect(second.data).toEqual(first.data);
+    expect(after.ok && before.ok && after.data.total - before.data.total).toBe(1);
+  });
+
   it('simulates shipment creation with valid inputs', async () => {
     const result = await mockOrdersService.createShipment({
       idempotency_key: 'idem-test-123456',

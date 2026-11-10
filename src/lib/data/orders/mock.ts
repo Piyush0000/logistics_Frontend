@@ -392,6 +392,8 @@ const INITIAL_MOCK_ORDERS: OrderDetail[] = [
 
 // In-memory store for newly created demo shipments
 const store: OrderDetail[] = [...INITIAL_MOCK_ORDERS];
+// Results by idempotency key, so a repeated key returns the original booking, as the real engine does.
+const createdByKey = new Map<string, CreateShipmentResult>();
 
 export const mockOrdersService: OrdersService = {
   async listOrders(query: OrderListQuery): Promise<DataResult<OrderListResult>> {
@@ -448,6 +450,8 @@ export const mockOrdersService: OrdersService = {
   },
 
   async createShipment(input: CreateShipmentInput): Promise<DataResult<CreateShipmentResult>> {
+    const earlier = createdByKey.get(input.idempotency_key);
+    if (earlier) return fromMock(earlier);
     const idSuffix = String(store.length + 1).padStart(6, '0');
     const shipment_id = `10000000-0000-4000-8000-000000${idSuffix}`;
     const carrier = input.preferred_carrier || 'delhivery';
@@ -491,13 +495,15 @@ export const mockOrdersService: OrdersService = {
 
     store.unshift(newRecord);
 
-    return fromMock({
+    const created: CreateShipmentResult = {
       shipment_id,
       reference_id,
       awb,
       carrier,
       status,
       created_at: now,
-    });
+    };
+    createdByKey.set(input.idempotency_key, created);
+    return fromMock(created);
   },
 };
