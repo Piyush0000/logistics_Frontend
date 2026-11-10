@@ -21,6 +21,8 @@ export const APP_ROUTES = [
   '/finances/wallet',
   '/finances/wallet?recharge=1',
   '/finances/cod',
+  '/finances/invoices',
+  '/finances/invoices/inv-2026-10',
   '/channel-integrations',
 ] as const;
 

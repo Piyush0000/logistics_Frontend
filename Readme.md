@@ -91,6 +91,7 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | Pickups and manifests | `DATA_SOURCE_PICKUPS` | No for scheduling and the pickup list, so gateway mode shows them as unavailable. The shipments ready to ship come from the shipments list route, through `DATA_SOURCE_ORDERS` |
 | RTO (counts and lists) | `DATA_SOURCE_RTO` | Yes: counts from the stats route, lists from the shipments list route. RTO charges have no source, so gateway mode shows "Not available yet" |
 | COD remittance | `DATA_SOURCE_COD` | No |
+| Invoices and the invoice print view | `DATA_SOURCE_INVOICES` | No. Gateway mode shows them as unavailable |
 
 In sample mode, AWB search knows `DEMOEK001` and `DEMODL002`.
 
@@ -117,6 +118,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Bulk Upload, at `/orders/bulk` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 7 | Books each valid CSV row through the same path as Create Shipment (`DATA_SOURCE_ORDERS`): sample store by default; in gateway mode every row shows the booking-not-available message | Done. In the sidebar under Shipping Management |
 | Pickups & Manifests, at `/orders/pickups` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 8 | Ready to ship uses the shipments list (`MANIFESTED` shipments), sample by default. Scheduled pickups and scheduling are sample only, and unavailable in gateway mode. The print page is at `/orders/pickups/manifest-print/[id]` | Done. In the sidebar under Shipping Management |
 | RTO, at `/rto` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 10 | Stage tabs (In progress, Delivered), summary tiles and a list of returning shipments. Sample by default; gateway mode uses the stats and shipments list routes. RTO charges are sample only and show "Not available yet" in gateway mode. The courier status column is empty in gateway mode, because the list route does not send it | Done. In the sidebar under Operations; the dashboard RTO tile links here |
+| Invoices, at `/finances/invoices` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 12 | Monthly shipping invoices with 18% GST, a year filter (`?year=`) and pages. Sample only; gateway mode shows it as unavailable. The print view is at `/finances/invoices/[id]`, laid out for A4, with a "Sample invoice. Not a tax document." banner on sample data | Done. In the sidebar under Billings |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.

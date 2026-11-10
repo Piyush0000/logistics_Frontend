@@ -417,6 +417,30 @@ test.describe('pickups with no route', () => {
   });
 });
 
+test.describe('invoices with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows invoices as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/invoices', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('invoices-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('invoice-row')).toHaveCount(0);
+  });
+
+  test('refuses the print view as unavailable, with no sample banner', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/invoices/inv-2026-10');
+
+    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Sample invoice. Not a tax document.')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  });
+});
+
 test.describe('NDR with no route', () => {
   test.use({ baseURL: 'http://localhost:3106' });
 

@@ -6,11 +6,44 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 11 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 12 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 11 |
-| **Next step** | Task 12: Invoice |
+| **Waiting on** | Review of Task 12 |
+| **Next step** | Task 13: Reconciliation, Weight |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 12, Invoices
+
+`/finances/invoices` lists monthly shipping invoices with 18% GST. `/finances/invoices/[id]` is a print view laid out for A4. The backend has no invoice route, so the data is sample, and gateway mode shows it as unavailable.
+
+### Done
+
+- New `src/lib/data/invoices/` (types, gst, mock, gateway, index, tests). `invoiceService()` follows `DATA_SOURCE_INVOICES`. `gstOf` rounds to the nearest paise. Every sample invoice satisfies `total = taxable + GST` and `GST = gstOf(taxable)`.
+- Sample: January 2025 to October 2026, newest first, 10 per page. October 2026 has a long number and a total of ₹10,66,31,297.08, for the long-value tests. September and October 2026 are due.
+- List: table on desktop, cards on phones, year filter (`?year=`, 2026, 2025 or 2024; anything else shows all years), pagination through `buildPageHref`. Empty message: "No invoices for this year." (2024 has none).
+- Print view: checks the session, hides its own buttons when printed (`@page` A4), and shows "Sample invoice. Not a tax document." whenever the source is mock, including in print. An unknown id shows "Invoice not found."
+- Sidebar Invoice is live. Two routes added to `e2e/routes.ts`. `DATA_SOURCE_INVOICES` is on the port 3106 server and in `.env.example`.
+
+### Files changed
+
+- New: `src/lib/data/invoices/*`, `src/app/(app)/finances/invoices/{page,loading,invoice-table,year-filter}.tsx`, `[id]/{page,print-button}.tsx`, `e2e/invoices.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts,dashboard.spec.ts}`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+- `e2e/dashboard.spec.ts`: the "planned items" test used Invoice, which is now live. It uses Weight under Reconciliation, with the same assertions.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: modules missing. Browser: 33 failed, 1 skipped, the page did not exist |
+| D1 lint, typecheck, unit tests | 0 errors, 39 files, 376 tests passed |
+| D2 full browser run | 640 passed, 37 skipped, 0 failed (run before a small card-layout fix; the invoice spec was re-run after it: 32 passed, 2 skipped) |
+| D3 `node scripts/dev-smoke.mjs` | Every route 200 with an h1, including both invoice routes. BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed. Found card amounts split across two lines at 320px; fixed and pinned in `wraps long values` |
+| D5 palette, D6 secrets and brand | No output |
+| D7 backend | Clean, aace603 |
+
+### Not verified
+- The real print dialog. The test checks the print styles with print media emulation and that the button calls `window.print()`.
 
 ## 2026-11-10: Task 11, Wallet recharge
 

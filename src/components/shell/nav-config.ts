@@ -85,7 +85,7 @@ export const NAV: NavGroup[] = [
     children: [
       { label: 'Wallet Transactions', href: '/finances/wallet', status: 'live', icon: Wallet },
       { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins },
-      { label: 'Invoice', href: '/finances/invoices', status: 'planned', icon: ReceiptText },
+      { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText },
     ],
   },
   {
