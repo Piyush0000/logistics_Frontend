@@ -87,7 +87,7 @@ export default async function TrackingPage({ searchParams }: Props) {
           title="Order tracking"
           description="Look up one or more shipments by AWB to see where each one is and what has happened so far."
         />
-        <TrackingForm query={awbs.join(', ')} />
+        <TrackingForm key={awbs.join(',')} query={awbs.join(', ')} />
 
         {awbs.length === 0 ? (
           <EmptyState message="Enter an AWB above to see its status and timeline." />

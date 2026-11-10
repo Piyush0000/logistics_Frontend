@@ -129,3 +129,26 @@ test('keeps tap targets touch-sized on phones', async ({ page }, testInfo) => {
     page.getByRole('button', { name: 'Share tracking link' }),
   ]);
 });
+
+test('resets the search box after "Open on its own"', async ({ page }) => {
+  await open(page);
+  await page.getByLabel('AWB numbers').fill('DEMOEK001, DEMODL002');
+  await page.getByRole('button', { name: 'Track', exact: true }).click();
+  await expect(page.getByTestId('tracking-item')).toHaveCount(2);
+  const second = page.getByTestId('tracking-item').nth(1);
+  await second.getByText('Show timeline').click();
+  await second.getByRole('link', { name: 'Open on its own' }).click();
+  await expect(page).toHaveURL(/awb=DEMODL002$/);
+  await expect(page.getByLabel('AWB numbers')).toHaveValue('DEMODL002');
+});
+
+test('empties the search box and results after Clear', async ({ page }) => {
+  await open(page);
+  await page.getByLabel('AWB numbers').fill('DEMOEK001');
+  await page.getByRole('button', { name: 'Track', exact: true }).click();
+  await expect(page.getByTestId('tracking-card')).toBeVisible();
+  await page.getByRole('link', { name: 'Clear' }).click();
+  await expect(page.getByTestId('empty-state')).toBeVisible();
+  await expect(page.getByTestId('tracking-card')).toHaveCount(0);
+  await expect(page.getByLabel('AWB numbers')).toHaveValue('');
+});
