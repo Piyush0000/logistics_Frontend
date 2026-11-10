@@ -116,4 +116,8 @@ export const mockWalletService: WalletService = {
       total: found.length,
     });
   },
+  // The sample takes no payment, so the balance never changes.
+  async startRecharge() {
+    return fromMock({ paymentUrl: null });
+  },
 };

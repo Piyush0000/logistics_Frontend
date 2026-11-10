@@ -303,3 +303,92 @@ test.describe('layout', () => {
     ).toBeGreaterThanOrEqual(44);
   });
 });
+
+test.describe('recharge', () => {
+  const dialog = (page: Page) => page.getByRole('dialog', { name: 'Recharge wallet' });
+  const amount = (page: Page) => dialog(page).getByLabel('Amount in rupees');
+  const submit = (page: Page) => dialog(page).getByRole('button', { name: 'Recharge', exact: true });
+  const NOT_CONNECTED = "Recharge isn't connected yet. No payment was taken.";
+
+  test('opens recharge from the Home quick action link', async ({ page }) => {
+    await open(page, `${WALLET}?recharge=1`);
+
+    await expect(dialog(page)).toBeVisible();
+    for (const label of ['₹500', '₹1,000', '₹2,500', '₹5,000']) {
+      await expect(dialog(page).getByRole('button', { name: label, exact: true })).toBeVisible();
+    }
+  });
+
+  test('opens from the Recharge button and drops recharge=1 when closed', async ({ page }) => {
+    await open(page);
+    await expect(dialog(page)).toBeHidden();
+
+    await page.getByRole('button', { name: 'Recharge', exact: true }).click();
+    await expect(dialog(page)).toBeVisible();
+    await expect(page).toHaveURL(/recharge=1/);
+
+    await dialog(page).getByRole('button', { name: 'Close popup' }).click();
+    await expect(dialog(page)).toBeHidden();
+    await expect(page).not.toHaveURL(/recharge/);
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  test('fills the amount from a preset', async ({ page }) => {
+    await open(page, `${WALLET}?recharge=1`);
+
+    await dialog(page).getByRole('button', { name: '₹2,500', exact: true }).click();
+
+    await expect(amount(page)).toHaveValue('2500');
+  });
+
+  test('rejects amounts below ₹100 and above ₹5,00,000', async ({ page }) => {
+    await open(page, `${WALLET}?recharge=1`);
+
+    for (const bad of ['99', '500001', '0', '12.5', 'abc', '']) {
+      await amount(page).fill(bad);
+      await submit(page).click();
+      await expect(dialog(page).getByRole('alert')).toBeVisible();
+      await expect(dialog(page).getByText(NOT_CONNECTED)).toBeHidden();
+    }
+
+    await amount(page).fill('500000');
+    await submit(page).click();
+    await expect(dialog(page).getByText(NOT_CONNECTED)).toBeVisible();
+  });
+
+  test('says no payment was taken in demo mode', async ({ page }) => {
+    await open(page, `${WALLET}?recharge=1`);
+
+    await amount(page).fill('100');
+    await submit(page).click();
+
+    await expect(dialog(page).getByText(NOT_CONNECTED)).toBeVisible();
+  });
+
+  test('keeps the balance unchanged after a demo recharge', async ({ page }) => {
+    await open(page, `${WALLET}?recharge=1`);
+
+    await submit(page).click();
+    await expect(dialog(page).getByText(NOT_CONNECTED)).toBeVisible();
+    await dialog(page).getByRole('button', { name: 'Close popup' }).click();
+    await page.reload({ waitUntil: 'networkidle' });
+
+    await expect(page.getByTestId('wallet-balance')).toContainText('₹12,500.00');
+    await expect(page.getByTestId('wallet')).toContainText('₹12,500.00');
+  });
+
+  test('keeps recharge touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await open(page, `${WALLET}?recharge=1`);
+
+    for (const target of [
+      dialog(page).getByRole('button', { name: '₹500', exact: true }),
+      amount(page),
+      submit(page),
+    ]) {
+      expect((await target.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await amount(page).evaluate((el) => getComputedStyle(el).fontSize)).toBe('16px');
+  });
+});

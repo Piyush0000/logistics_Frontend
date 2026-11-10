@@ -28,4 +28,6 @@ export interface WalletTransactionPage {
 export interface WalletService {
   getBalance(): Promise<DataResult<WalletBalance>>;
   listTransactions(filters: WalletFilters): Promise<DataResult<WalletTransactionPage>>;
+  /** A null paymentUrl means no payment page exists, so nothing was charged. */
+  startRecharge(amountPaise: number): Promise<DataResult<{ paymentUrl: string | null }>>;
 }

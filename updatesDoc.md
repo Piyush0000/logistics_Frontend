@@ -6,11 +6,40 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 10 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 11 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 10 |
-| **Next step** | Task 11: Wallet recharge |
+| **Waiting on** | Review of Task 11 |
+| **Next step** | Task 12: Invoice |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 11, Wallet recharge
+
+`/finances/wallet` has a Recharge button and a popup. `?recharge=1` opens it, and the Home quick action links there. Closing it removes `recharge=1` from the URL.
+
+### Done
+
+- `WalletService.startRecharge(amountPaise)`. The sample returns `{ paymentUrl: null }` and changes no balance. Gateway mode is `notAvailable()`, as the backend has no recharge route.
+- Presets of ₹500, ₹1,000, ₹2,500 and ₹5,000, and a custom whole-rupee amount from ₹100 to ₹5,00,000.
+- `startRechargeAction` checks the session first, then the amount on the server (10000 to 50000000 paise, multiples of 100). A payment link is only passed on if it is https; the browser then goes there. With no link the popup says "Recharge isn't connected yet. No payment was taken."
+- `/finances/wallet?recharge=1` added to `e2e/routes.ts`, so dev-smoke covers the popup under `next dev`.
+
+### Files changed
+
+- New: `src/lib/data/wallet/recharge.ts`, `recharge.test.ts`, `src/app/(app)/finances/wallet/{actions,actions.test,recharge-dialog}.ts(x)`
+- Changed: `src/lib/data/wallet/{types,mock,gateway}.ts`, wallet `page.tsx`, `e2e/wallet.spec.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| lint, typecheck, unit tests | 0 errors, 38 files, 362 tests passed |
+| Full browser run | 606 passed, 0 failed, 35 skipped (one-size tests) |
+| dev-smoke | 18 routes, `BROWSER ERRORS: none` |
+| Palette, secrets, backend | No output; backend clean at aace603 |
+
+### Not verified
+
+- A real redirect to a payment page. It is covered by the action unit test only, as the sample never returns a link.
 
 ## 2026-11-10: Task 10, RTO
 

@@ -19,6 +19,7 @@ export const APP_ROUTES = [
   '/ndr',
   '/rto',
   '/finances/wallet',
+  '/finances/wallet?recharge=1',
   '/finances/cod',
   '/channel-integrations',
 ] as const;

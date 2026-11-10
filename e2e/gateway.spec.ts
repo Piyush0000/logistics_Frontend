@@ -487,3 +487,18 @@ test.describe('RTO with the gateway down', () => {
     await expect(page.getByRole('tablist', { name: 'RTO stage' })).toBeVisible();
   });
 });
+
+test.describe('wallet recharge with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows recharge as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/wallet?recharge=1', { waitUntil: 'networkidle' });
+    const dialog = page.getByRole('dialog', { name: 'Recharge wallet' });
+
+    await dialog.getByRole('button', { name: 'Recharge', exact: true }).click();
+
+    await expect(dialog.getByText('This data is not available yet.')).toBeVisible();
+    await expect(dialog.getByText('No payment was taken')).toBeHidden();
+  });
+});

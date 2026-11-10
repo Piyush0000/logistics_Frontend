@@ -6,6 +6,7 @@ import { walletService } from '@/lib/data/wallet';
 import { parseWalletFilters, walletHref } from '@/lib/data/wallet/filters';
 import { formatPaise } from '@/lib/format/money';
 import { DetailCard } from '../../dashboard/sections';
+import { RechargeDialog } from './recharge-dialog';
 import { TransactionFilters } from './transaction-filters';
 import { TransactionList } from './transaction-list';
 
@@ -28,9 +29,12 @@ export default async function WalletPage({
 
   return (
     <AppShell email={session.email} wallet={wallet}>
-      <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
-        Wallet Transactions
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
+          Wallet Transactions
+        </h1>
+        <RechargeDialog />
+      </div>
 
       <DetailCard testId="wallet-balance" title="Current Wallet Balance" result={wallet}>
         {({ availablePaise }) => (
