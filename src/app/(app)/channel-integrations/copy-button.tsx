@@ -2,7 +2,7 @@
 
 import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
-import { SECONDARY_BUTTON } from './dialog';
+import { SECONDARY_BUTTON } from '@/components/ui/dialog';
 
 export function CopyButton({ label, text }: { label: string; text: string }) {
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');

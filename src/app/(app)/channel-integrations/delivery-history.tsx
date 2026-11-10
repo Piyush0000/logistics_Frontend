@@ -1,7 +1,7 @@
 import Link from 'next/link';
+import { SECONDARY_BUTTON } from '@/components/ui/dialog';
 import type { DeliveryStatus, WebhookDelivery, WebhookDeliveryPage } from '@/lib/data/webhooks';
 import { formatDateTime } from '@/lib/format/date';
-import { SECONDARY_BUTTON } from './dialog';
 import { RetryDeliveryButton } from './retry-delivery-button';
 
 const STATUSES: Record<DeliveryStatus, { label: string; tone: string }> = {

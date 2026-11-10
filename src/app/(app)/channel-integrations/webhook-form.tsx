@@ -1,10 +1,10 @@
 'use client';
 
 import { useId, useState, useTransition, type FormEvent } from 'react';
+import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { WEBHOOK_EVENTS } from '@/lib/data/webhooks/events';
 import type { Webhook, WebhookFieldErrors } from '@/lib/data/webhooks/types';
 import { createWebhookAction, updateWebhookAction } from './actions';
-import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from './dialog';
 
 function EventSwitch({
   value,

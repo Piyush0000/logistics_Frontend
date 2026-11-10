@@ -3,10 +3,10 @@
 import Form from 'next/form';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { DateField } from '@/components/ui/date-field';
+import { SelectField } from '@/components/ui/select-field';
 import { COD_PATH, COD_STATUSES, type CodFilters } from '@/lib/data/cod/filters';
 import { DATE_ORDER_ERROR } from '@/lib/data/wallet/filters';
-import { DateField } from '../wallet/date-field';
-import { SelectField } from '../wallet/select-field';
 
 export function RemittanceFilters({
   filters,

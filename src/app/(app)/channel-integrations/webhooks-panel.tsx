@@ -2,11 +2,11 @@
 
 import { Pencil, Plus, Trash2, Webhook as WebhookIcon } from 'lucide-react';
 import { useState, useTransition } from 'react';
+import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import type { Webhook } from '@/lib/data/webhooks/types';
 import { formatDateTime } from '@/lib/format/date';
 import { deleteWebhookAction } from './actions';
 import { CopyButton } from './copy-button';
-import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from './dialog';
 import { WebhookForm } from './webhook-form';
 
 type OpenDialog =

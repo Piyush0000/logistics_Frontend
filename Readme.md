@@ -39,6 +39,8 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 | `pnpm test` | Runs the unit tests |
 | `pnpm test:e2e` | Runs browser tests at desktop and phone sizes on port 3101, so `pnpm dev` can stay running. Run `pnpm build` first |
 | `pnpm contracts:update` | Repacks `@logicore/contracts` from the backend into `vendor/` |
+| `node scripts/dev-smoke.mjs` | Opens every route in `e2e/routes.ts` under `next dev` on port 3107 and fails on any browser error. Stop `pnpm dev` first: Next.js allows one `next dev` per folder |
+| `node scripts/screenshots.mjs [--menu] [route ...]` | Saves desktop, phone and 320px screenshots to `test-results/screenshots/`, from the build on port 3102. Run `pnpm build` first. In Git Bash, prefix `MSYS_NO_PATHCONV=1` so routes stay as typed |
 
 ## How it connects to the backend
 
@@ -56,13 +58,17 @@ Many backend features aren't available through the gateway yet. Screens use real
 | `src/app/(auth)/` | Login and terms pages, using the `theme-auth` settings |
 | `src/app/(app)/` | Signed-in pages, using the `theme-app` settings |
 | `src/components/brand-mark.tsx` | The placeholder name and logo. Change them here only |
-| `src/components/shell/` | Sidebar, top bar and AWB search, shared by signed-in pages |
+| `src/components/shell/` | Sidebar, top bar and AWB search, shared by signed-in pages. `nav-config.ts` holds the sidebar menu |
+| `src/components/ui/` | Shared screen parts: page header, data card, empty state, stat tile, pagination, dialog and form fields |
+| `src/lib/url-params.ts` | Safe parsing of `page`, `limit`, enum and text URL parameters |
+| `src/lib/csv.ts` | CSV building for downloads |
 | `src/lib/format/` | Money, date, status and user name formatting |
 | `src/lib/gateway/` | Server-only gateway client, and the mapping of all backend errors to one `ApiError` |
 | `src/lib/data/` | Data source selection, and one folder per feature as screens are built |
 | `src/lib/auth/` | Server-only credential lookup |
 | `vendor/` | Packed copy of the backend's `@logicore/contracts` |
-| `e2e/` | Browser tests |
+| `e2e/` | Browser tests. `screen-checks.ts` holds the shared size, tap-target and signed-out checks, and `routes.ts` lists every route |
+| `scripts/` | Development scripts: dev-mode check, screenshots, contracts update |
 
 ### Real and sample data
 
@@ -96,11 +102,19 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main |
 | Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Merged to main |
-| Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. No sidebar link yet |
-| COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. No sidebar link yet |
-| Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. No sidebar link yet |
+| Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |
+| COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
+| Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.
+
+### Sidebar menu
+
+The sidebar is built from `NAV` in [src/components/shell/nav-config.ts](src/components/shell/nav-config.ts): Home, Dashboard, Shipping Management, Operations, Billings, Reconciliation, Tools, Reports, Settings and Help & Support. Groups with sub-pages open and close, and the group holding the current page starts open. Entries marked `planned` show greyed out with "<name> is not available yet".
+
+### Adding a screen
+
+Add the screen to `NAV` in `src/components/shell/nav-config.ts` as `planned`, and flip it to `live` once its page exists. Add its route to `e2e/routes.ts`, so the dev-mode check and screenshots include it. Build it with the parts in `src/components/ui/`. Task 37 adds the full checklist here.
 
 ## How the work is done
 

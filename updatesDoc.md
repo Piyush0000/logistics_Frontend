@@ -6,11 +6,54 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Task 1 of 37 is done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 and 2 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 1, then Task 2 |
-| **Next step** | Task 2: shared test helpers and scripts |
+| **Waiting on** | Review of Task 2 |
+| **Next step** | Task 3: Home |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 2, new sidebar menu and shared building blocks
+
+The sidebar now shows the menu from the new reference, with sub-menus, in the existing blue style. Shared parts for the coming screens are in place.
+
+### Done
+
+- `src/components/shell/nav-config.ts` holds the menu (`NAV`): Home, Dashboard, Shipping Management, Operations, Billings, Reconciliation, Tools, Reports, Settings and Help & Support, with every route from the navigation map. Live today: Dashboard, All Shipments, Create Shipment, NDR, Wallet Transactions and COD Remittance. Everything else is `planned`: greyed out, with "<name> is not available yet".
+- The sidebar renders `NAV`. Groups with sub-pages open and close. The group holding the current page starts open, and on `/dashboard` all are closed. Clicking a group icon in the collapsed rail opens the rail with that group showing. The collapse button, phone menu, user row and widths are unchanged.
+- `/orders` stays marked for an order's detail page, but not for Create Shipment. Settings owns `/channel-integrations`, but nothing is marked there until Settings is built in Task 24.
+- New shared parts in `src/components/ui/`: `PageHeader`, `DataCard`, `EmptyState`, `StatTile`, `Pagination`. `dialog.tsx`, `select-field.tsx`, `date-field.tsx` and `field-styles.ts` moved there with the same exports.
+- `src/lib/url-params.ts` parses `page`, `limit`, enum and text URL parameters safely. `src/lib/csv.ts` builds CSV files, and the COD export now uses it with the same output.
+- Test tools: `e2e/screen-checks.ts` (sizes, tap targets, signed-out redirect), `e2e/routes.ts` (every route), `scripts/dev-smoke.mjs` (every route under `next dev`, failing on any browser error) and `scripts/screenshots.mjs`.
+- `Readme.md`: new commands, code layout, sidebar menu, and a short "Adding a screen" note.
+
+### Files changed
+
+- New: `src/components/shell/nav-config.ts`, `nav-config.test.ts`, `src/components/ui/page-header.tsx`, `data-card.tsx`, `empty-state.tsx`, `stat-tile.tsx`, `pagination.tsx`, `src/lib/url-params.ts`, `url-params.test.ts`, `src/lib/csv.ts`, `e2e/screen-checks.ts`, `e2e/routes.ts`, `scripts/dev-smoke.mjs`, `scripts/screenshots.mjs`
+- Moved: `channel-integrations/dialog.tsx`, `finances/wallet/select-field.tsx`, `date-field.tsx`, `field-styles.ts` to `src/components/ui/`, with import lines updated in the 10 files that use them
+- Changed: `src/components/shell/sidebar.tsx`, `src/lib/data/cod/csv.ts`, `e2e/dashboard.spec.ts`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| New unit tests before the code | Failed, modules missing |
+| New sidebar browser tests before the code | 10 failed, as expected |
+| `pnpm lint` | 0 errors, 1 warning: `_url` unused in `e2e/stub-gateway.mjs`, from Task 1 |
+| `pnpm typecheck` | Passed |
+| `pnpm test` | 233 of 233 passed (24 test files) |
+| `pnpm build && pnpm test:e2e` | 413 passed, 23 skipped, 0 failed. Wallet, COD and Channel Integrations specs passed unchanged |
+| `node scripts/dev-smoke.mjs` | 10 routes, all HTTP 200 with an h1, `BROWSER ERRORS: none` |
+| Screenshots | All 10 routes at desktop, phone and 320px, plus the sidebar open, reviewed |
+| Colours outside palette | None |
+| Secrets in `.next/static` | None |
+| Brand names in `src` | Only design-file comments |
+| `Evoc_ships` | Clean, at `aace603` |
+
+### Decisions
+
+- At 320px the phone menu is 269px wide, so "Shipping Management" is cut short with an ellipsis. Its full name is still read out.
+- `DataCard` reuses the dashboard's `RetryButton`, which stays in `src/app/(app)/dashboard/`.
+- In Git Bash, `scripts/screenshots.mjs` needs `MSYS_NO_PATHCONV=1` before route arguments, and says so if it's missing.
 
 ## 2026-11-10: Task 1, sync fixes after the merges
 

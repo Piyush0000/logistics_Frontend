@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { AppShell } from '@/components/shell/app-shell';
+import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { getDemoSession } from '@/lib/auth/session';
 import { walletService } from '@/lib/data/wallet';
 import { webhookService } from '@/lib/data/webhooks';
 import { DetailCard } from '../dashboard/sections';
 import { DeliveryHistory } from './delivery-history';
-import { PRIMARY_BUTTON } from './dialog';
 import { WebhookInfo } from './webhook-info';
 import { WebhooksPanel } from './webhooks-panel';
 

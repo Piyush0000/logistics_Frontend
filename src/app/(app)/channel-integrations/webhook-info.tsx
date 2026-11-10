@@ -2,9 +2,9 @@
 
 import { ChevronDown, Info } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { samplePayload, WEBHOOK_EVENTS, type WebhookEventName } from '@/lib/data/webhooks/events';
 import { CopyButton } from './copy-button';
-import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from './dialog';
 
 // These match the headers sent by services/webhooks/src/deliveries/webhook-sender.ts.
 const HEADERS = [

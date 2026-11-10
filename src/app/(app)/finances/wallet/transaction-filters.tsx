@@ -3,6 +3,8 @@
 import Form from 'next/form';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { DateField } from '@/components/ui/date-field';
+import { SelectField } from '@/components/ui/select-field';
 import {
   DATE_ORDER_ERROR,
   DEBIT_TYPES,
@@ -11,8 +13,6 @@ import {
   type TransactionType,
   type WalletFilters,
 } from '@/lib/data/wallet/filters';
-import { DateField } from './date-field';
-import { SelectField } from './select-field';
 
 const DEBIT_OPTIONS = [{ value: 'all', label: 'All Debit Types' }, ...DEBIT_TYPES] as const;
 

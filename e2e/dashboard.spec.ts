@@ -1,17 +1,26 @@
 import { expect, test, type Page } from '@playwright/test';
 import { DEMO_EMAIL, signIn } from './helpers';
 
-const NAV_ITEMS = [
-  'Overview',
-  'Orders',
-  'NDR',
-  'Weight Discrepancy',
-  'Finances',
-  'Buyer Experience',
-  'Business Tools',
-  'KYC Info',
-  'Get Support',
-  'Channel Integrations',
+const NAV_GROUPS = [
+  'Home',
+  'Dashboard',
+  'Shipping Management',
+  'Operations',
+  'Billings',
+  'Reconciliation',
+  'Tools',
+  'Reports',
+  'Settings',
+  'Help & Support',
+];
+
+const NAV_SUBMENUS = [
+  'Shipping Management',
+  'Operations',
+  'Billings',
+  'Reconciliation',
+  'Tools',
+  'Help & Support',
 ];
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Main' });
@@ -87,18 +96,81 @@ test.describe('overview', () => {
 });
 
 test.describe('sidebar', () => {
-  test('lists every section, with only Overview available', async ({ page }, testInfo) => {
+  test('lists every group from the new menu', async ({ page }, testInfo) => {
     await openSidebar(page, testInfo.project.name === 'phone');
 
-    for (const name of NAV_ITEMS) {
+    for (const name of NAV_GROUPS) {
       await expect(nav(page).getByText(name, { exact: true })).toBeVisible();
     }
-    await expect(nav(page).getByRole('link', { name: 'Overview' })).toHaveAttribute(
+    await expect(nav(page).getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(nav(page).getByRole('link', { name: 'Orders' })).toBeVisible();
-    await expect(nav(page).getByRole('button', { name: 'Weight Discrepancy' })).toBeDisabled();
+    await expect(nav(page).getByRole('button', { name: 'Shipping Management' })).toBeVisible();
+    await expect(nav(page).getByRole('button', { name: 'Home', exact: true })).toBeDisabled();
+  });
+
+  test('opens the group for the current page', async ({ page }, testInfo) => {
+    const isPhone = testInfo.project.name === 'phone';
+    await openSidebar(page, isPhone);
+
+    for (const name of NAV_SUBMENUS) {
+      await expect(nav(page).getByRole('button', { name, exact: true })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+    }
+
+    await page.goto('/finances/wallet');
+    await openSidebar(page, isPhone);
+    await expect(nav(page).getByRole('button', { name: 'Billings' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(nav(page).getByRole('link', { name: 'Wallet Transactions' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  test('expands and collapses a group', async ({ page }, testInfo) => {
+    await openSidebar(page, testInfo.project.name === 'phone');
+    const group = nav(page).getByRole('button', { name: 'Operations' });
+    const link = nav(page).getByRole('link', { name: 'NDR' });
+
+    await expect(link).toBeHidden();
+
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(link).toBeVisible();
+
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(link).toBeHidden();
+  });
+
+  test('opens the rail and the group from a collapsed icon', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Desktop behaviour');
+    const sidebar = page.getByTestId('sidebar');
+
+    await expect(sidebar).toHaveCSS('width', '80px');
+    await nav(page).getByRole('button', { name: 'Billings' }).click();
+
+    await expect(sidebar).toHaveCSS('width', '320px');
+    await expect(nav(page).getByRole('button', { name: 'Billings' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(nav(page).getByRole('link', { name: 'Wallet Transactions' })).toBeVisible();
+  });
+
+  test('shows planned items as unavailable', async ({ page }, testInfo) => {
+    await openSidebar(page, testInfo.project.name === 'phone');
+    await nav(page).getByRole('button', { name: 'Operations' }).click();
+
+    const rto = nav(page).getByRole('button', { name: 'RTO', exact: true });
+    await expect(rto).toBeDisabled();
+    await expect(rto).toHaveAttribute('title', 'RTO is not available yet');
   });
 
   test('shows the user and sign out at the bottom', async ({ page }, testInfo) => {
@@ -114,7 +186,7 @@ test.describe('sidebar', () => {
     const before = await page.getByTestId('shipments-card').boundingBox();
 
     await expect(sidebar).toHaveCSS('width', '80px');
-    await expect(nav(page).getByText('Orders', { exact: true })).toBeHidden();
+    await expect(nav(page).getByText('Shipping Management', { exact: true })).toBeHidden();
 
     await openSidebar(page, false);
     await expect(sidebar).toHaveCSS('width', '320px');
@@ -141,7 +213,7 @@ test.describe('sidebar', () => {
 
   test('is a slide-in menu on phones', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'Phone behaviour');
-    const link = nav(page).getByRole('link', { name: 'Overview' });
+    const link = nav(page).getByRole('link', { name: 'Dashboard' });
 
     await expect(link).toBeHidden();
 
@@ -156,7 +228,7 @@ test.describe('sidebar', () => {
 
   test('closes the phone menu with Escape or the backdrop', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'Phone behaviour');
-    const link = nav(page).getByRole('link', { name: 'Overview' });
+    const link = nav(page).getByRole('link', { name: 'Dashboard' });
 
     await openSidebar(page, true);
     await page.keyboard.press('Escape');
