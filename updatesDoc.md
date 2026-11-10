@@ -6,11 +6,33 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 20 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 20 of 37 are done, and Task 33 (Help Centre) was built ahead of order on branch `t33` |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 20 |
+| **Waiting on** | Review of Task 20 and Task 33 |
 | **Next step** | Task 21: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 33, Help Centre
+
+- Added `/support/help` and `/support/help/[slug]`: 14 merchant articles in five topics, stored in `src/content/help/articles.ts`. No data source and no sample label, because the content ships with the app.
+- Search updates as you type (`searchArticles` in `src/lib/help-search.ts`: every word must match; title matches first, then summary, then body). The topic filter lives in the URL (`?category=`, an unknown value shows all). `?q=` sets a starting search.
+- Each article ends with Raise a ticket, linking to `/support/tickets?new=1` with prefetch off. That screen is Task 32 and does not exist yet, so the tests check the link, not the page.
+- An unknown slug gives a real 404. There is no `loading.tsx` under `help/`, so the status stays 404.
+- The webhook article is adapted from the backend guide with its exact header names. Features that are sample-only or not connected are described as such.
+- Help Centre is live in the sidebar. Routes added to `e2e/routes.ts`.
+- Part C skipped: static content, no gateway route or variable to test.
+
+| Check | Result |
+|---|---|
+| Unit tests (`pnpm exec vitest run`) | 56 files, 518 tests passed |
+| Lint, typecheck | 0 errors |
+| Browser, `help.spec.ts` | 23 passed, 1 skipped (phone-only check on desktop) |
+| Full browser run, offset 600 | 864 passed, 50 skipped, 0 failed |
+| `node scripts/dev-smoke.mjs` | Both help routes 200 with an h1; BROWSER ERRORS: none |
+| Palette, secret and brand greps | No output (brand hits are design-file comments only) |
+| Backend check | status clean, HEAD aace603 |
+
+Not verified: the Raise a ticket destination (Task 32).
 
 ## 2026-11-11: Task 20, fix round 1
 
