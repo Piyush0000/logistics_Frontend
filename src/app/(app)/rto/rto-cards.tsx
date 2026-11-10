@@ -1,0 +1,46 @@
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { CarrierBadge } from '@/components/orders/carrier-badge';
+import { StatusBadge } from '@/components/orders/status-badge';
+import type { OrderSummary } from '@/lib/data/orders';
+import { formatDateTime } from '@/lib/format/date';
+import { NO_COURIER_STATUS } from './rto-table';
+
+export function RtoCards({ orders }: { orders: OrderSummary[] }) {
+  return (
+    <div className="grid gap-3 lg:hidden">
+      {orders.map((order) => (
+        <Link
+          key={order.shipment_id}
+          href={`/orders/${order.awb}`}
+          data-testid="rto-item"
+          className="flex min-h-[44px] flex-col gap-2.5 rounded-card border border-secondary bg-surface p-4 transition-all hover:border-primary active:bg-tertiary"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <span className="font-mono text-sm font-bold [overflow-wrap:anywhere] text-primary">
+                {order.awb}
+              </span>
+              <div className="text-xs text-on-surface/60 [overflow-wrap:anywhere]">
+                Ref: {order.reference_id || 'N/A'}
+              </div>
+            </div>
+            <StatusBadge status={order.status} />
+          </div>
+
+          <p className="text-xs text-on-surface/70 [overflow-wrap:anywhere]">
+            Courier status: {order.raw_status || NO_COURIER_STATUS}
+          </p>
+
+          <div className="flex items-center justify-between gap-2 border-t border-secondary/50 pt-2 text-xs text-on-surface/70">
+            <CarrierBadge carrier={order.carrier} />
+            <div className="flex items-center gap-1">
+              <span>{formatDateTime(order.last_status_at)}</span>
+              <ChevronRight aria-hidden="true" className="size-4 text-on-surface/40" />
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}

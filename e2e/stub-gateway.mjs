@@ -65,9 +65,29 @@ const MANIFESTED_ITEMS = ['LIVE201', 'LIVE202'].map((awb, index) => ({
   status: 'MANIFESTED',
 }));
 
+// One shipment for each RTO stage, for the RTO screen.
+const RTO_ITEMS = { RTO_INITIATED: ['LIVE301', 1], RTO_DELIVERED: ['LIVE302', 2] };
+
+function rtoItem(status) {
+  const [awb, n] = RTO_ITEMS[status];
+  return {
+    ...SHIPMENT_LIST_ITEM,
+    shipment_id: `10000000-0000-4000-8000-00000000030${n}`,
+    reference_id: `REF-${awb}`,
+    awb,
+    status,
+  };
+}
+
 function handleShipmentList(url, res) {
   const status = url.searchParams.get('status');
-  const items = !status ? [SHIPMENT_LIST_ITEM] : status === 'MANIFESTED' ? MANIFESTED_ITEMS : [];
+  const items = !status
+    ? [SHIPMENT_LIST_ITEM]
+    : status === 'MANIFESTED'
+      ? MANIFESTED_ITEMS
+      : Object.hasOwn(RTO_ITEMS, status)
+        ? [rtoItem(status)]
+        : [];
   return send(res, 200, { items, page: 1, limit: 50, total: items.length });
 }
 

@@ -433,3 +433,57 @@ test.describe('NDR with no route', () => {
     await expect(page.getByRole('button', { name: /Reattempt|RTO/ })).toHaveCount(0);
   });
 });
+
+test.describe('RTO with the stand-in gateway', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows gateway RTO shipments', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    await expect(page.getByTestId('tile-rto-in-progress')).toContainText('6');
+    await expect(page.getByTestId('tile-rto-delivered')).toContainText('7');
+    const card = page.getByTestId('rto-card');
+    await expect(card.getByText('LIVE301').locator('visible=true').first()).toBeVisible();
+    await expect(card.getByText('LIVE302')).toHaveCount(0);
+    await expect(page.getByText('Sample data')).toBeHidden();
+
+    await page.getByRole('tab', { name: 'Delivered' }).click();
+    await page.waitForURL('**/rto?stage=delivered');
+    await expect(card.getByText('LIVE302').locator('visible=true').first()).toBeVisible();
+    await expect(card.getByText('LIVE301')).toHaveCount(0);
+  });
+
+  test('shows RTO charges as not available in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    const tile = page.getByTestId('tile-rto-charges');
+    await expect(tile).toContainText('Not available yet');
+    await expect(tile).not.toContainText('₹');
+  });
+
+  test('links the dashboard RTO tile to the RTO screen', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard');
+    await page.getByTestId('tile-RTO').click();
+    await page.waitForURL('**/rto');
+  });
+});
+
+test.describe('RTO with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows the error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    for (const id of ['rto-summary', 'rto-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByRole('heading', { level: 1, name: 'RTO' })).toBeVisible();
+    await expect(page.getByRole('tablist', { name: 'RTO stage' })).toBeVisible();
+  });
+});

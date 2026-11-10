@@ -6,6 +6,7 @@ const gatewayData = {
   DATA_SOURCE_TRACKING: 'gateway',
   DATA_SOURCE_WEBHOOKS: 'gateway',
   DATA_SOURCE_PICKUPS: 'gateway',
+  DATA_SOURCE_RTO: 'gateway',
 };
 
 export default defineConfig({

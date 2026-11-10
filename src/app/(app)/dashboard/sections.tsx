@@ -1,4 +1,5 @@
 import { CalendarDays, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { SampleBadge } from '@/components/sample-badge';
 import type { DataResult } from '@/lib/data/source';
@@ -162,12 +163,14 @@ export function Tile({
   label,
   value,
   icon: Icon,
+  href,
 }: {
   label: string;
   value: number;
   icon: LucideIcon;
+  href?: string;
 }) {
-  return (
+  const content = (
     <div data-testid={`tile-${label}`} className="flex min-w-0 items-center gap-3">
       <span className="grid size-11 shrink-0 place-items-center rounded-control bg-muted text-primary">
         <Icon aria-hidden="true" className="size-5" />
@@ -177,5 +180,14 @@ export function Tile({
         <span className="block font-display text-xl leading-7 font-bold">{value}</span>
       </span>
     </div>
+  );
+  if (!href) return content;
+  return (
+    <Link
+      href={href}
+      className="block min-w-0 rounded-control hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-primary"
+    >
+      {content}
+    </Link>
   );
 }

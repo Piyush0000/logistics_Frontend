@@ -6,11 +6,47 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 9 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 10 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 9 |
-| **Next step** | Task 10: RTO |
+| **Waiting on** | Review of Task 10 |
+| **Next step** | Task 11: Wallet recharge |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 10, RTO
+
+`/rto` lists shipments returning to the seller, with stage tabs (In progress, Delivered) and three summary tiles. Counts and lists use the real gateway routes.
+
+### Done
+
+- New `src/lib/data/rto/` (types, mock, gateway, index, tests). `rtoService()` follows `DATA_SOURCE_RTO`.
+- Gateway mode: `listRto` calls the orders list function with `status=RTO_INITIATED` or `RTO_DELIVERED`; `getSummary` reads `/api/v1/shipments/stats` for the two counts. RTO charges have no source, so the tile shows "Not available yet" (`rtoChargesPaise` is `null`).
+- Screen: tiles, tabs (`?stage=delivered`, in progress is the default), table on desktop and cards on phones, rows link to `/orders/<awb>`, pagination through `buildPageHref`. Empty message: "No shipments are returning."
+- The list route sends no raw courier status, so `OrderSummary` got an optional `raw_status`. The mock fills it; gateway rows show "Not reported".
+- The dashboard RTO tile links to `/rto` (new optional `href` on `Tile`). Sidebar RTO is live; `/rto` is in `e2e/routes.ts`.
+- Stand-in gateway: `status=RTO_INITIATED` gives LIVE301, `status=RTO_DELIVERED` gives LIVE302. Other branches unchanged. `DATA_SOURCE_RTO` is on ports 3104 and 3105.
+
+### Files changed
+
+- New: `src/lib/data/rto/*`, `src/app/(app)/rto/{page,loading,rto-table,rto-cards}.tsx`, `e2e/rto.spec.ts`
+- Changed: `src/lib/data/orders/types.ts`, `src/app/(app)/dashboard/{page,sections}.tsx`, `src/components/shell/nav-config.ts`, `e2e/{routes.ts,stub-gateway.mjs,gateway.spec.ts,dashboard.spec.ts}`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+- `e2e/dashboard.spec.ts`: the "planned items" test used RTO, which is now live. It now checks Invoice under Billings, still planned.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: gateway module missing. Browser: 24 failed, `/rto` did not exist |
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 330 passed |
+| D2 full browser run | 592 passed, 34 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | 17 routes 200 with an h1, including `/rto`. BROWSER ERRORS: none |
+| D4 screenshots | Reviewed `/rto` desktop, phone and 320px images: no cut-off text, long AWB and reference wrap |
+| D5 palette check | No output |
+| D6 secret and brand check | No output from either grep |
+| D7 backend check | `status --porcelain` empty, HEAD `aace603` |
+
+### Not verified
+
+- Screenshot of the gateway-mode page.
 
 ## 2026-11-10: Task 9, Connect NDR
 

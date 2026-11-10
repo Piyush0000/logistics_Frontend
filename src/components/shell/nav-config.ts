@@ -75,7 +75,7 @@ export const NAV: NavGroup[] = [
     icon: ArrowLeftRight,
     children: [
       { label: 'NDR', href: '/ndr', status: 'live', icon: TriangleAlert },
-      { label: 'RTO', href: '/rto', status: 'planned', icon: Undo2 },
+      { label: 'RTO', href: '/rto', status: 'live', icon: Undo2 },
     ],
   },
   {

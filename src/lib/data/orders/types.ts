@@ -18,6 +18,8 @@ export interface OrderSummary {
   created_at: string;
   last_status_at: string;
   stuck: boolean;
+  /** The courier's own wording for the status. The gateway list route does not send it. */
+  raw_status?: string | null;
 }
 
 export interface OrderListQuery {

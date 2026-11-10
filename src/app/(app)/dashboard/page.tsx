@@ -95,7 +95,7 @@ export default async function DashboardPage() {
             <Tile label="In Transit" value={summary.inTransit} icon={Truck} />
             <Tile label="Out for Delivery" value={summary.outForDelivery} icon={Navigation} />
             <Tile label="Delivered" value={summary.delivered} icon={CircleCheck} />
-            <Tile label="RTO" value={summary.rto} icon={Undo2} />
+            <Tile label="RTO" value={summary.rto} icon={Undo2} href="/rto" />
           </div>
         )}
       </DetailCard>

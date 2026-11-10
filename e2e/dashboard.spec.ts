@@ -167,11 +167,11 @@ test.describe('sidebar', () => {
 
   test('shows planned items as unavailable', async ({ page }, testInfo) => {
     await openSidebar(page, testInfo.project.name === 'phone');
-    await nav(page).getByRole('button', { name: 'Operations' }).click();
+    await nav(page).getByRole('button', { name: 'Billings' }).click();
 
-    const rto = nav(page).getByRole('button', { name: 'RTO', exact: true });
-    await expect(rto).toBeDisabled();
-    await expect(rto).toHaveAttribute('title', 'RTO is not available yet');
+    const invoice = nav(page).getByRole('button', { name: 'Invoice', exact: true });
+    await expect(invoice).toBeDisabled();
+    await expect(invoice).toHaveAttribute('title', 'Invoice is not available yet');
   });
 
   test('shows the user and sign out at the bottom', async ({ page }, testInfo) => {

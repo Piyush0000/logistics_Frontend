@@ -17,6 +17,7 @@ export const APP_ROUTES = [
   '/orders/pickups/manifest-print/pk-001',
   '/orders/DEMOEK001',
   '/ndr',
+  '/rto',
   '/finances/wallet',
   '/finances/cod',
   '/channel-integrations',
