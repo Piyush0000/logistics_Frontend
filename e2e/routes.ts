@@ -33,6 +33,8 @@ export const APP_ROUTES = [
   '/tools/tracking',
   '/tools/tracking?awb=DEMOEK001',
   '/reports',
+  '/support/help',
+  '/support/help/verify-a-webhook-signature',
   '/channel-integrations',
 ] as const;
 
