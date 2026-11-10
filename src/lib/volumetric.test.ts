@@ -19,6 +19,8 @@ describe('volumetricWeightKg', () => {
     expect(volumetricWeightKg(box(1.1, 1.1, 1.1))).toBe(0);
     // 25 cm3 is exactly 0.005 kg, which rounds up to 0.01.
     expect(volumetricWeightKg(box(5, 5, 1))).toBe(0.01);
+    // 75 cm3 is exactly 0.015 kg, which rounds up to 0.02.
+    expect(volumetricWeightKg(box(5, 5, 3))).toBe(0.02);
     // 500 x 500 x 500 is the largest box and must stay exact.
     expect(volumetricWeightKg(box(500, 500, 500))).toBe(25_000);
   });
@@ -34,5 +36,12 @@ describe('chargeableWeightKg', () => {
 
   it('is that weight when both are equal', () => {
     expect(chargeableWeightKg(1.2, box(30, 20, 10))).toBe(1.2);
+  });
+
+  it('rounds a real weight ending in 5 half up, without drift', () => {
+    const tiny = box(1, 1, 1);
+    // 0.285 * 100 is 28.499999999999996 in floating point.
+    expect(chargeableWeightKg(0.285, tiny)).toBe(0.29);
+    expect(chargeableWeightKg(1.005, tiny)).toBe(1.01);
   });
 });

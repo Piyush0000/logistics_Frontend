@@ -24,6 +24,7 @@ export function volumetricWeightKg(dimensions: PackageDimensions): number {
 
 /** What a courier bills: the larger of the real weight and the volumetric weight, to 2 decimals. */
 export function chargeableWeightKg(actualKg: number, dimensions: PackageDimensions): number {
-  const actual = Math.round(actualKg * HUNDREDTHS_PER_KG);
+  // toPrecision drops the float noise in values such as 0.285 * 100, so a trailing 5 rounds up.
+  const actual = Math.round(Number((actualKg * HUNDREDTHS_PER_KG).toPrecision(12)));
   return Math.max(actual, volumetricHundredths(dimensions)) / HUNDREDTHS_PER_KG;
 }
