@@ -32,7 +32,7 @@ export async function NdrTab() {
             <StatTile testId="tile-NDR Delivered" label="NDR Delivered" value={kpis.delivered} icon={CircleCheck} />
             <StatTile testId="tile-NDR Returned" label="NDR Returned" value={kpis.returned} icon={PackageMinus} />
           </div>
-          <BarChart label="NDR reasons" data={ndrReasonCounts(items)} />
+          <BarChart label="NDR reasons" categoryLabel="Reason" data={ndrReasonCounts(items)} />
         </div>
       )}
     </DataCard>

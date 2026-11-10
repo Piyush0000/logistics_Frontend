@@ -131,6 +131,13 @@ test.describe('NDR tab', () => {
     await page.waitForURL('**/ndr');
   });
 
+  test('keeps the full reason in the chart table and bar titles', async ({ page }) => {
+    const card = page.getByTestId('ndr-tab-card');
+    await expect(card.getByRole('columnheader', { name: 'Reason' })).toHaveCount(1);
+    await expect(card.getByRole('rowheader', { name: 'Door locked / Premise closed' })).toHaveCount(1);
+    await expect(card.locator('[data-bar] title', { hasText: 'Customer refused delivery (COD amount mismatch)' })).toHaveCount(1);
+  });
+
   test('does not scroll sideways at any size', async ({ page }) => {
     await expectNoSidewaysScroll(page, SIZES);
   });
@@ -150,6 +157,15 @@ test.describe('RTO tab', () => {
     await expect(page.getByTestId('rto-tab-card')).toBeVisible();
   });
 
+  test('charts as many shipments as the tiles count', async ({ page }) => {
+    const card = page.getByTestId('rto-tab-card');
+    const tile = async (name: string) =>
+      Number((await card.getByTestId(`tile-${name}`).innerText()).match(/\d+/)![0]);
+    const values = await card.locator('table tbody tr td').allInnerTexts();
+    const chartTotal = values.reduce((sum, v) => sum + Number(v), 0);
+    expect(chartTotal).toBe((await tile('RTO in progress')) + (await tile('RTO delivered')));
+  });
+
   test('shows counts, a courier chart and a link to RTO', async ({ page }) => {
     await expect(page.getByRole('tab', { name: 'RTO' })).toHaveAttribute('aria-selected', 'true');
     const card = page.getByTestId('rto-tab-card');
@@ -158,6 +174,8 @@ test.describe('RTO tab', () => {
     await expect(card.getByTestId('tile-RTO delivered')).toContainText('2');
     await expect(card.getByRole('img', { name: /^RTO by courier\./ })).toBeVisible();
     await expect(card.locator('[data-bar]')).toHaveCount(4);
+    await expect(card.getByRole('columnheader', { name: 'Courier' })).toHaveCount(1);
+    await expect(card.getByTestId('rto-chart-note')).toHaveCount(0);
     await card.getByRole('link', { name: 'View all RTO' }).click();
     await page.waitForURL('**/rto');
   });

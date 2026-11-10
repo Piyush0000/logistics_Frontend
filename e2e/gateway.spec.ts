@@ -775,6 +775,8 @@ test.describe('dashboard RTO tab with the stand-in gateway', () => {
     await expect(card.getByTestId('tile-RTO in progress')).toContainText('6');
     await expect(card.getByTestId('tile-RTO delivered')).toContainText('7');
     await expect(card.getByRole('img', { name: /^RTO by courier\./ })).toBeVisible();
+    // The stand-in list route returns one record per stage while its stats say 6 and 7.
+    await expect(card.getByTestId('rto-chart-note')).toHaveText('Based on 2 of 13 RTO shipments.');
     await expect(page.getByText('Sample data')).toBeHidden();
   });
 });
