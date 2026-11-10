@@ -56,4 +56,9 @@ export const mockTrackingService = {
         .reverse(),
     });
   },
+
+  /** For the public page. The sample data needs no credential either way. */
+  getTimelinePublic(awb: string): Promise<DataResult<TrackingDetail>> {
+    return mockTrackingService.getTimeline(awb);
+  },
 };

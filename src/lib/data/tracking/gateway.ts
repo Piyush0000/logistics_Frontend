@@ -87,11 +87,20 @@ export async function fetchTimeline(
   };
 }
 
+/** The timeline for the public tracking page. The gateway route has no auth, so no token is sent. */
+export function fetchTimelinePublic(awb: string): Promise<DataResult<TrackingDetail>> {
+  return fetchTimeline(awb, null);
+}
+
 export const gatewayTrackingService = {
   async lookup(awb: string) {
     return fetchTracking(awb, await merchantCredential('shipments'));
   },
   async getTimeline(awb: string) {
     return fetchTimeline(awb, await merchantCredential('shipments'));
+  },
+  /** For the public page: never reads a merchant credential. */
+  getTimelinePublic(awb: string) {
+    return fetchTimelinePublic(awb);
   },
 };

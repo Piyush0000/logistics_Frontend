@@ -647,3 +647,36 @@ test.describe('order tracking with the gateway down', () => {
     await expect(page.getByLabel('AWB numbers')).toBeVisible();
   });
 });
+
+test.describe('public tracking with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows the gateway timeline', async ({ page }) => {
+    const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1, name: 'LIVE123' })).toBeVisible();
+    await expect(page.getByTestId('status-badge')).toContainText('Delivered');
+    const events = page.getByTestId('timeline-event');
+    await expect(events).toHaveCount(2);
+    await expect(events.first()).toContainText('Jaipur');
+    await expect(events.last()).toContainText('Pune');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('answers 404 for an AWB the gateway does not know', async ({ page }) => {
+    const response = await page.goto('/track/MISSING1');
+    expect(response?.status()).toBe(404);
+  });
+});
+
+test.describe('public tracking with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows a clear error, not a 404', async ({ page }) => {
+    const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
+    expect(response?.status()).not.toBe(404);
+    await expect(page.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+});

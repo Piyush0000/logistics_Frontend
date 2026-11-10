@@ -6,11 +6,44 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 17 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 18 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 17 |
-| **Next step** | Task 18: the public tracking page, `/track/[awb]` |
+| **Waiting on** | Review of Task 18 |
+| **Next step** | Task 19: Reports |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 18, Public tracking page
+
+`/track/[awb]` is the page a buyer opens from a shared link. It needs no sign-in and has no app shell.
+
+### Done
+
+- New route group `src/app/(public)/` with its own layout (`theme-app`, brand mark, no shell). No `loading.tsx`, so an unknown AWB returns a real 404 through `notFound()`.
+- `view-model.ts`: `toPublicView` builds the page's data by picking AWB, courier, status, stage progress and timeline (status, place, time). It never spreads the tracking object. `stageProgress` maps statuses to four stages; RTO, cancelled and failed show a message. `parsePublicAwb` decodes safely, trims and rejects empty or over-40-character values.
+- `fetchTimelinePublic` in the gateway file calls `fetchTimeline(awb, null)`. Both tracking services got `getTimelinePublic`. The page never reads a merchant credential.
+- `robots: { index: false, follow: false }`.
+- Gateway down shows a clear error with Try again, not a 404.
+- Order Tracking's share link is a copy button, not a Link, so there was no `prefetch` prop to change.
+
+### Files changed
+
+- New: `src/app/(public)/*`, `e2e/public-tracking.spec.ts`
+- Changed: `src/lib/data/tracking/{gateway,mock,tracking.test}.ts`, `e2e/{routes,gateway.spec}.ts`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: view-model and fetchTimelinePublic tests failed before the code. Browser: all 10 public-tracking tests failed (no route) |
+| Public tracking spec, desktop and phone | 10 passed |
+| Gateway tests, public tracking (3104, 3105) | 3 passed |
+| D1 lint, typecheck, unit tests | 0 errors, 48 files, 474 tests passed |
+| D2 full browser run | 791 passed, 47 skipped, 1 failed: `weight-settings.spec.ts` "keeps exactly one default preset" (desktop). It fails when the whole file runs and passes alone. Task 18 did not touch weight settings. Not yet explained |
+| D5 palette check | No output |
+| D6 brand check | No output (secret check on .next/static not re-run) |
+| D7 backend | Clean, HEAD aace603 |
+| D3 dev smoke | Every route HTTP 200, BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed: header, card, progress and timeline fit with no cut-off text |
 
 ## 2026-11-10: Task 17, Order tracking
 

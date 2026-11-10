@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { fetchTimeline } from './gateway';
+import { fetchTimeline, fetchTimelinePublic } from './gateway';
 
 let handler: (req: IncomingMessage, res: ServerResponse) => void;
 let server: Server;
@@ -82,5 +82,30 @@ describe('fetchTimeline (gateway)', () => {
     if (result.ok) return;
     expect(result.error.kind).toBe('not_found');
     expect(result.error.message).toBe('No shipment found for this AWB.');
+  });
+});
+
+describe('fetchTimelinePublic (gateway)', () => {
+  it('asks for the timeline without an Authorization header', async () => {
+    let auth: string | undefined = 'unset';
+    let url = '';
+    handler = (req, res) => {
+      auth = req.headers.authorization;
+      url = req.url ?? '';
+      json(res, 200, {
+        shipment_id: '10000000-0000-4000-8000-000000000001',
+        awb: 'LIVE123',
+        carrier: 'ekart',
+        status: 'DELIVERED',
+        raw_status: 'Delivered',
+        last_event_at: '2026-10-23T10:00:00.000Z',
+        stuck: false,
+        timeline: [],
+      });
+    };
+    const result = await fetchTimelinePublic('LIVE 123');
+    expect(result.ok).toBe(true);
+    expect(auth).toBeUndefined();
+    expect(url).toBe('/api/v1/shipments/LIVE%20123/tracking');
   });
 });
