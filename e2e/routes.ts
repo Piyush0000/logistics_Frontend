@@ -8,6 +8,7 @@
 export const APP_ROUTES = [
   '/home',
   '/dashboard',
+  '/dashboard?tab=pickups',
   '/orders',
   '/orders/b2c',
   '/orders/b2b',

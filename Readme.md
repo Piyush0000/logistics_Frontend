@@ -112,7 +112,8 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
 | Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
-| Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main |
+| Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main. Tabs: Overview and Pickups (Task 20) |
+| Dashboard Pickups tab, at `/dashboard?tab=pickups` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 20 | Scheduled today, Picked up today and Pending pickup tiles, plus a 7-day bar chart. Sample by default; unavailable in gateway mode, as the gateway has no pickups route | Done. Other tabs stay disabled until Tasks 21 to 23 |
 | Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today); facts on the detail page are sample data; NDR is sample data, or unavailable in gateway mode (Task 9) | Merged to main |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes. Recharge button and popup added in Task 11 (no payment is taken) | Merged to main. In the sidebar under Billings |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |

@@ -22,15 +22,33 @@ import { shipmentService } from '@/lib/data/shipments';
 import { walletService } from '@/lib/data/wallet';
 import { formatDateRange } from '@/lib/format/date';
 import { formatPaise } from '@/lib/format/money';
-import { AlertTicker, DetailCard, KpiCard, OverviewTabs, PageHeading, Tile } from './sections';
+import { AlertTicker, DetailCard, KpiCard, OverviewTabs, PageHeading, parseTab, Tile } from './sections';
+import { PickupsTab } from './tabs/pickups-tab';
 
 export const metadata: Metadata = { title: 'Dashboard | Evoc Logistics' };
 
 const vsYesterday = (percent: number) => `${percent}% vs past day`;
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string | string[] }>;
+}) {
   const session = await getDemoSession();
   if (!session) redirect('/login');
+
+  const tab = parseTab((await searchParams).tab);
+  if (tab === 'pickups') {
+    const wallet = await walletService().getBalance();
+    return (
+      <AppShell email={session.email} wallet={wallet}>
+        <AlertTicker />
+        <PageHeading dateRange={formatDateRange(new Date())} />
+        <OverviewTabs active={tab} />
+        <PickupsTab />
+      </AppShell>
+    );
+  }
 
   const [wallet, overview, shipments] = await Promise.all([
     walletService().getBalance(),

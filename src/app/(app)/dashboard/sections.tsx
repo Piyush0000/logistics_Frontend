@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { SampleBadge } from '@/components/sample-badge';
 import type { DataResult } from '@/lib/data/source';
+import { parseEnum } from '@/lib/url-params';
 import { RetryButton } from './retry-button';
 
 const NOTICE = 'Sample notice:';
@@ -53,31 +54,60 @@ export function PageHeading({ dateRange }: { dateRange: string }) {
   );
 }
 
-const TABS = ['Overview', 'Pickups', 'NDR', 'RTO', 'Delivered', 'Revenue', 'SMS'];
+export type DashboardTab = 'overview' | 'pickups' | 'ndr' | 'rto' | 'delivered' | 'revenue' | 'sms';
 
-export function OverviewTabs() {
+/** One entry per tab. A later task flips `enabled` when it builds the tab. */
+const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
+  { id: 'overview', label: 'Overview', enabled: true },
+  { id: 'pickups', label: 'Pickups', enabled: true },
+  { id: 'ndr', label: 'NDR', enabled: false },
+  { id: 'rto', label: 'RTO', enabled: false },
+  { id: 'delivered', label: 'Delivered', enabled: false },
+  { id: 'revenue', label: 'Revenue', enabled: false },
+  { id: 'sms', label: 'SMS', enabled: false },
+];
+
+/** The tab named by `?tab=`, or Overview when it is missing, unknown or not built yet. */
+export function parseTab(value: unknown): DashboardTab {
+  const tab = parseEnum(value, TABS.map((entry) => entry.id));
+  return TABS.find((entry) => entry.id === tab)?.enabled ? tab! : 'overview';
+}
+
+const tabHref = (id: DashboardTab) => (id === 'overview' ? '/dashboard' : `/dashboard?tab=${id}`);
+
+export function OverviewTabs({ active = 'overview' }: { active?: DashboardTab }) {
   return (
     <div
       role="tablist"
       aria-label="Dashboard views"
       className="flex overflow-x-auto rounded-full bg-muted [scrollbar-width:none]"
     >
-      {TABS.map((tab, index) => (
-        <button
-          key={tab}
-          type="button"
-          role="tab"
-          aria-selected={index === 0}
-          disabled={index !== 0}
-          className={`h-11 min-w-24 flex-1 shrink-0 rounded-full px-4 text-sm ${
-            index === 0
-              ? 'bg-primary font-medium text-tertiary'
+      {TABS.map((tab) => {
+        const selected = tab.id === active;
+        const className = `h-11 min-w-24 flex-1 shrink-0 rounded-full px-4 text-sm ${
+          selected
+            ? 'bg-primary font-medium text-tertiary'
+            : tab.enabled
+              ? 'text-on-surface hover:bg-primary/10'
               : 'cursor-not-allowed text-on-surface/70'
-          }`}
-        >
-          {tab}
-        </button>
-      ))}
+        }`;
+        return tab.enabled ? (
+          <Link
+            key={tab.id}
+            href={tabHref(tab.id)}
+            role="tab"
+            aria-selected={selected}
+            aria-current={selected ? 'page' : undefined}
+            className={`${className} flex items-center justify-center`}
+          >
+            {tab.label}
+          </Link>
+        ) : (
+          <button key={tab.id} type="button" role="tab" aria-selected={false} disabled className={className}>
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

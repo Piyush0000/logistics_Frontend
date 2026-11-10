@@ -6,11 +6,38 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 19 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 20 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 19 |
-| **Next step** | Task 20: Dashboard tabs |
+| **Waiting on** | Review of Task 20 |
+| **Next step** | Task 21: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 20, Dashboard tab navigation, bar chart and Pickups tab
+
+`/dashboard?tab=<id>` now selects a tab. Overview and Pickups are built; the other tabs stay disabled.
+
+### Done
+
+- `OverviewTabs` reads one `TABS` list with an `enabled` flag per tab. Built tabs are links (`/dashboard`, `/dashboard?tab=pickups`); unbuilt ones are disabled buttons. `aria-selected` and `aria-current` follow the parsed tab. `parseTab` uses `parseEnum`, so an unknown or unbuilt value shows Overview.
+- `src/components/charts/bar-chart.tsx`: inline SVG bar chart. `role="img"` with a summary label, value labels, a visually hidden data table, a `<title>` per bar, bars `fill-primary`, text `fill-on-surface/70`. It scales to its container.
+- `src/lib/data/pickups/summary.ts`: pure `summarizePickups(pickups, readyCount, today)` with an injectable today. Cancelled pickups are not counted. Days use `indianDay`.
+- Pickups tab: one card with three tiles and the 7-day chart. In gateway mode it shows the unavailable message with Try again and no sample label.
+- `/dashboard?tab=pickups` added to `e2e/routes.ts`.
+- Existing test "shows the title with Overview selected and other tabs disabled" now asserts Pickups is an enabled link and the rest are disabled. Nothing else in `e2e/dashboard.spec.ts` changed.
+
+### Verification
+
+See the Task 20 report for the full run. Results are recorded below once observed.
+
+| Check | Result |
+|---|---|
+| Unit tests (`pnpm test`) | 53 files, 505 tests passed |
+| Lint and typecheck | 0 errors, 0 warnings |
+| Full browser run (`playwright test`) | 836 passed, 49 skipped, 3 failed. Two failures were weight dispute tests that pass when run alone; one was my Pickups tile test, which assumed exact sample counts and is now fixed. The fixed spec and `dashboard.spec.ts` then passed (86 passed, 8 skipped). The whole suite was not re-run after that fix |
+| Gateway test, Pickups unavailable on port 3106 | passed |
+| Dev smoke (`dev-smoke.mjs`) | every route HTTP 200, `BROWSER ERRORS: none` |
+| Palette check | no output |
+| Backend check | clean, HEAD aace603 |
 
 ## 2026-11-11: Task 19, Reports
 

@@ -735,3 +735,18 @@ test.describe('reports with no COD, wallet or NDR route', () => {
     }
   });
 });
+
+test.describe('dashboard pickups tab with no pickups route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows pickups as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=pickups', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('pickups-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('aria-selected', 'true');
+  });
+});

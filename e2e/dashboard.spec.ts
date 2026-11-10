@@ -38,7 +38,9 @@ test.describe('overview', () => {
   test('shows the title with Overview selected and other tabs disabled', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    for (const name of ['Pickups', 'NDR', 'RTO', 'Delivered', 'Revenue', 'SMS']) {
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toBeEnabled();
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('href', '/dashboard?tab=pickups');
+    for (const name of ['NDR', 'RTO', 'Delivered', 'Revenue', 'SMS']) {
       await expect(page.getByRole('tab', { name })).toBeDisabled();
     }
   });
