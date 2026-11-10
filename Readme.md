@@ -93,6 +93,7 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | COD remittance | `DATA_SOURCE_COD` | No |
 | Invoices and the invoice print view | `DATA_SOURCE_INVOICES` | No. Gateway mode shows them as unavailable |
 | Weight discrepancies | `DATA_SOURCE_WEIGHT` | No. Gateway mode shows them as unavailable |
+| Weight settings (package presets) | `DATA_SOURCE_WEIGHT_SETTINGS` | No. Gateway mode shows them as unavailable |
 
 In sample mode, AWB search knows `DEMOEK001` and `DEMODL002`.
 
@@ -121,6 +122,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | RTO, at `/rto` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 10 | Stage tabs (In progress, Delivered), summary tiles and a list of returning shipments. Sample by default; gateway mode uses the stats and shipments list routes. RTO charges are sample only and show "Not available yet" in gateway mode. The courier status column is empty in gateway mode, because the list route does not send it | Done. In the sidebar under Operations; the dashboard RTO tile links here |
 | Invoices, at `/finances/invoices` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 12 | Monthly shipping invoices with 18% GST, a year filter (`?year=`) and pages. Sample only; gateway mode shows it as unavailable. The print view is at `/finances/invoices/[id]`, laid out for A4, with a "Sample invoice. Not a tax document." banner on sample data | Done. In the sidebar under Billings |
 | Weight discrepancies, at `/reconciliation/weight` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 13 | Couriers' weight disputes: declared against charged weight and the extra charge, with summary tiles, a status filter (`?status=`), an AWB search (`?q=`) and pages. Accept a charge, or dispute it with a note of 10 to 1,000 characters and 1 to 3 JPG or PNG images up to 5 MB (only file name, type and size are sent; no file is stored). Rows past their response window show "Response window closed" and cannot be disputed. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Reconciliation |
+| Weight settings, at `/reconciliation/weight-settings` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 14 | Package presets: name (1 to 40 characters), size (1 to 500 cm each side), weight (0.1 to 1000 kg) and one default, up to 20 presets. Add, edit and delete (delete asks first). The form shows the chargeable weight as you type: the larger of the real weight and length × width × height ÷ 5,000, to 2 decimals (`src/lib/volumetric.ts`, also used by the Rate Calculator later). The default preset cannot be deleted while others exist; make another the default first. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Reconciliation |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.

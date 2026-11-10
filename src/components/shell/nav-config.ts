@@ -96,7 +96,7 @@ export const NAV: NavGroup[] = [
       {
         label: 'Weight Settings',
         href: '/reconciliation/weight-settings',
-        status: 'planned',
+        status: 'live',
         icon: SlidersHorizontal,
       },
     ],

@@ -544,3 +544,20 @@ test.describe('weight with no route', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Weight discrepancies' })).toBeVisible();
   });
 });
+
+test.describe('weight settings with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows presets as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/reconciliation/weight-settings', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('presets-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('preset-row')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add preset' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Weight settings' })).toBeVisible();
+  });
+});

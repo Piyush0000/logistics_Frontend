@@ -6,11 +6,53 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 13 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 14 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 13 |
-| **Next step** | Task 14: Reconciliation, Weight Settings |
+| **Waiting on** | Review of Task 14 |
+| **Next step** | Task 15: Tools, Rate Card |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 14, Weight settings
+
+`/reconciliation/weight-settings` keeps a merchant's package presets: name, size, weight and one default, with a live chargeable-weight preview in the form. The backend has no route, so the data is sample, and gateway mode shows it as unavailable.
+
+### Done
+
+- New `src/lib/volumetric.ts`: `VOLUMETRIC_DIVISOR` (5000), `volumetricWeightKg` and `chargeableWeightKg`, to 2 decimals. Sizes are scaled to whole thousandths of a cm3 and the result is rounded once, in whole hundredths of a kilo, so there is no floating-point drift. The Rate Calculator (Task 16) will use it.
+- New `src/lib/data/weight-settings/` (types, input, mock, gateway, index, tests). `weightSettingsService()` follows `DATA_SOURCE_WEIGHT_SETTINGS`.
+- Rules, checked on the server in the action and again in the mock service: name 1 to 40 characters after trimming; size 1 to 500 cm; weight 0.1 to 1000 kg; at most 20 presets; exactly one default.
+- Default rule: the first preset is always the default. Saving a preset as default moves the default to it. The default cannot be turned off, and cannot be deleted, while other presets exist. The last preset can be deleted. The page text, the form and the delete dialog all say so.
+- Page: a table on desktop and cards on phones, with Edit and Delete. Add and Edit open one form dialog. Delete asks first in the shared `Dialog`. At 20 presets, Add is disabled with a message.
+- Sample: 4 presets, one with a 40-character name. The mock is built by `createMockWeightSettingsService()`, so unit tests use their own store.
+- Server actions `savePresetAction` and `deletePresetAction` check the session first.
+- Sidebar Weight Settings is live. Route added to `e2e/routes.ts`. `DATA_SOURCE_WEIGHT_SETTINGS` is on the port 3106 server and in `.env.example`.
+
+### Files changed
+
+- New: `src/lib/volumetric.ts` and test, `src/lib/data/weight-settings/*`, `src/app/(app)/reconciliation/weight-settings/{page,loading,package-presets,preset-form-dialog,actions}.tsx|ts` and `actions.test.ts`, `e2e/weight-settings.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts}`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: modules missing. Browser: every weight settings test failed, the page did not exist |
+| D1 lint, typecheck, unit tests | 0 errors, 44 files, 428 tests passed |
+| D2 full browser run | 705 passed, 42 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route 200 with an h1, including `/reconciliation/weight-settings`. BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed. No cut-off or sideways scroll |
+| D5 palette, D6 secrets and brand | No output |
+| D7 backend | Clean, aace603 |
+
+### Decisions
+
+- Dimensions may have decimals, as B2B boxes do.
+- Mutating browser tests create their own preset and delete it again. The one test that moves the default runs on desktop only, because the sample store is shared. The 20-preset limit is a unit test of the mock service.
+- This screen has no filter and its URL takes no parameters, so there is no filtered empty-state browser test. The empty message exists in the page and is not shown by any browser test, because the shared store cannot be emptied safely. The bad URL test opens `?page=abc`, `?page=-1`, `?status=FOO` and a 300-character `q` and expects the list.
+
+### Not verified
+
+- The empty state in a browser.
 
 ## 2026-11-10: Task 13, Weight discrepancies
 
