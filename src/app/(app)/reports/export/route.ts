@@ -6,8 +6,15 @@ import { ndrService } from '@/lib/data/ndr';
 import { ordersService, type OrderSummary } from '@/lib/data/orders';
 import type { DataResult, DataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
-import { DEBIT_TYPES } from '@/lib/data/wallet/filters';
 import type { WalletTransaction } from '@/lib/data/wallet/types';
+import {
+  ORDER_PAGE_SIZE,
+  TRUNCATED_NOTICE,
+  mergeCapped,
+  pageThrough,
+  walletRow,
+  type Capped,
+} from '@/lib/report-rows';
 import { formatDate, formatDateTime, indianDay } from '@/lib/format/date';
 import { statusLabel } from '@/lib/format/status';
 import {
@@ -18,11 +25,9 @@ import {
 } from '@/lib/reports';
 
 const SAMPLE_NOTICE = '# Sample data';
-const ORDER_PAGE_SIZE = 100;
-const MAX_ORDER_PAGES = 10;
 const MAX_WALLET_PAGES = 100;
 
-type Built = DataResult<string[][]>;
+type Built = DataResult<string[][]> & { truncated?: boolean };
 type Range = Pick<ReportRequest, 'from' | 'to'>;
 
 const inRange = (moment: string, { from, to }: Range) => {
@@ -30,21 +35,15 @@ const inRange = (moment: string, { from, to }: Range) => {
   return day >= from && day <= to;
 };
 
-/** Up to 10 pages of 100, stopping early when a page is short or the total is reached. */
-async function listOrders(range: Range, status?: string): Promise<DataResult<OrderSummary[]>> {
+/** Orders in range, up to the row cap. Truncated when more orders exist than were read. */
+async function listOrders(range: Range, status?: string): Promise<DataResult<Capped<OrderSummary>>> {
   const service = ordersService();
-  const items: OrderSummary[] = [];
-  let source: DataSource = 'mock';
-
-  for (let page = 1; page <= MAX_ORDER_PAGES; page += 1) {
-    const result = await service.listOrders({ status, from: range.from, page, limit: ORDER_PAGE_SIZE });
-    if (!result.ok) return result;
-    source = result.source;
-    items.push(...result.data.items);
-    if (result.data.items.length < ORDER_PAGE_SIZE || items.length >= result.data.total) break;
-  }
-
-  return { ok: true, source, data: items.filter((item) => inRange(item.created_at, range)) };
+  const result = await pageThrough((page) =>
+    service.listOrders({ status, from: range.from, page, limit: ORDER_PAGE_SIZE }),
+  );
+  if (!result.ok) return result;
+  const items = result.data.items.filter((item) => inRange(item.created_at, range));
+  return { ...result, data: { ...result.data, items } };
 }
 
 const orderRow = (item: OrderSummary) => [
@@ -58,7 +57,8 @@ const orderRow = (item: OrderSummary) => [
 
 async function shipmentRows(range: Range): Promise<Built> {
   const result = await listOrders(range);
-  return result.ok ? { ...result, data: result.data.map(orderRow) } : result;
+  if (!result.ok) return result;
+  return { ...result, data: result.data.items.map(orderRow), truncated: result.data.truncated };
 }
 
 async function rtoRows(range: Range): Promise<Built> {
@@ -66,10 +66,10 @@ async function rtoRows(range: Range): Promise<Built> {
   if (!started.ok) return started;
   const back = await listOrders(range, 'RTO_DELIVERED');
   if (!back.ok) return back;
-  const items = [...started.data, ...back.data].sort((a, b) =>
+  const merged = mergeCapped([started.data, back.data], (a, b) =>
     b.created_at.localeCompare(a.created_at),
   );
-  return { ok: true, source: back.source, data: items.map(orderRow) };
+  return { ok: true, source: back.source, data: merged.items.map(orderRow), truncated: merged.truncated };
 }
 
 async function ndrRows(range: Range): Promise<Built> {
@@ -118,16 +118,6 @@ async function codRows(range: Range): Promise<Built> {
       ]),
   };
 }
-
-const walletRow = (entry: WalletTransaction) => [
-  formatDateTime(entry.occurredAt),
-  entry.direction === 'credit' ? 'Credit' : 'Debit',
-  entry.debitType
-    ? `${entry.title} (${DEBIT_TYPES.find(({ value }) => value === entry.debitType)?.label ?? entry.debitType})`
-    : entry.title,
-  entry.orderRef ?? '',
-  csvRupees(entry.direction === 'credit' ? entry.amountPaise : -entry.amountPaise),
-];
 
 async function walletRows(range: Range): Promise<Built> {
   const service = walletService();
@@ -178,6 +168,7 @@ export async function GET(request: NextRequest) {
     reportColumns(report.type),
     result.data,
     result.source === 'mock' ? SAMPLE_NOTICE : undefined,
+    result.truncated ? TRUNCATED_NOTICE : undefined,
   );
 
   return new Response(csv, {

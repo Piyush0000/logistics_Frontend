@@ -90,6 +90,18 @@ test.describe('reports', () => {
     }
   });
 
+  test('writes wallet debits as plain negative numbers', async ({ page }) => {
+    const response = await page.request.get('/reports/export?type=wallet&from=2026-10-01&to=2026-10-31');
+    const rows = (await response.text()).split('\r\n').slice(2).filter(Boolean);
+    const debits = rows.filter((row) => row.includes(',Debit,'));
+
+    expect(debits.length).toBeGreaterThan(0);
+    for (const row of debits) {
+      expect(row).toMatch(/,-\d+\.\d{2}$/);
+      expect(row).not.toContain("'-");
+    }
+  });
+
   test('keeps only rows inside the date range', async ({ page }) => {
     const response = await page.request.get(
       '/reports/export?type=shipments&from=2026-10-23&to=2026-10-23',
