@@ -64,7 +64,7 @@ export const NAV: NavGroup[] = [
     children: [
       { label: 'All Shipments', href: '/orders', status: 'live', icon: Package },
       { label: 'B2C Shipments', href: '/orders/b2c', status: 'live', icon: UserRound },
-      { label: 'B2B Shipments', href: '/orders/b2b', status: 'planned', icon: Building2 },
+      { label: 'B2B Shipments', href: '/orders/b2b', status: 'live', icon: Building2 },
       { label: 'Create Shipment', href: '/orders/create', status: 'live', icon: PackagePlus },
       { label: 'Bulk Upload', href: '/orders/bulk', status: 'planned', icon: Upload },
       { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'planned', icon: Truck },

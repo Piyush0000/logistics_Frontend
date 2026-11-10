@@ -1,0 +1,15 @@
+const BLOCKS = ['h-16', 'h-12', 'h-96'];
+
+export default function B2bLoading() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading B2B shipments"
+      className="grid gap-4 p-4 lg:gap-5 lg:p-8 lg:pl-28"
+    >
+      {BLOCKS.map((height, index) => (
+        <div key={index} className={`${height} animate-pulse rounded-card bg-muted`} />
+      ))}
+    </div>
+  );
+}

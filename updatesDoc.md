@@ -6,11 +6,48 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 5 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 6 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 5 |
-| **Next step** | Task 6: B2B Shipments |
+| **Waiting on** | Review of Task 6 |
+| **Next step** | Task 7: Bulk Upload |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 6, B2B Shipments
+
+`/orders/b2b` lists multi-box business shipments and has a Create B2B shipment dialog. The backend has no B2B route, so the data is sample, and gateway mode shows it as unavailable.
+
+### Done
+
+- List with LR number, Consignee, Destination, Boxes, Total weight, Invoice value, Carrier, Status and Created. Table on desktop, cards on phones, search by LR number or consignee, 20 per page, and the empty message "No B2B shipments yet."
+- Create dialog: consignee address checked with `AddressSchema`, a saved pickup address select, 1 to 50 box rows, a live total weight, invoice number and value, and the e-way bill note above ₹50,000. The server action checks the session first, then the input, then that the pickup address is one of the saved ones.
+- Per ruling R5, the pickup-addresses data layer now exists (`src/lib/data/pickup-addresses/`): two sample addresses, `save` and `remove` with the label, 25-address and one-default rules, and a gateway service that is `notAvailable()`. Task 27 builds its screen.
+- `DATA_SOURCE_B2B` and `DATA_SOURCE_PICKUP_ADDRESSES` are in `.env.example` and the port 3106 test server.
+- B2B Shipments is live in the sidebar and `/orders/b2b` is in `e2e/routes.ts`.
+- The create button is hidden in gateway mode, so nothing can be created against an unavailable service.
+
+### Files changed
+
+- New: `src/app/(app)/orders/b2b/` (`page.tsx`, `loading.tsx`, `b2b-table.tsx`, `b2b-cards.tsx`, `create-b2b-dialog.tsx`, `actions.ts`, `actions.test.ts`); `src/lib/data/b2b/` (types, totals, input, mock, gateway, index, test); `src/lib/data/pickup-addresses/` (types, mock, gateway, index, test); `e2e/b2b.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 267 passed |
+| D2 full browser run | 490 passed, 28 skipped (single-size tests), 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route HTTP 200 with an h1, BROWSER ERRORS: none |
+| D4 screenshots (desktop, phone, 320px) | Reviewed /orders/b2b: table and cards align, the long name wraps, the large invoice stays on one line. The open dialog was not screenshotted |
+| D5 palette check | No output |
+| D6 secret check | Nothing in `.next/static` |
+| D7 backend | status clean, HEAD aace603 |
+
+### Decisions and not verified
+
+- Saving the current default address as non-default keeps it default, so there is always exactly one.
+- Deleting the only remaining address is allowed, because the rule only blocks deleting the default while others exist.
+- The first B2B run in a shared server has desktop and phone sharing one sample store, so tests use unique names.
+- The dialog is covered by browser tests, not by a screenshot review.
 
 ## 2026-11-10: Task 5, B2C Shipments
 

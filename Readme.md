@@ -84,6 +84,8 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | KPI cards, NDR | `DATA_SOURCE_OVERVIEW` | No |
 | Wallet balance and transactions | `DATA_SOURCE_WALLET` | No |
 | Home setup checklist | `DATA_SOURCE_ONBOARDING` | No |
+| B2B shipments | `DATA_SOURCE_B2B` | No |
+| Saved pickup addresses | `DATA_SOURCE_PICKUP_ADDRESSES` | No |
 | COD remittance | `DATA_SOURCE_COD` | No |
 
 In sample mode, AWB search knows `DEMOEK001` and `DEMODL002`.
@@ -107,6 +109,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
 | B2C Shipments, at `/orders/b2c` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 5 | The All Shipments list, scoped to single-parcel shipments. Sample by default; uses the gateway list when set (every gateway shipment is single-parcel) | Done. In the sidebar under Shipping Management |
+| B2B Shipments, at `/orders/b2b` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 6 | Sample only, as the gateway has no B2B route; gateway mode shows it as unavailable. The create dialog offers saved pickup addresses (sample) | Done. In the sidebar under Shipping Management |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.

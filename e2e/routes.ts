@@ -10,6 +10,7 @@ export const APP_ROUTES = [
   '/dashboard',
   '/orders',
   '/orders/b2c',
+  '/orders/b2b',
   '/orders/create',
   '/orders/DEMOEK001',
   '/ndr',

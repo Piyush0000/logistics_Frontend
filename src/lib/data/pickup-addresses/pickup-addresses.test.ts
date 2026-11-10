@@ -1,0 +1,92 @@
+import { AddressSchema } from '@logicore/contracts';
+import { describe, expect, it } from 'vitest';
+import { gatewayPickupAddressService } from './gateway';
+import { pickupAddressService } from './index';
+import { mockPickupAddressService as mock } from './mock';
+
+const address = {
+  name: 'Depot',
+  phone: '9822000000',
+  line1: '1 Test Road',
+  city: 'Pune',
+  state: 'Maharashtra',
+  country: 'IN',
+  pincode: '411001',
+};
+
+async function all() {
+  const result = await mock.list();
+  if (!result.ok) throw new Error('list failed');
+  return result.data;
+}
+
+describe('mock pickup addresses', () => {
+  it('lists two valid sample addresses with exactly one default', async () => {
+    const list = await all();
+    expect(list).toHaveLength(2);
+    expect(list.filter((entry) => entry.isDefault)).toHaveLength(1);
+    for (const entry of list) expect(AddressSchema.safeParse(entry.address).success).toBe(true);
+  });
+
+  it('refuses to delete the default while others exist', async () => {
+    const list = await all();
+    const result = await mock.remove(list.find((entry) => entry.isDefault)!.id);
+    expect(result.ok).toBe(false);
+    expect(await all()).toHaveLength(2);
+  });
+
+  it('rejects a bad label or address', async () => {
+    for (const label of ['', '   ', 'x'.repeat(41)]) {
+      expect((await mock.save({ label, address, isDefault: false })).ok).toBe(false);
+    }
+    const bad = { ...address, pincode: '012345' };
+    expect((await mock.save({ label: 'Bad', address: bad, isDefault: false })).ok).toBe(false);
+  });
+
+  it('moves the default when another address is made default, then allows deleting the old one', async () => {
+    const saved = await mock.save({ label: 'Pune depot', address, isDefault: true });
+    expect(saved.ok).toBe(true);
+    if (!saved.ok) return;
+    const list = await all();
+    expect(list.filter((entry) => entry.isDefault).map((entry) => entry.id)).toEqual([saved.data.id]);
+    expect((await mock.remove('pa-001')).ok).toBe(true);
+    expect((await mock.remove(saved.data.id)).ok).toBe(false);
+  });
+
+  it('refuses a 26th address and keeps one default', async () => {
+    let list = await all();
+    for (let i = list.length; i < 25; i++) {
+      expect((await mock.save({ label: `Extra ${i}`, address, isDefault: false })).ok).toBe(true);
+    }
+    const refused = await mock.save({ label: 'One too many', address, isDefault: false });
+    expect(refused.ok).toBe(false);
+    list = await all();
+    expect(list).toHaveLength(25);
+    expect(list.filter((entry) => entry.isDefault)).toHaveLength(1);
+  });
+});
+
+describe('gateway pickup addresses', () => {
+  it('reports every method as unavailable', async () => {
+    const expected = {
+      ok: false,
+      source: 'gateway',
+      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+    };
+    expect(await gatewayPickupAddressService.list()).toEqual(expected);
+    expect(
+      await gatewayPickupAddressService.save({ label: 'x', address, isDefault: false }),
+    ).toEqual(expected);
+    expect(await gatewayPickupAddressService.remove('pa-001')).toEqual(expected);
+  });
+
+  it('picks the source from DATA_SOURCE_PICKUP_ADDRESSES', () => {
+    expect(pickupAddressService()).toBe(mock);
+    process.env.DATA_SOURCE_PICKUP_ADDRESSES = 'gateway';
+    try {
+      expect(pickupAddressService()).toBe(gatewayPickupAddressService);
+    } finally {
+      delete process.env.DATA_SOURCE_PICKUP_ADDRESSES;
+    }
+  });
+});

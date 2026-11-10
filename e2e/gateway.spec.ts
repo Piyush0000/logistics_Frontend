@@ -313,3 +313,18 @@ test.describe('B2C shipments with the gateway down', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'B2C Shipments' })).toBeVisible();
   });
 });
+
+test.describe('B2B with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows B2B as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2b', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('b2b-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Create B2B shipment' })).toHaveCount(0);
+  });
+});
