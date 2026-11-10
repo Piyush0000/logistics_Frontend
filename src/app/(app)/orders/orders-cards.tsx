@@ -20,11 +20,11 @@ export function OrdersCards({ orders }: OrdersCardsProps) {
           className="flex min-h-[44px] flex-col gap-2.5 rounded-card border border-secondary bg-surface p-4 transition-all hover:border-primary active:bg-tertiary"
         >
           <div className="flex items-start justify-between gap-2">
-            <div>
-              <span className="font-mono text-sm font-bold text-primary">
+            <div className="min-w-0">
+              <span className="font-mono text-sm font-bold [overflow-wrap:anywhere] text-primary">
                 {order.awb}
               </span>
-              <div className="text-xs text-on-surface/60">
+              <div className="text-xs text-on-surface/60 [overflow-wrap:anywhere]">
                 Ref: {order.reference_id || 'N/A'}
               </div>
             </div>

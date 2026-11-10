@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { BULK_COLUMNS } from '../src/lib/bulk-shipments';
 import { signIn } from './helpers';
 
 test.describe('with the gateway answering', () => {
@@ -326,5 +327,36 @@ test.describe('B2B with no route', () => {
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(card.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Create B2B shipment' })).toHaveCount(0);
+  });
+});
+
+test.describe('bulk upload with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows the booking-unavailable message per row', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/bulk');
+    const head = 'Central Hub,9876543210,42 Industrial Road,Bengaluru,Karnataka,560100';
+    await page.getByLabel('Shipment file').setInputFiles({
+      name: 'shipments.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        [
+          BULK_COLUMNS.join(','),
+          `${head},Aditi Rao,9988776655,Flat 302,,Bengaluru,Karnataka,560103,1.2,25,15,10,Keyboard,1,3499,PREPAID,0,GW-1,`,
+          `${head},Ravi Kumar,9988776656,Flat 9,,Pune,Maharashtra,411001,1,20,15,10,Mouse,1,499,PREPAID,0,GW-2,`,
+        ].join('\r\n'),
+      ),
+    });
+    await expect(page.getByText('Sample data')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Submit 2 valid rows' }).click();
+
+    const message =
+      'Booking is not available yet: Shipment creation is disabled until merchant authentication is configured';
+    const results = page.getByTestId('bulk-result');
+    await expect(results).toHaveCount(2);
+    await expect(results.nth(0)).toContainText(message);
+    await expect(results.nth(1)).toContainText(message);
+    await expect(page.getByText('0 booked, 2 not booked')).toBeVisible();
   });
 });

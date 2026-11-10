@@ -37,7 +37,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                 >
                   {order.awb}
                 </Link>
-                <div className="text-xs text-on-surface/60">
+                <div className="text-xs text-on-surface/60 [overflow-wrap:anywhere]">
                   Ref: {order.reference_id || 'N/A'}
                 </div>
               </td>

@@ -6,11 +6,53 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 6 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 7 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 6 |
-| **Next step** | Task 7: Bulk Upload |
+| **Waiting on** | Review of Task 7 |
+| **Next step** | Task 8: Pickups & Manifests |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 7, Bulk Upload
+
+`/orders/bulk` lets a merchant upload a CSV of shipments, preview the valid and invalid rows, and book the valid ones through the same create path as Create Shipment.
+
+### Done
+
+- Template download, a `.csv` file field (up to 1 MB, 200 rows), a preview of every row with each error ("Line 3: destination pincode is invalid"), and Submit valid rows. Table on desktop, cards on phones.
+- Rows book one at a time, in file order, with "Booking 3 of 12" progress. A failed row never stops the rest. The results show Booked with the AWB (or "AWB pending"), or Not booked with the reason.
+- In gateway mode the stand-in answers 503, and every row shows "Booking is not available yet: Shipment creation is disabled until merchant authentication is configured". That wording now lives in one place, `bookingErrorMessage`, and Create Shipment uses it too.
+- Per the controller's ruling, the browser only reads the file text. `previewBulkAction` runs on the server: it checks the session, enforces 1 MB, works out the SHA-256 key with `node:crypto` and parses the file. `crypto.subtle` is not used, because it only exists on secure origins. Each row's key is `bulk-<sha256>-<line>`, so the same file never double-books.
+- `submitBulkAction` checks the session, then checks every row again with `StandardShipmentRequestSchema` and refuses bad rows one by one. It drops any `merchant_id` the browser sends.
+- The template `public/samples/bulk-shipments-template.csv` has the `BULK_COLUMNS` header and one valid row. A unit test parses it, so the template and the parser cannot drift apart.
+- Bulk Upload is live in the sidebar and `/orders/bulk` is in `e2e/routes.ts`.
+
+### Found and fixed
+
+- A 60-character reference ID (the schema allows 64) made All Shipments and B2C scroll sideways at 320px. The reference and AWB now wrap in `orders-table.tsx` and `orders-cards.tsx`. The Bulk Upload long-value test books such a row and checks `/orders` at 320px and 1024px.
+
+### Files changed
+
+- New: `src/app/(app)/orders/bulk/` (`page.tsx`, `loading.tsx`, `upload-form.tsx`, `row-results.tsx`, `actions.ts`, `actions.test.ts`); `src/lib/bulk-shipments.ts` and its test; `src/lib/data/orders/booking-message.ts`; `public/samples/bulk-shipments-template.csv`; `e2e/bulk.spec.ts`
+- Changed: `src/app/(app)/orders/actions.ts` (uses the shared message), `src/app/(app)/orders/orders-table.tsx` and `orders-cards.tsx` (wrapping), `src/components/shell/nav-config.ts`, `e2e/routes.ts`, `e2e/gateway.spec.ts`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 289 passed |
+| D2 full browser run | 520 passed, 29 skipped (single-size tests), 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route HTTP 200 with an h1, including /orders/bulk. BROWSER ERRORS: none |
+| D4 screenshots | Reviewed the empty page (desktop, phone, 320px) and the preview and results states (desktop and 360px). Table and cards align, errors wrap, nothing is cut off |
+| D5 palette check | No output |
+| D6 secret and brand check | No output from either grep |
+| D7 backend check | `status --porcelain` empty, HEAD `aace603` |
+
+### Decisions and not verified
+
+- `submitBulkAction` takes `{ line, input }` rows, not bare requests, so each result can name its line.
+- Line numbers count file records, with the header as line 1. A quoted cell that contains a line break would shift later numbers.
+- A file near 1 MB may exceed Next.js's default 1 MB server action body limit. The screen then says "Could not read the file. Please try again." The 1 MB check itself is tested with a file just over the limit.
+- Not verified: a real booking, because the gateway answers 503 until merchant authentication exists.
 
 ## 2026-11-10: Task 6, B2B Shipments
 

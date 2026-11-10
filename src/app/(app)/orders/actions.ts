@@ -4,6 +4,7 @@ import { StandardShipmentRequestSchema } from '@logicore/contracts';
 import { redirect } from 'next/navigation';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
+import { bookingErrorMessage } from '@/lib/data/orders/booking-message';
 
 export interface CreateShipmentFormState {
   ok: boolean;
@@ -89,12 +90,7 @@ export async function createShipmentAction(
 
   const result = await ordersService().createShipment(parsed.data);
   if (!result.ok) {
-    const message = result.error.message || "Failed to create shipment";
-    return {
-      ok: false,
-      message: result.error.kind === "unavailable" ? `Booking is not available yet: ${message}` : message,
-      values,
-    };
+    return { ok: false, message: bookingErrorMessage(result.error), values };
   }
 
   return {

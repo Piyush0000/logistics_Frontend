@@ -62,6 +62,7 @@ Many backend features aren't available through the gateway yet. Screens use real
 | `src/components/ui/` | Shared screen parts: page header, data card, empty state, stat tile, pagination, dialog and form fields |
 | `src/lib/url-params.ts` | Safe parsing of `page`, `limit`, enum and text URL parameters |
 | `src/lib/csv.ts` | CSV building for downloads |
+| `src/lib/bulk-shipments.ts` | Reads the Bulk Upload CSV into shipment requests. `public/samples/bulk-shipments-template.csv` is its template |
 | `src/lib/format/` | Money, date, status and user name formatting |
 | `src/lib/gateway/` | Server-only gateway client, and the mapping of all backend errors to one `ApiError` |
 | `src/lib/data/` | Data source selection, and one folder per feature as screens are built |
@@ -110,6 +111,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
 | B2C Shipments, at `/orders/b2c` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 5 | The All Shipments list, scoped to single-parcel shipments. Sample by default; uses the gateway list when set (every gateway shipment is single-parcel) | Done. In the sidebar under Shipping Management |
 | B2B Shipments, at `/orders/b2b` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 6 | Sample only, as the gateway has no B2B route; gateway mode shows it as unavailable. The create dialog offers saved pickup addresses (sample) | Done. In the sidebar under Shipping Management |
+| Bulk Upload, at `/orders/bulk` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 7 | Books each valid CSV row through the same path as Create Shipment (`DATA_SOURCE_ORDERS`): sample store by default; in gateway mode every row shows the booking-not-available message | Done. In the sidebar under Shipping Management |
 | Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Linked from Settings once Task 24 builds it |
 
 Further screens are added one at a time, as directed.

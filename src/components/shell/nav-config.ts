@@ -66,7 +66,7 @@ export const NAV: NavGroup[] = [
       { label: 'B2C Shipments', href: '/orders/b2c', status: 'live', icon: UserRound },
       { label: 'B2B Shipments', href: '/orders/b2b', status: 'live', icon: Building2 },
       { label: 'Create Shipment', href: '/orders/create', status: 'live', icon: PackagePlus },
-      { label: 'Bulk Upload', href: '/orders/bulk', status: 'planned', icon: Upload },
+      { label: 'Bulk Upload', href: '/orders/bulk', status: 'live', icon: Upload },
       { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'planned', icon: Truck },
     ],
   },
