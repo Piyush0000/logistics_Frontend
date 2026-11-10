@@ -6,11 +6,48 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 18 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 19 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 18 |
-| **Next step** | Task 19: Reports |
+| **Waiting on** | Review of Task 19 |
+| **Next step** | Task 20: Dashboard tabs |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 19, Reports
+
+`/reports` lets a merchant pick a date range and download one of five CSV reports.
+
+### Done
+
+- `src/lib/reports.ts`: `validateReport` (YYYY-MM-DD, to on or after from, at most 92 days inclusive, known type), `defaultReportRange` (last 30 days in Indian time), `reportColumns`, file name and link helpers.
+- `GET /reports/export?type&from&to`: session check (401), validation (400), then the CSV built with `src/lib/csv.ts`. The filename uses validated values only. A mock source starts the CSV with `# Sample data`. A failed source answers 503 with its own message.
+- Shipments and RTO page through the orders list (up to 10 pages of 100). RTO joins RTO_INITIATED and RTO_DELIVERED. NDR, COD and wallet use their services. Rows are filtered to the range by Indian day.
+- The page has From and To date fields, a range error, and five cards each with Download. `?from=&to=` prefill the dates; bad values fall back to the default.
+- Reports is live in the sidebar and in `e2e/routes.ts`.
+
+### Files changed
+
+- New: `src/lib/reports.ts`, `src/lib/reports.test.ts`, `src/app/(app)/reports/*`, `e2e/reports.spec.ts`
+- Changed: `src/components/shell/nav-config.ts`, `e2e/routes.ts`, `e2e/gateway.spec.ts`, `e2e/dashboard.spec.ts`, `Readme.md`, `updatesDoc.md`
+- `e2e/dashboard.spec.ts` line 112 asserted Reports was a disabled button. It now checks Settings, which is still planned. The intent is unchanged.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Browser: 13 reports tests failed before the route existed. Unit: with the limit set to 93, `rejects a 93-day range` failed |
+| Reports spec, desktop and phone | 25 passed, 1 skipped (phone-only) |
+| Gateway project | 51 passed, including 4 new reports tests |
+| D1 lint, typecheck, unit tests | 0 errors, 49 files, 485 tests passed |
+| D2 full browser run | 819 passed, 48 skipped, 2 failed on the old Reports-disabled assertion. After the one-line fix that test passes on both projects. The full run was not repeated |
+| D3 dev smoke | Every route HTTP 200, BROWSER ERRORS: none |
+| D4 screenshots | Desktop, phone and 320px reviewed: no cut-off text, cards stack cleanly |
+| D5 palette, D6 secrets and brand | No output |
+| D7 backend | Clean, HEAD aace603 |
+
+### Not verified
+
+- A download of more than 1,000 shipments is cut at 10 pages of 100, with no notice in the file.
+- Tests rely on mock dates in October 2026, so they use explicit ranges.
 
 ## 2026-11-11: Fix, flaky weight settings test
 

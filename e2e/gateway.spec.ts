@@ -680,3 +680,58 @@ test.describe('public tracking with the gateway down', () => {
     await expect(page.getByText('Sample data')).toBeHidden();
   });
 });
+
+test.describe('reports with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  const RANGE = 'from=2026-10-01&to=2026-10-31';
+
+  test('downloads gateway shipments', async ({ page }) => {
+    await signIn(page);
+
+    const response = await page.request.get(`/reports/export?type=shipments&${RANGE}`);
+    const text = await response.text();
+
+    expect(response.status()).toBe(200);
+    expect(text.split('\r\n')[0]).toBe('Reference,AWB,Courier,Status,Created,Last Update');
+    expect(text).toContain('LIVE123');
+    expect(text).not.toContain('# Sample data');
+  });
+
+  test('combines both RTO stages', async ({ page }) => {
+    await signIn(page);
+
+    const text = await (await page.request.get(`/reports/export?type=rto&${RANGE}`)).text();
+
+    expect(text).toContain('LIVE301');
+    expect(text).toContain('LIVE302');
+  });
+});
+
+test.describe('reports with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('returns 503 with a plain message for shipments', async ({ page }) => {
+    await signIn(page);
+
+    const response = await page.request.get('/reports/export?type=shipments&from=2026-10-01&to=2026-10-31');
+
+    expect(response.status()).toBe(503);
+    expect(await response.text()).toBe('Could not reach the server. Please try again.');
+  });
+});
+
+test.describe('reports with no COD, wallet or NDR route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('returns 503 for COD in gateway mode', async ({ page }) => {
+    await signIn(page);
+
+    for (const type of ['cod', 'wallet', 'ndr']) {
+      const response = await page.request.get(`/reports/export?type=${type}&from=2026-10-01&to=2026-10-31`);
+
+      expect(response.status(), type).toBe(503);
+      expect(await response.text(), type).toBe('This data is not available yet.');
+    }
+  });
+});

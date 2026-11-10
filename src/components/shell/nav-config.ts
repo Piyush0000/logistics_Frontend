@@ -116,7 +116,7 @@ export const NAV: NavGroup[] = [
       { label: 'Order Tracking', href: '/tools/tracking', status: 'live', icon: MapPinned },
     ],
   },
-  { label: 'Reports', icon: FileChartColumn, href: '/reports', status: 'planned' },
+  { label: 'Reports', icon: FileChartColumn, href: '/reports', status: 'live' },
   {
     label: 'Settings',
     icon: Settings,

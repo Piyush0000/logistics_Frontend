@@ -29,6 +29,7 @@ export const APP_ROUTES = [
   '/tools/rate-calculator',
   '/tools/tracking',
   '/tools/tracking?awb=DEMOEK001',
+  '/reports',
   '/channel-integrations',
 ] as const;
 
