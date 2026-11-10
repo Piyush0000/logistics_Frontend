@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { gatewayNdrService } from './gateway';
 import { ndrService } from './index';
 import { mockNdrService } from './mock';
 
@@ -59,9 +60,25 @@ describe('mockNdrService', () => {
   });
 });
 
+describe('gatewayNdrService', () => {
+  const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
+
+  it('reports the dashboard as unavailable', async () => {
+    expect(await gatewayNdrService.getNdrDashboard()).toMatchObject(unavailable);
+  });
+
+  it('refuses to take an action', async () => {
+    const result = await gatewayNdrService.takeNdrAction({ ndr_id: 'x', action: 'RTO' });
+    expect(result).toMatchObject(unavailable);
+  });
+});
+
 describe('ndrService resolution', () => {
-  it('defaults to mock service', () => {
-    const service = ndrService();
-    expect(service).toBe(mockNdrService);
+  it('ndrService uses mock by default and gateway when set', () => {
+    delete process.env.DATA_SOURCE_NDR;
+    expect(ndrService()).toBe(mockNdrService);
+    process.env.DATA_SOURCE_NDR = 'gateway';
+    expect(ndrService()).toBe(gatewayNdrService);
+    delete process.env.DATA_SOURCE_NDR;
   });
 });

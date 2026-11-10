@@ -6,11 +6,9 @@ import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { ndrService } from '@/lib/data/ndr';
-import { notAvailable } from '@/lib/data/not-available';
 import { onboardingService } from '@/lib/data/onboarding';
 import { ordersService } from '@/lib/data/orders';
 import { shipmentService } from '@/lib/data/shipments';
-import { resolveDataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import { formatPaise } from '@/lib/format/money';
 import { userLabel } from '@/lib/format/user';
@@ -28,8 +26,7 @@ export default async function HomePage() {
   const [wallet, summary, ndr, checklist, recent] = await Promise.all([
     walletService().getBalance(),
     shipmentService().getSummary(),
-    // The backend has no NDR route, so in gateway mode this must not pass sample data as real.
-    resolveDataSource('ndr') === 'gateway' ? notAvailable() : ndrService().getNdrDashboard(),
+    ndrService().getNdrDashboard(),
     onboardingService().getChecklist(),
     ordersService().listOrders({ page: 1, limit: 5 }),
   ]);

@@ -416,3 +416,20 @@ test.describe('pickups with no route', () => {
     await expect(page.getByTestId('sample-manifest')).toHaveCount(0);
   });
 });
+
+test.describe('NDR with no route', () => {
+  test.use({ baseURL: 'http://localhost:3106' });
+
+  test('shows NDR as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/ndr', { waitUntil: 'networkidle' });
+
+    for (const id of ['ndr-kpis', 'ndr-list']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: /Reattempt|RTO/ })).toHaveCount(0);
+  });
+});

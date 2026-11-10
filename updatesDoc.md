@@ -6,11 +6,45 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 8 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 9 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 8 |
-| **Next step** | Task 9: NDR connection |
+| **Waiting on** | Review of Task 9 |
+| **Next step** | Task 10: RTO |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 9, Connect NDR
+
+`ndrService()` now follows `DATA_SOURCE_NDR`. In gateway mode the NDR screen, its actions and the Home tile show "This data is not available yet." The backend has no NDR route.
+
+### Done
+
+- New `src/lib/data/ndr/gateway.ts`: both methods return `notAvailable()`. `index.ts` picks it with `resolveDataSource('ndr')`.
+- `/ndr` shows two cards (`ndr-kpis`, `ndr-list`) through `DataCard` when the result fails, with Try again. The Sample data label shows only for mock data. In gateway mode no action buttons render, so the modal cannot open.
+- The NDR server action calls the service, so in gateway mode it returns the unavailable message and never reaches the mock. Pinned by a new unit test.
+- Removed the Task 3 workaround in `home/page.tsx`. Home calls `ndrService().getNdrDashboard()`, and the existing port 3106 Home test still passes.
+- `.env.example` comment for `DATA_SOURCE_NDR` updated.
+
+### Files changed
+
+- New: `src/lib/data/ndr/gateway.ts`, `src/app/(app)/ndr/actions.test.ts`
+- Changed: `src/lib/data/ndr/index.ts`, `src/lib/data/ndr/ndr.test.ts`, `src/app/(app)/ndr/page.tsx`, `src/app/(app)/home/page.tsx`, `e2e/gateway.spec.ts`, `.env.example`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Unit: gateway import missing, action test failed. Browser (port 3106): `ndr-kpis` unavailable text not found |
+| D1 lint, typecheck, unit tests | 0 errors, 0 warnings, 322 passed |
+| D2 full browser run | 566 passed, 32 skipped, 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | Every route 200 with an h1. BROWSER ERRORS: none |
+| D4 screenshots | Reviewed `/ndr` phone image in mock mode, unchanged. Gateway view covered by the browser test |
+| D5 palette check | No output |
+| D6 secret and brand check | No output |
+| D7 backend check | `status --porcelain` empty, HEAD `aace603` |
+
+### Not verified
+
+- A screenshot of the gateway-mode NDR page.
 
 ## 2026-11-10: Task 8, Pickups & Manifests
 

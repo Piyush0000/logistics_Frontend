@@ -82,7 +82,8 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | AWB search and shipment timeline | `DATA_SOURCE_TRACKING` | Yes, needs tracking-engine |
 | Webhooks and delivery history | `DATA_SOURCE_WEBHOOKS` | Yes, needs the webhooks service and Postgres |
 | Sign-in | `DATA_SOURCE_SESSION` | No |
-| KPI cards, NDR | `DATA_SOURCE_OVERVIEW` | No |
+| KPI cards | `DATA_SOURCE_OVERVIEW` | No |
+| NDR (screen, actions, Home tile) | `DATA_SOURCE_NDR` | No. Gateway shows it as unavailable |
 | Wallet balance and transactions | `DATA_SOURCE_WALLET` | No |
 | Home setup checklist | `DATA_SOURCE_ONBOARDING` | No |
 | B2B shipments | `DATA_SOURCE_B2B` | No |
@@ -107,7 +108,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
 | Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main |
-| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today); facts on the detail page and NDR are sample data | Merged to main |
+| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today); facts on the detail page are sample data; NDR is sample data, or unavailable in gateway mode (Task 9) | Merged to main |
 | Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Merged to main. In the sidebar under Billings |
 | COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
 | B2C Shipments, at `/orders/b2c` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 5 | The All Shipments list, scoped to single-parcel shipments. Sample by default; uses the gateway list when set (every gateway shipment is single-parcel) | Done. In the sidebar under Shipping Management |

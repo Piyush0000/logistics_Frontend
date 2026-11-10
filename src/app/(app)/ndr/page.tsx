@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
+import { DataCard } from '@/components/ui/data-card';
 import { getDemoSession } from '@/lib/auth/session';
 import { ndrService } from '@/lib/data/ndr';
 import { walletService } from '@/lib/data/wallet';
@@ -32,7 +33,7 @@ export default async function NdrPage() {
             <ArrowLeft className="size-4" />
             <span>Back to Orders</span>
           </Link>
-          <SampleBadge />
+          {ndrResult.source === 'mock' ? <SampleBadge /> : null}
         </div>
 
         {/* Page Title */}
@@ -47,13 +48,14 @@ export default async function NdrPage() {
 
         {/* Content */}
         {!ndrResult.ok ? (
-          <div
-            data-testid="ndr-error"
-            className="rounded-card border border-error/30 bg-error/10 p-6 text-center text-error"
-          >
-            <p className="font-semibold">Failed to load NDR reports</p>
-            <p className="mt-1 text-xs text-on-surface/80">{ndrResult.error.message}</p>
-          </div>
+          <>
+            <DataCard testId="ndr-kpis" title="Summary" result={ndrResult}>
+              {() => null}
+            </DataCard>
+            <DataCard testId="ndr-list" title="Failed deliveries" result={ndrResult}>
+              {() => null}
+            </DataCard>
+          </>
         ) : (
           <NdrView data={ndrResult.data} />
         )}
