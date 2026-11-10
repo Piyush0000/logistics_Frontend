@@ -27,6 +27,8 @@ export const APP_ROUTES = [
   '/reconciliation/weight-settings',
   '/tools/rate-card',
   '/tools/rate-calculator',
+  '/tools/tracking',
+  '/tools/tracking?awb=DEMOEK001',
   '/channel-integrations',
 ] as const;
 

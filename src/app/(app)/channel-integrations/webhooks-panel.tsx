@@ -6,7 +6,7 @@ import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog
 import type { Webhook } from '@/lib/data/webhooks/types';
 import { formatDateTime } from '@/lib/format/date';
 import { deleteWebhookAction } from './actions';
-import { CopyButton } from './copy-button';
+import { CopyButton } from '@/components/ui/copy-button';
 import { WebhookForm } from './webhook-form';
 
 type OpenDialog =

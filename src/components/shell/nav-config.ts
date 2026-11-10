@@ -113,7 +113,7 @@ export const NAV: NavGroup[] = [
         status: 'live',
         icon: Calculator,
       },
-      { label: 'Order Tracking', href: '/tools/tracking', status: 'planned', icon: MapPinned },
+      { label: 'Order Tracking', href: '/tools/tracking', status: 'live', icon: MapPinned },
     ],
   },
   { label: 'Reports', icon: FileChartColumn, href: '/reports', status: 'planned' },

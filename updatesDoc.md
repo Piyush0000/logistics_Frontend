@@ -6,11 +6,49 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 16 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 17 of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 16 |
-| **Next step** | Task 17: Tools, Order Tracking |
+| **Waiting on** | Review of Task 17 |
+| **Next step** | Task 18: the public tracking page, `/track/[awb]` |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-10: Task 17, Order tracking
+
+`/tools/tracking` shows the status, courier, latest location and full timeline for one or more AWBs. It uses the live gateway tracking route through `trackingService().getTimeline`.
+
+### Done
+
+- The page is a server component. It reads `?awb=`, parses it with `parseAwbQuery` and loads each timeline on the server. Each AWB settles on its own, so one failure never hides another.
+- One AWB shows a result card. Several show a summary list where each opens its timeline. A cut list says "Showing the first 10 of N AWBs."
+- The form is a plain GET form, so results can be shared and reloaded.
+- Unknown AWB: "No shipment found for this AWB." with no Try again. Other errors show their message with Try again.
+- `CopyButton` moved to `src/components/ui/copy-button.tsx`. When the clipboard is refused (plain HTTP), it shows a read-only field with the text already selected. The old "Copy failed" label is gone.
+- Share tracking link copies the absolute `/track/<awb>` address. Task 18 builds that page.
+- Sidebar item is live. Routes added to `APP_ROUTES`.
+
+### Files changed
+
+- New: `src/app/(app)/tools/tracking/*`, `e2e/tracking.spec.ts`
+- Moved: `copy-button.tsx` from `channel-integrations` to `src/components/ui/`, with two imports updated
+- Changed: `src/components/shell/nav-config.ts`, `e2e/{routes.ts,gateway.spec.ts}`, `Readme.md`, `updatesDoc.md`
+
+### Verification
+
+| Check | Result |
+|---|---|
+| RED | Browser: tracking spec failed on every test before the page existed (no Order tracking heading) |
+| D1 lint, typecheck, unit tests | 0 errors, 47 files, 457 tests passed |
+| D2 full browser run | desktop 353 passed, 36 skipped; phone and gateway 422 passed, 11 skipped; 0 failed |
+| D3 `node scripts/dev-smoke.mjs` | both tracking routes 200 with an h1. BROWSER ERRORS: none |
+| D4 screenshots | desktop, phone and 320px reviewed for single and several AWBs |
+| D5 palette | no output |
+| D6 secrets and brand | no output in `src` |
+| D7 backend | status clean, HEAD aace603 |
+
+### Decisions
+
+- A failed AWB is a plain block, not an opening one, because a closed section would hide its error.
+- Not verified: the real gateway, and the `/track/<awb>` page, which Task 18 builds.
 
 ## 2026-11-10: Task 16, Rate calculator
 

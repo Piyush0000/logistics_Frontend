@@ -603,3 +603,47 @@ test.describe('rate calculator with no route', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Rate calculator' })).toBeVisible();
   });
 });
+
+test.describe('order tracking with the gateway answering', () => {
+  test.use({ baseURL: 'http://localhost:3104' });
+
+  test('shows the gateway timeline for LIVE123', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=LIVE123', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tracking-card');
+    await expect(card.getByText('LIVE123').first()).toBeVisible();
+    await expect(card.getByTestId('status-badge')).toContainText('Delivered');
+    await expect(card.getByText('Jaipur').first()).toBeVisible();
+    const events = card.getByTestId('timeline-event');
+    await expect(events).toHaveCount(2);
+    await expect(events.first()).toContainText('Jaipur');
+    await expect(events.last()).toContainText('Pune');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('says no shipment found for an unknown AWB', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=MISSING1', { waitUntil: 'networkidle' });
+    await expect(page.getByText('No shipment found for this AWB.')).toBeVisible();
+  });
+});
+
+test.describe('order tracking with the gateway down', () => {
+  test.use({ baseURL: 'http://localhost:3105' });
+
+  test('shows the error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=LIVE123,LIVE124', { waitUntil: 'networkidle' });
+
+    const items = page.getByTestId('tracking-item');
+    await expect(items).toHaveCount(2);
+    for (const item of await items.all()) {
+      await expect(item.getByText('Could not reach the server. Please try again.')).toBeVisible();
+      await expect(item.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1, name: 'Order tracking' })).toBeVisible();
+    await expect(page.getByLabel('AWB numbers')).toBeVisible();
+  });
+});
