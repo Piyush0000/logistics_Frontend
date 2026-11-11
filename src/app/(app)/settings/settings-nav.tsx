@@ -27,7 +27,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Users & Roles',
     description: 'Invite teammates and choose what each can do.',
     href: '/settings/users',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Pickup Addresses',

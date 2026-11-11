@@ -312,7 +312,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'Settings is available with your Profile and a link to Channel Integrations. Company details, team members and roles, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
+          'Settings is available with your Profile and a link to Channel Integrations. Company details, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {
@@ -320,6 +320,7 @@ export const ARTICLES: HelpArticle[] = [
         paragraphs: [
           'Profile is available now, under Settings. You can change your name and phone number and set a new password. Your sign-in email is shown but cannot be changed there. The Profile screen currently uses sample data.',
           'Webhooks and their signing secrets are available now, in Channel Integrations. See the article on getting shipment updates by webhook.',
+          'Users & Roles is available now, under Settings. Admins can invite a teammate by email, choose their role (Admin, Operations, Finance or Viewer), change a role later and remove someone. You cannot change your own role or remove yourself, and at least one admin must always remain. The team list currently uses sample data.',
         ],
       },
     ],

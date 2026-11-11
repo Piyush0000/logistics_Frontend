@@ -6,11 +6,49 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22, 24, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22, 24, 26, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Tasks 23 and 32 are being built |
-| **Next step** | Task 23 (SMS tab), Task 32 (Support Tickets), then Tasks 25 to 31 (Settings sections) and 35 |
+| **Next step** | Task 23 (SMS tab), Task 32 (Support Tickets), then Tasks 25, 27 to 31 (Settings sections) and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 26, Users & Roles
+
+### What was done
+
+- `/settings/users`: the team list (email, name, Active or Invited, role) and a card that explains the four roles.
+- Invite user opens a dialog with an email and a role. The email is checked and a duplicate (any letter case) is refused.
+- Other people's rows have a role picker and a Remove button. Removing asks for confirmation in a dialog (Keep member or Remove member).
+- Your own row is marked You and has no role picker and no Remove button. The server action also refuses it, so a direct call cannot change your own row.
+- At least one admin must remain: demoting or removing the last admin is refused, in the data service itself.
+- The Users & Roles card on `/settings` is live. The help article on Settings now lists Users & Roles as available.
+- Data in `src/lib/data/team/`, selected by `DATA_SOURCE_TEAM`. Gateway mode shows the team as unavailable (port 3106 test).
+
+### Files
+
+New: `src/app/(app)/settings/users/` (`page.tsx`, `loading.tsx`, `team-panel.tsx`, `invite-dialog.tsx`, `actions.ts`, `actions.test.ts`), `src/lib/data/team/` (types, input, mock, gateway, index, tests), `e2e/users.spec.ts`. Changed: `settings-nav.tsx`, `src/content/help/articles.ts`, `e2e/settings.spec.ts` (the disabled-card check now uses the first planned section, not a fixed name), `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Unit spec written first, run with no code | Failed: the `./gateway` module did not exist |
+| Browser spec written first, run before the page existed | 14 failed, 1 skipped (desktop) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| `pnpm test` | 67 files, 609 tests passed |
+| `e2e/users.spec.ts`, desktop and phone, `--repeat-each=2` | 56 passed, 4 skipped (single-size tests). The first run found the long-email overflow, fixed with `overflow-wrap:anywhere` |
+| `e2e/settings.spec.ts` and `e2e/help.spec.ts`, desktop and phone | 69 passed, 3 skipped, plus 2 passed after the disabled-card test was made dynamic |
+| `--project=gateway` | 60 passed, including the team test on port 3106 |
+| D5 palette, D6 brand grep on `src` | No output, except design-file comments |
+| D7 backend | `git status --porcelain` empty, HEAD `aace603` |
+| Screenshot `/settings/users` | Desktop and phone reviewed; no cut-off or misalignment |
+| Not run | Full suite (told not to); `node scripts/dev-smoke.mjs` did not finish within 175 seconds on the loaded machine, so D3 is not verified |
+
+### Decisions
+
+- The role picker is a native select, which is the clearest control on a phone.
+- The mock team has no knowledge of who is signed in. The server action compares the member with the session email, because the data service has no session.
+- Browser tests that change the team invite a member of their own with an email unique to the project, repeat and retry, and only change that row. They never make anyone an admin, so the last-admin test is steady.
 
 ## 2026-11-11: Task 24, Settings hub and Profile
 
