@@ -63,7 +63,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Sub-merchants',
     description: 'Manage the sellers who ship under your account.',
     href: '/settings/sub-merchants',
-    status: 'planned',
+    status: 'live',
   },
 ];
 
