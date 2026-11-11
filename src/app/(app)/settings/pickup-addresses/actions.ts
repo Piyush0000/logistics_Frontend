@@ -102,13 +102,7 @@ export async function makeDefaultPickupAddressAction(id: unknown): Promise<Addre
   if (!(await getDemoSession())) return { ok: false, message: SIGN_IN_AGAIN };
   if (typeof id !== 'string' || !id) return { ok: false, message: 'This address could not be found.' };
 
-  const service = pickupAddressService();
-  const list = await service.list();
-  if (!list.ok) return failure(list);
-  const entry = list.data.find((candidate) => candidate.id === id);
-  if (!entry) return { ok: false, message: 'This address could not be found.' };
-
-  const result = await service.save({ ...entry, isDefault: true });
+  const result = await pickupAddressService().makeDefault(id);
   if (!result.ok) return failure(result);
   revalidatePath(ROUTE);
   return { ok: true, message: 'Default address changed.' };

@@ -6,4 +6,5 @@ export const gatewayPickupAddressService: PickupAddressService = {
   list: notAvailable,
   save: notAvailable,
   remove: notAvailable,
+  makeDefault: notAvailable,
 };

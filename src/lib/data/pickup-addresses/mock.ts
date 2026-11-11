@@ -85,6 +85,14 @@ export const mockPickupAddressService: PickupAddressService = {
     return fromMock({ ...saved });
   },
 
+  // One synchronous step, so two people choosing a default at once can never leave two defaults.
+  async makeDefault(id) {
+    const target = store.find((entry) => entry.id === id);
+    if (!target) return fail('not_found', 'This address could not be found.', 404);
+    store = store.map((entry) => ({ ...entry, isDefault: entry.id === id }));
+    return fromMock({ ...target, isDefault: true });
+  },
+
   async remove(id) {
     const target = store.find((entry) => entry.id === id);
     if (!target) return fail('not_found', 'This address could not be found.', 404);

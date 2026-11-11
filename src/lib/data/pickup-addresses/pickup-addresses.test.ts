@@ -53,6 +53,21 @@ describe('mock pickup addresses', () => {
     expect((await mock.remove(saved.data.id)).ok).toBe(false);
   });
 
+  it('makeDefault moves the default in one step, and refuses a missing id', async () => {
+    const before = await all();
+    const target = before.find((entry) => !entry.isDefault)!;
+    const result = await mock.makeDefault(target.id);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.id).toBe(target.id);
+    expect((await all()).filter((entry) => entry.isDefault).map((entry) => entry.id)).toEqual([target.id]);
+    // Making the current default the default again changes nothing.
+    expect((await mock.makeDefault(target.id)).ok).toBe(true);
+    const missing = await mock.makeDefault('pa-missing');
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.error.kind).toBe('not_found');
+    expect((await all()).filter((entry) => entry.isDefault)).toHaveLength(1);
+  });
+
   it('refuses a 26th address and keeps one default', async () => {
     let list = await all();
     for (let i = list.length; i < 25; i++) {
@@ -78,6 +93,7 @@ describe('gateway pickup addresses', () => {
       await gatewayPickupAddressService.save({ label: 'x', address, isDefault: false }),
     ).toEqual(expected);
     expect(await gatewayPickupAddressService.remove('pa-001')).toEqual(expected);
+    expect(await gatewayPickupAddressService.makeDefault('pa-001')).toEqual(expected);
   });
 
   it('picks the source from DATA_SOURCE_PICKUP_ADDRESSES', () => {
