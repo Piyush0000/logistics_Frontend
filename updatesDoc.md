@@ -6,12 +6,34 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 30, 32, 33, 34 and 36 of 37 are done; 28, 29, 30, 32, 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 34 and 36 of 37 are done, except Task 35 (Sign up), which is in its fix round; 28 to 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Tasks 31 and 35 are being built |
-| **Next step** | Merge Tasks 31 and 35, then the final regression (Task 37) |
+| **Waiting on** | Nothing: Task 35 is in its fix round |
+| **Next step** | Merge Task 35, then the final regression and handover (Task 37) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+
+
+## 2026-11-11: Task 31, Sub-merchants
+
+- New `/settings/sub-merchants`. A list of the sellers who ship under the account (10 a page, newest first), a search by name (`?q=`), and an Onboard seller dialog: business name, email, optional GSTIN, account holder, account number and IFSC. A new seller starts as Submitted for review. Only the last 4 account digits are ever kept for display or shown.
+- Rules are in `src/lib/data/sub-merchants/input.ts`, using the patterns in `src/lib/kyc.ts`, and are shared by the dialog, the server action and the mock. A duplicate email is refused. The action checks the session first and validates again.
+- Saves are per seller (one onboard call each), never a whole-list save, so concurrent users cannot revert each other.
+- Data in `src/lib/data/sub-merchants/`, picked by `DATA_SOURCE_SUB_MERCHANTS` (in `.env.example` and the 3106 server). The gateway service is `notAvailable()`.
+- Settings hub card: Sub-merchants is live. Help article "Settings": the planned sentence now names only Courier rules, and a Sub-merchants paragraph follows Tracking Page.
+- Not built: editing or removing a seller (the brief lists list and onboard only). Screenshots (D4), D2, D3 and the full suite were not run, by instruction.
+
+| Check | Result |
+|---|---|
+| RED: unit tests before the code | 2 files failed (modules missing) |
+| RED: `sub-merchants.spec.ts`, desktop, against a build with no page | 13 failed, 1 skipped |
+| `pnpm lint`, `pnpm typecheck` | 0 warnings, 0 errors |
+| `pnpm test` | 82 files, 738 tests passed |
+| `sub-merchants.spec.ts`, desktop and phone, `--repeat-each=2` | 52 passed, 4 skipped (size-specific) |
+| `settings.spec.ts` and `help.spec.ts`, desktop and phone | 69 passed, 3 skipped |
+| `--project=gateway` | 67 passed |
+| D5 palette, D6 secrets and brand | No output; only design-file comments |
+| D7 backend | Clean, `aace603` |
 
 ## 2026-11-11: Task 30, Courier Rules
 

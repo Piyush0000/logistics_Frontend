@@ -310,9 +310,9 @@ export const ARTICLES: HelpArticle[] = [
     summary: 'What you can and cannot change in the app today.',
     body: [
       {
-        heading: 'Not available yet',
+        heading: 'Settings sections',
         paragraphs: [
-          'Settings is available with your Profile, Company & KYC, Users & Roles, Pickup Addresses, Buyer Notifications, Tracking Page, Courier Rules and a link to Channel Integrations. Sub-merchants is still planned and shows as Not available yet on the Settings page.',
+          'Settings is available with your Profile, Company & KYC, Users & Roles, Pickup Addresses, Buyer Notifications, Tracking Page, Courier Rules, Sub-merchants and a link to Channel Integrations. Every Settings section is available now.',
         ],
       },
       {
@@ -326,6 +326,7 @@ export const ARTICLES: HelpArticle[] = [
           'Buyer Notifications is available now, under Settings. Choose which channels (SMS, Email or WhatsApp) send a message when a parcel is manifested, in transit, out for delivery, delivered or being returned, and edit the message for each. A message can use {{buyer_name}}, {{awb}}, {{courier}}, {{tracking_link}} and {{store_name}}, and the preview shows it with sample values. Any other variable stops you saving, and an SMS over 160 characters is sent as more than one message. This screen currently uses sample data.',
           'Tracking Page is available now, under Settings. You can set a display name, a support email and phone, an accent colour from the app palette, whether to show the courier, and a PNG or SVG logo up to 1 MB, with a live preview. Buyers will not see these changes on the public tracking page until tracking-page settings are connected. This screen currently uses sample data, and only the logo name is kept.',
           'Courier Rules is available now, under Settings. Choose whether a courier is picked by lowest cost, by fastest delivery, or in your own order. With Custom, use Move up and Move down to set the order, which also works from the keyboard. You can switch a courier off, but at least one must stay on. Each change is saved as soon as you make it. This screen currently uses sample data, and the order engine does not read these rules yet.',
+          'Sub-merchants is available now, under Settings. You can search the sellers who ship under your account by name, and onboard a new one with their business name, email, an optional GSTIN and bank details (account holder, account number and IFSC). Only the last 4 digits of the account number are shown, and a new seller starts as Submitted for review. Sellers cannot be edited or removed yet. This screen currently uses sample data.',
         ],
       },
     ],
