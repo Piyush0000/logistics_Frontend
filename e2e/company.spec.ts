@@ -132,6 +132,8 @@ test('submits, masks the account number and marks the Home KYC step done', async
 
   await expect(page.getByRole('status').filter({ hasText: 'Your details were sent for review.' })).toBeVisible();
   await expect(page.getByTestId('kyc-status')).toHaveText('Submitted for review');
+  await expect(page.getByLabel('Account number', { exact: true })).toHaveValue('');
+  await expect(page.getByText("Files are not uploaded yet. Only each file's name, type and size are recorded.")).toBeVisible();
 
   // The other project may save at the same time, so the brand is one of the two saved ones.
   await expect(async () => {
@@ -142,7 +144,7 @@ test('submits, masks the account number and marks the Home KYC step done', async
   await expect(page.getByLabel('Account number', { exact: true })).toHaveValue('');
   await expect(page.getByText(ACCOUNT)).toHaveCount(0);
   expect(await page.content()).not.toContain(ACCOUNT);
-  await expect(page.getByText(/^On file: (gst|pan|cheque)-(desktop|phone)\.pdf$/)).toHaveCount(3);
+  await expect(page.getByText(/^Recorded: (gst|pan|cheque)-(desktop|phone)\.pdf$/)).toHaveCount(3);
 
   await page.goto('/home');
   const card = page.getByTestId('checklist-card');

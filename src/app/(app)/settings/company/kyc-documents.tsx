@@ -41,7 +41,7 @@ function DocumentField({
           {chosen.name} <span className="text-on-surface/60">({formatSize(chosen.size)})</span>
         </p>
       ) : onFile ? (
-        <p className="mt-1 text-sm text-on-surface/70 [overflow-wrap:anywhere]">On file: {onFile}</p>
+        <p className="mt-1 text-sm text-on-surface/70 [overflow-wrap:anywhere]">Recorded: {onFile}</p>
       ) : null}
     </div>
   );
@@ -60,6 +60,9 @@ export function KycDocuments({
   return (
     <fieldset className="grid min-w-0 gap-4">
       <legend className="font-heading text-lg leading-7">KYC documents</legend>
+      <p className="text-sm text-on-surface/70">
+        Files are not uploaded yet. Only each file&apos;s name, type and size are recorded.
+      </p>
       <p className="text-sm text-on-surface/70">
         One file for each, as PDF, JPG or PNG, up to {MAX_DOCUMENT_BYTES / (1024 * 1024)} MB.
       </p>

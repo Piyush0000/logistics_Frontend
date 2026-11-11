@@ -138,6 +138,8 @@ export function CompanyForm({ company }: { company: CompanyView }) {
       });
       setErrors(result.ok ? {} : (result.errors ?? {}));
       if (result.ok) {
+        // The typed number must not stay in the page once it is saved.
+        setAccount('');
         setFeedback({ ok: true, message: result.message });
       } else if (!result.errors) {
         setFeedback({ ok: false, message: result.message });
