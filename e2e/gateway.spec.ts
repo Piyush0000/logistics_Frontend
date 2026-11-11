@@ -794,3 +794,48 @@ test.describe('dashboard RTO tab with the gateway down', () => {
     await expect(page.getByRole('tab', { name: 'RTO' })).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+test.describe('dashboard Delivered tab with the stand-in gateway', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the live delivered total but unavailable trend in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=delivered');
+    const total = page.getByTestId('delivered-total-card');
+    await expect(total.getByTestId('tile-Delivered')).toContainText('5');
+    await expect(total.getByText('Sample data')).toBeHidden();
+    const trend = page.getByTestId('delivered-trend-card');
+    await expect(trend.getByText('This data is not available yet.')).toBeVisible();
+    await expect(trend.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Delivered' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard Delivered tab with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error in the total card only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=delivered');
+    const total = page.getByTestId('delivered-total-card');
+    await expect(total.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(total.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+    await expect(page.getByTestId('delivered-trend-card')).toBeVisible();
+  });
+});
+
+test.describe('dashboard Revenue tab with no gateway route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=revenue');
+    const card = page.getByTestId('revenue-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Revenue' })).toHaveAttribute('aria-selected', 'true');
+  });
+});

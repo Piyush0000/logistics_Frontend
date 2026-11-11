@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatDate, formatDateRange, formatDateTime, indianDay } from './date';
-import { formatPaise } from './money';
+import { formatPaise, formatPaiseCompact } from './money';
 import { statusLabel } from './status';
 import { userLabel } from './user';
 
@@ -72,5 +72,31 @@ describe('formatDate', () => {
   it('shows a short date in Indian time', () => {
     expect(formatDate('2026-07-20T06:00:00Z')).toBe('20 Jul 2026');
     expect(formatDate('2026-09-04T19:00:00Z')).toBe('5 Sep 2026');
+  });
+});
+
+describe('formatPaiseCompact', () => {
+  it('keeps small amounts whole', () => {
+    expect(formatPaiseCompact(0)).toBe('₹0');
+    expect(formatPaiseCompact(95000)).toBe('₹950');
+  });
+
+  it('uses K, L and Cr, trimming a trailing .0', () => {
+    expect(formatPaiseCompact(150000)).toBe('₹1.5K');
+    expect(formatPaiseCompact(100000)).toBe('₹1K');
+    expect(formatPaiseCompact(12345600)).toBe('₹1.2L');
+    expect(formatPaiseCompact(1000000000)).toBe('₹1Cr');
+    expect(formatPaiseCompact(123456789000)).toBe('₹123.5Cr');
+  });
+
+  it('does not round up into a unit it has not reached', () => {
+    expect(formatPaiseCompact(99990000)).toBe('₹10L');
+    expect(formatPaiseCompact(99950000)).toBe('₹10L');
+    expect(formatPaiseCompact(9995000)).toBe('₹1L');
+  });
+
+  it('treats NaN and negative amounts as zero', () => {
+    expect(formatPaiseCompact(Number.NaN)).toBe('₹0');
+    expect(formatPaiseCompact(-500)).toBe('₹0');
   });
 });

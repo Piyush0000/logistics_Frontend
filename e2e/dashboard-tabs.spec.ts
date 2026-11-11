@@ -2,8 +2,6 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './helpers';
 import { expectNoSidewaysScroll, expectTapTargets, SIZES } from './screen-checks';
 
-const TABS = ['Overview', 'Pickups', 'NDR', 'RTO', 'Delivered', 'Revenue', 'SMS'];
-
 test.beforeEach(async ({ page }) => {
   await signIn(page);
 });
@@ -36,10 +34,11 @@ test.describe('dashboard tabs', () => {
   });
 
   test('keeps tabs that are not built disabled', async ({ page }) => {
-    await page.goto('/dashboard?tab=delivered');
+    await page.goto('/dashboard?tab=sms');
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    for (const name of TABS.slice(4)) {
-      await expect(page.getByRole('tab', { name })).toBeDisabled();
+    await expect(page.getByRole('tab', { name: 'SMS' })).toBeDisabled();
+    for (const name of ['Delivered', 'Revenue']) {
+      await expect(page.getByRole('tab', { name })).toBeEnabled();
     }
   });
 });
@@ -189,6 +188,121 @@ test.describe('RTO tab', () => {
     await expectTapTargets(page, [
       page.getByRole('tab', { name: 'RTO' }),
       page.getByRole('link', { name: 'View all RTO' }),
+    ]);
+  });
+});
+
+const parseNumber = (text: string) => Number(text.replace(/[^\d.]/g, ''));
+
+test.describe('delivered tab', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/dashboard?tab=delivered');
+    await expect(page.getByTestId('delivered-total-card')).toBeVisible();
+  });
+
+  test('shows the delivered total and a 7-day chart with the sample label', async ({ page }) => {
+    await expect(page.getByRole('tab', { name: 'Delivered' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'Delivered' })).toHaveAttribute('href', '/dashboard?tab=delivered');
+    const total = page.getByTestId('delivered-total-card');
+    await expect(total.getByText('Sample data')).toBeVisible();
+    await expect(total.getByTestId('tile-Delivered')).toContainText('126');
+    const trend = page.getByTestId('delivered-trend-card');
+    await expect(trend.getByText('Sample data')).toBeVisible();
+    await expect(trend.getByRole('img', { name: /^Delivered in the last 7 days\./ })).toBeVisible();
+    await expect(trend.locator('[data-bar]')).toHaveCount(7);
+    await expect(page.getByTestId('kpi-cards')).toBeHidden();
+  });
+
+  test('switches between 7 and 30 days', async ({ page }) => {
+    const trend = page.getByTestId('delivered-trend-card');
+    await expect(trend.getByRole('link', { name: 'Last 7 days' })).toHaveAttribute('aria-current', 'true');
+    await trend.getByRole('link', { name: 'Last 30 days' }).click();
+    await expect(page).toHaveURL(/\/dashboard\?tab=delivered&range=30$/);
+    await expect(trend.locator('[data-bar]')).toHaveCount(30);
+    await expect(trend.getByRole('link', { name: 'Last 30 days' })).toHaveAttribute('aria-current', 'true');
+    await expect(trend.getByRole('img', { name: /^Delivered in the last 30 days\./ })).toBeVisible();
+    await trend.getByRole('link', { name: 'Last 7 days' }).click();
+    await expect(trend.locator('[data-bar]')).toHaveCount(7);
+  });
+
+  test('ignores a bad range', async ({ page }) => {
+    for (const range of ['FOO', '-1', '14', '']) {
+      await page.goto(`/dashboard?tab=delivered&range=${range}`);
+      await expect(page.getByTestId('delivered-trend-card').locator('[data-bar]')).toHaveCount(7);
+    }
+  });
+
+  test('does not scroll sideways at any size', async ({ page }) => {
+    await page.goto('/dashboard?tab=delivered&range=30');
+    await expect(page.getByTestId('delivered-trend-card').locator('[data-bar]')).toHaveCount(30);
+    await expectNoSidewaysScroll(page, SIZES);
+  });
+
+  test('keeps tap targets touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await expectTapTargets(page, [
+      page.getByRole('tab', { name: 'Delivered' }),
+      page.getByRole('link', { name: 'Last 7 days' }),
+      page.getByRole('link', { name: 'Last 30 days' }),
+    ]);
+  });
+});
+
+test.describe('revenue tab', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/dashboard?tab=revenue');
+    await expect(page.getByTestId('revenue-tab-card')).toBeVisible();
+  });
+
+  test('shows freight and COD totals that match their charts', async ({ page }) => {
+    await expect(page.getByRole('tab', { name: 'Revenue' })).toHaveAttribute('aria-selected', 'true');
+    const card = page.getByTestId('revenue-tab-card');
+    await expect(card.getByText('Sample data')).toBeVisible();
+    for (const [tile, chart] of [
+      ['Freight spend', 'Freight spend per day'],
+      ['COD collected', 'COD collected per day'],
+    ] as const) {
+      await expect(card.getByRole('img', { name: new RegExp(`^${chart}\\.`) })).toBeVisible();
+      const cells = await card.getByRole('table', { name: chart }).locator('tbody td').allInnerTexts();
+      expect(cells).toHaveLength(7);
+      const sum = cells.reduce((total, cell) => total + parseNumber(cell), 0);
+      const text = await card.getByTestId(`tile-${tile}`).innerText();
+      expect(text).toContain('₹');
+      expect(parseNumber(text.replace(tile, ''))).toBeCloseTo(sum, 2);
+    }
+  });
+
+  test('keeps wide value labels from overlapping at 30 days', async ({ page }) => {
+    await page.goto('/dashboard?tab=revenue&range=30');
+    const card = page.getByTestId('revenue-tab-card');
+    await expect(card.locator('[data-bar]')).toHaveCount(60);
+    for (const chart of ['Freight spend per day', 'COD collected per day']) {
+      const svg = card.getByRole('img', { name: new RegExp(`^${chart}\\.`) });
+      for (const selector of ['text[data-value-label]', 'text:not([data-value-label])']) {
+        const boxes = await svg.locator(selector).evaluateAll((nodes) =>
+          nodes.map((node) => node.getBoundingClientRect()).map((r) => ({ left: r.left, right: r.right })),
+        );
+        expect(boxes.length).toBeGreaterThan(1);
+        boxes.sort((a, b) => a.left - b.left);
+        for (let i = 1; i < boxes.length; i += 1) {
+          expect(boxes[i]!.left, `${chart} ${selector} label ${i}`).toBeGreaterThanOrEqual(boxes[i - 1]!.right);
+        }
+      }
+    }
+  });
+
+  test('does not scroll sideways at any size', async ({ page }) => {
+    await page.goto('/dashboard?tab=revenue&range=30');
+    await expect(page.getByTestId('revenue-tab-card').locator('[data-bar]')).toHaveCount(60);
+    await expectNoSidewaysScroll(page, SIZES);
+  });
+
+  test('keeps tap targets touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await expectTapTargets(page, [
+      page.getByRole('tab', { name: 'Revenue' }),
+      page.getByRole('link', { name: 'Last 7 days' }),
+      page.getByRole('link', { name: 'Last 30 days' }),
     ]);
   });
 });

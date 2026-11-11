@@ -62,8 +62,8 @@ const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
   { id: 'pickups', label: 'Pickups', enabled: true },
   { id: 'ndr', label: 'NDR', enabled: true },
   { id: 'rto', label: 'RTO', enabled: true },
-  { id: 'delivered', label: 'Delivered', enabled: false },
-  { id: 'revenue', label: 'Revenue', enabled: false },
+  { id: 'delivered', label: 'Delivered', enabled: true },
+  { id: 'revenue', label: 'Revenue', enabled: true },
   { id: 'sms', label: 'SMS', enabled: false },
 ];
 

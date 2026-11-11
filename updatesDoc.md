@@ -6,11 +6,32 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 21 and Task 33 (Help Centre, built ahead of order) of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22 and Task 33 (Help Centre, built ahead of order) of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Tasks 22 and 24 are being built |
-| **Next step** | Task 22 (Delivered and Revenue tabs), Task 24 (Settings and Profile) |
+| **Waiting on** | Nothing: Task 24 is being built |
+| **Next step** | Task 23 (SMS tab), Task 24 (Settings and Profile) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 22, Delivered and Revenue dashboard tabs
+
+- Added the Delivered and Revenue tabs (`/dashboard?tab=delivered`, `?tab=revenue`) and enabled them in the tab list. `range=7|30` in the URL switches the chart window; anything else means 7 days.
+- Delivered: the total comes from the shipment stats (a real route) in its own card. The per-day chart is a second card, so in gateway mode only the chart says "This data is not available yet."
+- Revenue: freight spend and COD collected totals (`formatPaise`) and one chart each, in one card.
+- New `src/lib/data/analytics/` (types, mock, gateway, index, totals). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_ANALYTICS`, added to `.env.example` and the 3104, 3105 and 3106 servers.
+- Carried ruling on `BarChart`: a new `formatLabel` prop gives compact labels (`formatPaiseCompact`: ₹1.2L), while the summary, titles and table keep the full figures. Value and axis labels thin out when they would overlap, always keeping the latest day. A single bar is capped at 28 units wide. NaN, infinite and negative values draw and read as zero.
+- Merged `feature/full-frontend` before committing, to take the sr-only table wrapper. No conflict: the wrapper and the new chart code both survive.
+- Files outside the brief: `src/components/charts/bar-chart.tsx` (and test), `src/lib/format/money.ts` (and test), `src/lib/data/pickups/summary.ts` (exports `dayLabel`), `sections.tsx` and `page.tsx` (tab list, `range`). Two older assertions changed because Delivered and Revenue are no longer disabled: `dashboard.spec.ts` and the "not built" test in `dashboard-tabs.spec.ts` now check SMS only.
+
+| Check | Result |
+|---|---|
+| Lint, typecheck | 0 errors |
+| Unit tests (`pnpm test`) | 60 files, 552 tests passed (after merge) |
+| Chart, analytics and format unit tests, after merge | 46 passed |
+| Browser, dashboard-tabs and dashboard specs, desktop and phone, offset 1000 | 116 passed, then 2 older assertions fixed and re-run: 2 passed |
+| Browser, gateway project | 58 passed |
+| Palette, secret and brand checks (D5, D6) | No output, apart from design-file comments |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 33, Help Centre
 

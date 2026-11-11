@@ -8,19 +8,37 @@ export interface BarDatum {
 
 const full = (d: BarDatum) => d.fullLabel ?? d.label;
 
+/** NaN, infinite and negative values are drawn and read out as zero. */
+const clean = (data: readonly BarDatum[]): BarDatum[] =>
+  data.map((d) => (Number.isFinite(d.value) && d.value > 0 ? d : { ...d, value: 0 }));
+
 const WIDTH = 320;
 const HEIGHT = 190;
 const TOP = 22; // room for the tallest value label
 const BOTTOM = 26; // room for the axis labels
 const SIDE = 8;
 const RADIUS = 4;
+const MAX_BAR_WIDTH = 28; // a lone bar stays a bar, not a block
+const VALUE_CHAR = 6.6; // approximate width of one 11px semibold character
+const AXIS_CHAR = 5.6; // approximate width of one 10px character
+const LABEL_GAP = 4;
+
+/**
+ * Show every `step`-th label, counting back from the last bar so the latest one is always
+ * shown, when the widest label is wider than a bar's slot.
+ */
+function labelStep(texts: readonly string[], slot: number, charWidth: number): number {
+  const widest = Math.max(0, ...texts.map((text) => text.length)) * charWidth + LABEL_GAP;
+  return Math.max(1, Math.ceil(widest / slot));
+}
 
 /** The text read out for the chart, so its figures are available without seeing the bars. */
 export function chartSummary(
   label: string,
-  data: readonly BarDatum[],
+  input: readonly BarDatum[],
   format: (n: number) => string = String,
 ): string {
+  const data = clean(input);
   if (data.length === 0) return `${label}. No data.`;
   const series = data.map((d) => `${full(d)}: ${format(d.value)}`).join(', ');
   const top = data.reduce((best, d) => (d.value > best.value ? d : best), data[0]!);
@@ -40,21 +58,37 @@ function barPath(x: number, y: number, width: number, height: number): string {
  */
 export function BarChart({
   label,
-  data,
+  data: input,
   format = String,
+  formatLabel = format,
   categoryLabel = 'Day',
 }: {
   label: string;
   data: BarDatum[];
+  /** Full figures, for the summary, the bar's title and the table. */
   format?: (n: number) => string;
+  /** Shorter figures for the labels above the bars. Defaults to `format`. */
+  formatLabel?: (n: number) => string;
   /** The hidden table's first column heading. */
   categoryLabel?: string;
 }) {
+  const data = clean(input);
   const max = Math.max(1, ...data.map((d) => d.value));
   const plotHeight = HEIGHT - TOP - BOTTOM;
   const slot = (WIDTH - SIDE * 2) / Math.max(1, data.length);
-  const barWidth = Math.max(4, slot - 6);
+  const barWidth = Math.min(MAX_BAR_WIDTH, Math.max(4, slot - 6));
   const baseline = TOP + plotHeight;
+  const valueStep = labelStep(
+    data.map((d) => formatLabel(d.value)),
+    slot,
+    VALUE_CHAR,
+  );
+  const axisStep = labelStep(
+    data.map((d) => d.label),
+    slot,
+    AXIS_CHAR,
+  );
+  const shows = (index: number, step: number) => (data.length - 1 - index) % step === 0;
 
   return (
     <figure className="m-0 min-w-0">
@@ -87,26 +121,30 @@ export function BarChart({
                   <title>{`${full(d)}: ${format(d.value)}`}</title>
                 </rect>
               )}
-              <text
-                data-value-label={d.label}
-                x={centre}
-                y={baseline - height - 6}
-                textAnchor="middle"
-                fontSize={11}
-                fontWeight={600}
-                className="fill-on-surface/70"
-              >
-                {format(d.value)}
-              </text>
-              <text
-                x={centre}
-                y={baseline + 16}
-                textAnchor="middle"
-                fontSize={10}
-                className="fill-on-surface/70"
-              >
-                {d.label}
-              </text>
+              {shows(index, valueStep) ? (
+                <text
+                  data-value-label={d.label}
+                  x={centre}
+                  y={baseline - height - 6}
+                  textAnchor="middle"
+                  fontSize={11}
+                  fontWeight={600}
+                  className="fill-on-surface/70"
+                >
+                  {formatLabel(d.value)}
+                </text>
+              ) : null}
+              {shows(index, axisStep) ? (
+                <text
+                  x={centre}
+                  y={baseline + 16}
+                  textAnchor="middle"
+                  fontSize={10}
+                  className="fill-on-surface/70"
+                >
+                  {d.label}
+                </text>
+              ) : null}
             </g>
           );
         })}
