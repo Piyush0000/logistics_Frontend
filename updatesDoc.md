@@ -62,7 +62,20 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 - Typing into a Buyer Notifications message box before the page hydrates is lost, not doubled. A "pick up pre-hydration input" step, as on login and sign up, would keep it.
 - The Pickups, NDR and RTO phone tab strip scrolls sideways to reach the later tabs, with no visual hint.
-- Further items from the whole-branch review will be added here when the controller sends them.
+- Forgot password on phone leaves a large blank gap below the form.
+- `/orders` accepts only the statuses its filter offers. A link with `PICKUP_SCHEDULED` or `CANCELLED` falls back to All.
+- From the whole-branch review, not yet fixed:
+  - Sample (mock) team data reaches the browser bundle, because 17 client components import types through `src/lib/data/<feature>/index.ts`. Import types from `types.ts` instead.
+  - The sign-up page and the sign-up action redirect to different places. Pick one.
+  - `RetryButton` lives with one feature but is shared. Move it to `src/components`.
+  - The COD fee rounds up (ceil), but the backend rounds to nearest. Match the backend.
+  - Wallet recharge reads the session twice.
+  - Booking a shipment has no guard against a double click before the first submit settles.
+  - The Users & Roles count of admins includes invited admins who have not joined.
+  - Unknown manifest and invoice ids return status 200, not 404.
+  - The "search covers this page only" note on All Shipments shows even when the list failed to load.
+  - Compact number format on the dashboard tabs does not handle negative values.
+  - Latent test flakes: NDR, orders and pickups tests depend on the sample having enough actionable rows; repeat runs can use them up.
 - API key management and the developer sandbox, cancel shipment, label download, real-time updates, real sign-in, and live data for each `notAvailable()` feature all wait on backend routes.
 
 
