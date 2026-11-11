@@ -51,10 +51,8 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
 
         <aside className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-secondary bg-muted p-card">
           <p className="font-medium">Still need help?</p>
-          {/* The tickets screen is not built yet, so Next must not try to prefetch it. */}
           <Link
             href="/support/tickets?new=1"
-            prefetch={false}
             className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control"
           >
             Raise a ticket

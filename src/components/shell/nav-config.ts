@@ -128,7 +128,7 @@ export const NAV: NavGroup[] = [
     label: 'Help & Support',
     icon: CircleHelp,
     children: [
-      { label: 'Support Tickets', href: '/support/tickets', status: 'planned', icon: Ticket },
+      { label: 'Support Tickets', href: '/support/tickets', status: 'live', icon: Ticket },
       { label: 'Help Centre', href: '/support/help', status: 'live', icon: BookOpen },
     ],
   },
