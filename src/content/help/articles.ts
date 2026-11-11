@@ -312,7 +312,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'Settings is available with your Profile, Company & KYC, Users & Roles, Pickup Addresses and a link to Channel Integrations. Buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
+          'Settings is available with your Profile, Company & KYC, Users & Roles, Pickup Addresses, Tracking Page and a link to Channel Integrations. Buyer notifications are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {
@@ -323,6 +323,7 @@ export const ARTICLES: HelpArticle[] = [
           'Pickup Addresses is available now, under Settings. Add, edit and delete the places couriers collect from, up to 25 addresses. One is always your default. To delete the default while you have others, first choose another address as the default. On Create Shipment, the Use saved address select fills in the pickup details for you. Pickup Addresses currently uses sample data.',
           'Webhooks and their signing secrets are available now, in Channel Integrations. See the article on getting shipment updates by webhook.',
           'Users & Roles is available now, under Settings. You can invite a teammate by email, choose their role (Admin, Operations, Finance or Viewer), change a role later and remove someone. You cannot change your own role or remove yourself, and at least one admin must always remain. The team list currently uses sample data, and in sample mode any signed-in user can make these changes; role-based limits come with the real backend.',
+          'Tracking Page is available now, under Settings. You can set a display name, a support email and phone, an accent colour from the app palette, whether to show the courier, and a PNG or SVG logo up to 1 MB, with a live preview. Buyers will not see these changes on the public tracking page until tracking-page settings are connected. This screen currently uses sample data, and only the logo name is kept.',
         ],
       },
     ],

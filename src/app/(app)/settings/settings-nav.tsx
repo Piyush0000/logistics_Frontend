@@ -51,7 +51,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Tracking Page',
     description: 'Set up the page your buyers open to follow a parcel.',
     href: '/settings/tracking-page',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Courier Rules',
