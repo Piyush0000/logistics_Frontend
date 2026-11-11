@@ -38,13 +38,13 @@ export const ARTICLES: HelpArticle[] = [
         heading: 'The menu groups',
         paragraphs: [
           'The side menu groups screens by the job they do. Shipping Management holds your shipments, shipment creation, bulk upload, and pickups and manifests. Operations holds NDR and RTO. Billings holds wallet transactions, COD remittance and invoices. Reconciliation holds weight discrepancies and weight settings. Tools holds the rate card, the rate calculator and order tracking.',
-          'Home, Dashboard and Reports are single links. Settings and Help & Support close the menu.',
+          'Home, Dashboard, Reports and Settings are single links. Help & Support closes the menu.',
         ],
       },
       {
         heading: 'Items that are greyed out',
         paragraphs: [
-          'A greyed-out item is planned but not built yet. Point at it to see that it is not available yet. At the moment this applies to Settings and Support Tickets.',
+          'A greyed-out item is planned but not built yet. Point at it to see that it is not available yet. At the moment this applies to Support Tickets.',
         ],
       },
       {
@@ -312,12 +312,13 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'The Settings screens are planned but not built. That includes your profile, company details, team members and roles, pickup addresses, buyer notifications and the tracking page. The Settings item in the side menu is greyed out until they are ready.',
+          'Settings is available with your Profile and a link to Channel Integrations. Company details, team members and roles, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {
         heading: 'What is available',
         paragraphs: [
+          'Profile is available now, under Settings. You can change your name and phone number and set a new password. Your sign-in email is shown but cannot be changed there. The Profile screen currently uses sample data.',
           'Webhooks and their signing secrets are available now, in Channel Integrations. See the article on getting shipment updates by webhook.',
         ],
       },

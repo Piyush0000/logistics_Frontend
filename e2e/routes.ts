@@ -36,6 +36,8 @@ export const APP_ROUTES = [
   '/support/help',
   '/support/help/verify-a-webhook-signature',
   '/channel-integrations',
+  '/settings',
+  '/settings/profile',
 ] as const;
 
 /** Routes anyone can open without signing in. */

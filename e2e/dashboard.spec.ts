@@ -111,7 +111,23 @@ test.describe('sidebar', () => {
     );
     await expect(nav(page).getByRole('button', { name: 'Shipping Management' })).toBeVisible();
     await expect(nav(page).getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/home');
-    await expect(nav(page).getByRole('button', { name: 'Settings', exact: true })).toBeDisabled();
+
+    // Takes whichever planned entry is left, so making a screen live never breaks this check.
+    const single = NAV.find((entry) => entry.href && entry.status === 'planned');
+    const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
+    const child = group?.children?.find((item) => item.status === 'planned');
+    if (!single && !(group && child)) {
+      // Nothing is planned any more: every entry must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const all = NAV.flatMap((entry) => [entry, ...(entry.children ?? [])]);
+      expect(all.filter((entry) => entry.status === 'planned')).toEqual([]);
+      return;
+    }
+    if (!single && group && child) await nav(page).getByRole('button', { name: group.label }).click();
+    const label = single ? single.label : child!.label;
+
+    const entry = nav(page).getByRole('button', { name: label, exact: true });
+    await expect(entry).toBeDisabled();
+    await expect(entry).toHaveAttribute('title', `${label} is not available yet`);
   });
 
   test('opens the group for the current page', async ({ page }, testInfo) => {
@@ -173,7 +189,10 @@ test.describe('sidebar', () => {
     const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
     const planned = group?.children?.find((item) => item.status === 'planned');
     if (!group || !planned) {
-      throw new Error('No planned child item is left in NAV, so this test has nothing to check.');
+      // Nothing is planned any more: every child must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const children = NAV.flatMap((entry) => entry.children ?? []);
+      expect(children.filter((item) => item.status !== 'live')).toEqual([]);
+      return;
     }
 
     await openSidebar(page, testInfo.project.name === 'phone');

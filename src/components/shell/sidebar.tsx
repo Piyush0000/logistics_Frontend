@@ -7,7 +7,7 @@ import { useId, useState, type Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
 import { BrandMark } from '@/components/brand-mark';
 import { userLabel } from '@/lib/format/user';
-import { activeGroupLabel, isActivePath, NAV, type NavGroup, type NavItem } from './nav-config';
+import { activeGroupLabel, isActivePath, isGroupActive, NAV, type NavGroup, type NavItem } from './nav-config';
 
 const ROW = 'flex h-12 w-full shrink-0 items-center gap-3 rounded-control px-3 text-base';
 const CHILD_ROW = 'flex h-11 w-full items-center gap-3 rounded-control px-3 text-left text-[15px]';
@@ -23,7 +23,7 @@ function submenuFor(pathname: string): string | null {
   return NAV.some((group) => group.label === label && group.children) ? label : null;
 }
 
-function ChildLink({ item, pathname }: { item: NavItem; pathname: string }) {
+export function ChildLink({ item, pathname }: { item: NavItem; pathname: string }) {
   const { label, href, icon: Icon } = item;
 
   if (item.status === 'planned') {
@@ -82,9 +82,7 @@ function SingleLink({
     );
   }
 
-  const isActive =
-    isActivePath(href, pathname) ||
-    (group.alsoActiveFor ?? []).some((prefix) => isActivePath(prefix, pathname));
+  const isActive = isGroupActive(group, pathname);
   return (
     <Link
       href={href}
@@ -278,9 +276,13 @@ export function Sidebar({
         </span>
         <span className={`min-w-0 flex-1 ${label}`}>
           <span className="block truncate text-sm font-medium">{name}</span>
-          <span title="Profile is not available yet" className="block text-xs text-tertiary/80">
+          <Link
+            href="/settings/profile"
+            onClick={onClose}
+            className="flex min-h-11 items-center text-xs text-tertiary/80 underline-offset-2 hover:underline"
+          >
             View Profile
-          </span>
+          </Link>
         </span>
         <form action={signOutAction} className={label}>
           <button
