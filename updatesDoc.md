@@ -6,11 +6,31 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22 and Task 33 (Help Centre, built ahead of order) of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22, Task 33 (Help Centre) and Task 36 (not-found and error pages), both built ahead of order, of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Task 24 is being built |
 | **Next step** | Task 23 (SMS tab), Task 24 (Settings and Profile) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 36, not-found and error pages
+
+- Added `src/app/not-found.tsx` (Page not found, a real 404, links to Home and Dashboard), `src/app/(app)/error.tsx` (Something went wrong on this page., Try again and Go to Home, no technical detail) and `src/app/global-error.tsx` (same message with its own html and body).
+- The app error page keeps the shell. `(app)/layout.tsx` now reads the session and passes the email through `ShellIdentityProvider` (`src/components/shell/shell-identity.tsx`), so the error page can draw `AppShell`. The wallet is not reloaded there (it may be what failed) and shows Unavailable. Signed out, it shows the panel without the shell.
+- Both error files use `retry` and not `reset`: this Next version (16.4.5) passes `retry`, which re-fetches the page, and the docs say to prefer it.
+- Shared card in `src/components/ui/status-panel.tsx`.
+- Test route: the brief named `__error-test`, but a leading underscore makes Next skip the folder, so it is `src/app/(app)/e2e-error-test`. It throws only when `E2E_ERROR_ROUTE=on`, otherwise `notFound()`. The variable is set only on the port 3101 server in `playwright.config.ts`. A unit test covers the guard (`guard.test.ts`) and a browser test checks port 3104 answers 404. The route is not in `e2e/routes.ts`, so the dev smoke skips it. After a cookie `e2e-error-recovered=1` exists the route renders, so Try again is tested as a real recovery.
+- Existing 404s (help article slugs, order detail, public tracking) still return 404.
+
+| Check | Result |
+|---|---|
+| Unit tests | 60 files, 539 tests passed (before the final lint tidy) |
+| Lint, typecheck | 0 errors, 0 warnings |
+| Browser, error-pages, help, orders, desktop and phone | 100 passed, 2 skipped |
+| Gateway project | 54 passed, 1 failed once under load (bulk upload booking message), passed when re-run alone |
+| Palette grep (D5), secret grep (D6) | No output |
+| Backend check (D7) | status clean, HEAD aace603 |
+
+Not run, by instruction: the full browser suite, the dev smoke and screenshots (D2 to D4).
 
 ## 2026-11-11: Task 22, Delivered and Revenue dashboard tabs
 
