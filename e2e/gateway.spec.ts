@@ -839,3 +839,17 @@ test.describe('dashboard Revenue tab with no gateway route', () => {
     await expect(page.getByRole('tab', { name: 'Revenue' })).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+test.describe('dashboard SMS tab with no gateway route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=sms');
+    const card = page.getByTestId('sms-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
+  });
+});

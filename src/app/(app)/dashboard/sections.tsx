@@ -64,7 +64,7 @@ const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
   { id: 'rto', label: 'RTO', enabled: true },
   { id: 'delivered', label: 'Delivered', enabled: true },
   { id: 'revenue', label: 'Revenue', enabled: true },
-  { id: 'sms', label: 'SMS', enabled: false },
+  { id: 'sms', label: 'SMS', enabled: true },
 ];
 
 /** The tab named by `?tab=`, or Overview when it is missing, unknown or not built yet. */

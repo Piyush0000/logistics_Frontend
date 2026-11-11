@@ -6,11 +6,29 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22 and Task 33 (Help Centre, built ahead of order) of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 23 and Task 33 (Help Centre, built ahead of order) of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Task 24 is being built |
-| **Next step** | Task 23 (SMS tab), Task 24 (Settings and Profile) |
+| **Waiting on** | Nothing: Task 24 is next |
+| **Next step** | Task 24 (Settings and Profile) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 23, SMS dashboard tab
+
+- Added the SMS tab (`/dashboard?tab=sms`) and enabled it, so every dashboard tab is now enabled. Tiles for Sent, Delivered, Failed and Delivery rate (delivered of sent, one decimal: 980 of 1,000 is 98.0%, a dash when nothing was sent), a chart of messages by shipment status, the 7 or 30 day toggle, and a `Manage buyer notifications` link to `/settings/notifications` (prefetch off, as that page is built in a later task).
+- New `src/lib/data/messages/` (types, mock, gateway, index, rate). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_MESSAGES`, in `.env.example` and the 3104, 3105 and 3106 servers.
+- Carried ruling on `BarChart`: the first and last labels are anchored to the edge (`textAnchor` start or end) when centring them would push them past the svg. The overlap browser test now also checks every value and axis label sits inside the svg's left and right edges. It failed first on the old chart (a value label ended 3.6px past the edge at 30 days).
+- Tests pointed at the new reality: `dashboard.spec.ts` now expects SMS enabled; the "not built" test in `dashboard-tabs.spec.ts` became "falls back to Overview for an unknown tab and enables every tab" (`?tab=foo`).
+- Files outside the brief: `src/components/charts/bar-chart.tsx`, `sections.tsx`, `page.tsx`.
+
+| Check | Result |
+|---|---|
+| Lint, typecheck | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 61 files, 558 tests passed |
+| Browser, dashboard-tabs and dashboard specs, desktop and phone, offset 1000 | 127 passed, 13 skipped (single-size), 0 failed |
+| Browser, gateway project | 59 passed |
+| Palette, secret and brand checks (D5, D6) | No output |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 22, Delivered and Revenue dashboard tabs
 

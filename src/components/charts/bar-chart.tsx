@@ -32,6 +32,17 @@ function labelStep(texts: readonly string[], slot: number, charWidth: number): n
   return Math.max(1, Math.ceil(widest / slot));
 }
 
+/**
+ * Where a label goes. It is centred on its bar, except that one too wide to fit between the
+ * svg's edges and the margin is anchored to that edge, so the first and last labels never clip.
+ */
+function labelPlacement(centre: number, text: string, charWidth: number) {
+  const half = (text.length * charWidth) / 2;
+  if (centre - half < SIDE) return { x: SIDE, anchor: 'start' as const };
+  if (centre + half > WIDTH - SIDE) return { x: WIDTH - SIDE, anchor: 'end' as const };
+  return { x: centre, anchor: 'middle' as const };
+}
+
 /** The text read out for the chart, so its figures are available without seeing the bars. */
 export function chartSummary(
   label: string,
@@ -110,6 +121,9 @@ export function BarChart({
           const x = SIDE + index * slot + (slot - barWidth) / 2;
           const height = d.value > 0 ? Math.max(2, (d.value / max) * plotHeight) : 0;
           const centre = x + barWidth / 2;
+          const valueText = formatLabel(d.value);
+          const valueAt = labelPlacement(centre, valueText, VALUE_CHAR);
+          const axisAt = labelPlacement(centre, d.label, AXIS_CHAR);
           return (
             <g key={`${d.label}-${index}`} aria-hidden="true">
               {height > 0 ? (
@@ -124,21 +138,21 @@ export function BarChart({
               {shows(index, valueStep) ? (
                 <text
                   data-value-label={d.label}
-                  x={centre}
+                  x={valueAt.x}
                   y={baseline - height - 6}
-                  textAnchor="middle"
+                  textAnchor={valueAt.anchor}
                   fontSize={11}
                   fontWeight={600}
                   className="fill-on-surface/70"
                 >
-                  {formatLabel(d.value)}
+                  {valueText}
                 </text>
               ) : null}
               {shows(index, axisStep) ? (
                 <text
-                  x={centre}
+                  x={axisAt.x}
                   y={baseline + 16}
-                  textAnchor="middle"
+                  textAnchor={axisAt.anchor}
                   fontSize={10}
                   className="fill-on-surface/70"
                 >
