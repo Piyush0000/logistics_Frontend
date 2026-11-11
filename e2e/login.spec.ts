@@ -359,6 +359,7 @@ test.describe('layout', () => {
       page.getByLabel('Work email'),
       page.getByRole('button', sendCode),
       page.getByRole('link', { name: 'View terms and policies' }),
+      page.getByRole('link', { name: 'Create an account' }),
     ]) {
       expect((await target.boundingBox())?.height).toBeGreaterThanOrEqual(44);
     }

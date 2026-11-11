@@ -33,6 +33,8 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | Backend check (D7) | Clean, HEAD aace603 |
 | Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
+- Fix round 1: `/signup` now shows `Demo mode: no account is created or stored, and any email works.` (browser test added). `signUpAction` redirects to `/home` when a session already exists and never replaces it (unit test). The login `Create an account` link is in the phone tap-target check. Results: lint and typecheck clean, 745 unit tests passed, browser signup and login specs on desktop and phone 112 passed, 14 skipped, 0 failed.
+
 ## 2026-11-11: Task 28, Buyer Notifications
 
 - New `/settings/notifications`. A switch for each shipment event (Manifested, In transit, Out for delivery, Delivered, RTO initiated) and channel (SMS, Email, WhatsApp), and one message for each event with a live preview using invented sample values. One Save sends the switches and messages together.

@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { createDemoSession } from '@/lib/auth/session';
+import { createDemoSession, getDemoSession } from '@/lib/auth/session';
 import { signupSchema } from '@/lib/auth/signup-schema';
 import { sessionService } from '@/lib/data/session';
 import type { SignupState } from './signup-state';
@@ -13,6 +13,9 @@ function field(formData: FormData, name: string): string {
 
 /** Public on purpose: a signed-out visitor has to be able to create an account. */
 export async function signUpAction(_state: SignupState, formData: FormData): Promise<SignupState> {
+  // Never replace an existing session.
+  if (await getDemoSession()) redirect('/home');
+
   const parsed = signupSchema.safeParse({
     company: field(formData, 'company'),
     name: field(formData, 'name'),

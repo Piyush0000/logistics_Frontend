@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const created = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/auth/session', () => ({ createDemoSession: created }));
+const current = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/auth/session', () => ({ createDemoSession: created, getDemoSession: current }));
 vi.mock('next/navigation', () => ({
   redirect: (to: string) => {
     throw new Error(`REDIRECT:${to}`);
@@ -30,6 +31,14 @@ describe('signUpAction', () => {
   afterEach(() => {
     delete process.env.DATA_SOURCE_SESSION;
     created.mockClear();
+    current.mockReset();
+  });
+
+  it('leaves an existing session alone', async () => {
+    current.mockResolvedValue({ email: 'ops@example.com' });
+
+    await expect(signUpAction(IDLE, form())).rejects.toThrow('REDIRECT:/home');
+    expect(created).not.toHaveBeenCalled();
   });
 
   it('creates the session and redirects to Home', async () => {

@@ -60,6 +60,11 @@ test('links between sign-in and sign-up', async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test('says it is a demo', async ({ page }) => {
+  await openSignup(page);
+  await expect(page.getByText('Demo mode: no account is created or stored, and any email works.')).toBeVisible();
+});
+
 test('shows no reference brand', async ({ page }) => {
   await openSignup(page);
   await expect(page.locator('body')).not.toContainText(/mera|courier ?wala|sharkship/i);

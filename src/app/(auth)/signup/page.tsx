@@ -1,3 +1,4 @@
+import { Info } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getDemoSession } from '@/lib/auth/session';
@@ -32,6 +33,10 @@ export default async function SignupPage() {
             </p>
 
             <div className="mt-5 grid gap-4 text-left sm:mt-6 sm:rounded-card sm:border sm:border-secondary sm:p-6">
+              <p className="mx-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs leading-4 font-extrabold tracking-[0.02em] text-primary sm:mx-0">
+                <Info aria-hidden="true" className="size-4 shrink-0" />
+                Demo mode: no account is created or stored, and any email works.
+              </p>
               <SignupForm />
             </div>
           </div>
