@@ -6,11 +6,14 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 28 (Buyer Notifications), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 28, 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 28 (Buyer Notifications), 32, 33, 34 and 36 of 37 are done; 28, 32, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Tasks 25, 26 and 32 are being built |
-| **Next step** | Tasks 25, 26 and 32, then Tasks 27 to 31 (Settings sections) and 35 |
+| **Waiting on** | Nothing: Tasks 29 and 30 are being built; Task 27 is merging |
+| **Next step** | Tasks 29 to 31 and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+
+
 
 
 ## 2026-11-11: Task 28, Buyer Notifications
@@ -35,6 +38,103 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | Palette, secret and brand checks (D5, D6) | No output (brand grep shows only design-file comments) |
 | Backend check (D7) | Clean, HEAD aace603 |
 | Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+
+## 2026-11-11: Task 32, Support Tickets
+
+- Added `/support/tickets` and `/support/tickets/[id]`. The list has a status filter (`?status=open|awaiting_you|resolved`, anything else shows every status), pages of 10, a table on desktop and cards on phones. New ticket opens a form: subject 5 to 120 characters, category, one optional AWB (checked with `parseAwbQuery`, at most 40 characters), message 20 to 5,000 characters. The ticket page shows the thread and a reply form. Replying to a resolved ticket (and to one awaiting you) sets it to Open. A resolved ticket shows `This ticket is resolved. Reply to reopen it.`
+- New `src/lib/data/support/` (types, input, mock, gateway, index). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_SUPPORT`, added to `.env.example` and the port 3106 server. In gateway mode the card says "This data is not available yet." and the New ticket button is hidden.
+- Server actions `createTicketAction` and `replyAction` check the session first, then check the input again.
+- Help Centre: `?new=1` opens the New ticket form. Closing it drops `?new=1`. I removed the two `prefetch={false}` overrides, because the route now exists. I rewrote the two articles that said Support Tickets was not built (side menu article and the ticket article). Support Tickets is now `live` in `NAV`.
+- Help tests that only checked the link now click it and expect the form.
+- Dashboard test `shows planned items as unavailable` fails on this branch, with 4 failures (desktop and phone, repeated twice). It picks a planned child item, and Support Tickets was the last one; Settings is planned but has no children. Task 24 adds a fallback for this, and I did not edit that logic.
+- No `loading.tsx` for the tickets list. A `loading.tsx` above `[id]` makes an unknown ticket answer 200 instead of 404, so the list loads without a skeleton, as Orders does.
+- Browser tests that change data use rows no other run touches: the reopen test takes its own resolved ticket by project, repeat and retry (tk-009 to tk-020); every other test raises a ticket with a unique subject.
+- Empty state: the list has an empty message, but no status filter matches nothing in the sample (every status has rows), so there is no browser test for it.
+
+| Check | Result |
+|---|---|
+| Unit tests | 63 files, 578 tests passed |
+| Lint, typecheck | 0 errors, 0 warnings |
+| Build | Passed |
+| Browser, support-tickets spec, desktop and phone, repeat 2 | 72 passed, 4 skipped (phone-only and desktop-only tests) |
+| Browser, support-tickets, help, dashboard, desktop and phone, repeat 2 (before the not-found fix) | 256 passed, 20 skipped, 8 failed: 4 not-found (fixed, see above) and 4 dashboard planned-item (known) |
+| Gateway project | 59 passed |
+| Palette grep (D5), secret grep (D6) | No output; brand grep prints design-file comments only |
+| Encoding check | 0 |
+| Backend check (D7) | status clean, HEAD aace603 |
+
+Not run, by instruction: the full browser suite, the dev smoke and screenshots (D2 to D4).
+
+## 2026-11-11: Task 26, Users & Roles
+
+### What was done
+
+- `/settings/users`: the team list (email, name, Active or Invited, role) and a card that explains the four roles.
+- Invite user opens a dialog with an email and a role. The email is checked and a duplicate (any letter case) is refused.
+- Other people's rows have a role picker and a Remove button. Removing asks for confirmation in a dialog (Keep member or Remove member).
+- Your own row is marked You and has no role picker and no Remove button. The server action also refuses it, so a direct call cannot change your own row.
+- At least one admin must remain: demoting or removing the last admin is refused, in the data service itself.
+- The Users & Roles card on `/settings` is live. The help article on Settings now lists Users & Roles as available.
+- Data in `src/lib/data/team/`, selected by `DATA_SOURCE_TEAM`. Gateway mode shows the team as unavailable (port 3106 test).
+
+### Files
+
+New: `src/app/(app)/settings/users/` (`page.tsx`, `loading.tsx`, `team-panel.tsx`, `invite-dialog.tsx`, `actions.ts`, `actions.test.ts`), `src/lib/data/team/` (types, input, mock, gateway, index, tests), `e2e/users.spec.ts`. Changed: `settings-nav.tsx`, `src/content/help/articles.ts`, `e2e/settings.spec.ts` (the disabled-card check now uses the first planned section, not a fixed name), `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`.
+
+## 2026-11-11: Task 25, Company & KYC
+
+### What was done
+
+- `/settings/company`: legal and brand name, GSTIN and PAN (uppercased as you type), registered address (the shared `AddressSchema`: contact name, phone, two lines, city, state, 6-digit pincode), and bank account (holder, 9 to 18 digit account number, IFSC with a 0 as the fifth character). Three documents are needed: GST certificate, PAN card and cancelled cheque, each PDF, JPG or PNG up to 5 MB, one per kind. A kind already on file does not need a new file.
+- A status badge shows the KYC status. Submitting sets it to Submitted for review. After saving, only the last 4 digits of the account number are shown, and the number is typed again on each submit.
+- Only each file's name, type and size go to the server action, as in weight disputes, so the 2 MB server action limit does not apply. The files are not stored yet.
+- The mock Home checklist reads the same company store, so the KYC step shows done after submitting.
+- Rules live in `src/lib/kyc.ts` (patterns, `parseCompanyInput`, `checkDocuments`, `maskAccount`). Data is in `src/lib/data/company/`, selected by `DATA_SOURCE_COMPANY`. Gateway mode shows the screen as unavailable, because the backend has no merchant onboarding route.
+- The Settings hub card and section list now link to Company & KYC. The Help article on Settings no longer lists company details as planned.
+
+### Files
+
+New: `src/lib/kyc.ts` and its test, `src/lib/data/company/` (types, mock, gateway, index, test), `src/app/(app)/settings/company/` (page, loading, company-form, kyc-documents, actions and its test), `e2e/company.spec.ts`.
+Changed: `src/lib/data/onboarding/mock.ts` (KYC done follows the company store), `settings-nav.tsx`, `src/content/help/articles.ts`, `e2e/routes.ts`, `e2e/gateway.spec.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`.
+Outside the brief: `e2e/settings.spec.ts` had a check that Company & KYC was a disabled button. It now checks the link, and uses Users & Roles for the disabled example.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Unit spec written first, run with no code | Failed: the `./gateway` module did not exist |
+| Browser spec written first, run before the page existed | 14 failed, 1 skipped (desktop) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| `pnpm test` | 67 files, 609 tests passed |
+| `e2e/users.spec.ts`, desktop and phone, `--repeat-each=2` | 56 passed, 4 skipped (single-size tests). The first run found the long-email overflow, fixed with `overflow-wrap:anywhere` |
+| `e2e/settings.spec.ts` and `e2e/help.spec.ts`, desktop and phone | 69 passed, 3 skipped, plus 2 passed after the disabled-card test was made dynamic |
+| `--project=gateway` | 60 passed, including the team test on port 3106 |
+| D5 palette, D6 brand grep on `src` | No output, except design-file comments |
+| D7 backend | `git status --porcelain` empty, HEAD `aace603` |
+| Screenshot `/settings/users` | Desktop and phone reviewed; no cut-off or misalignment |
+| Not run | Full suite (told not to); `node scripts/dev-smoke.mjs` did not finish within 175 seconds on the loaded machine, so D3 is not verified |
+
+### Decisions
+
+- The role picker is a native select, which is the clearest control on a phone.
+- The mock team has no knowledge of who is signed in. The server action compares the member with the session email, because the data service has no session.
+- Browser tests that change the team invite a member of their own with an email unique to the project, repeat and retry, and only change that row. They never make anyone an admin, so the last-admin test is steady.
+
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| `pnpm test` | 614 passed |
+| Settings, company and help specs, desktop and phone | 87 passed, 4 skipped, 1 failed (a company test that assumed no documents were on file, because the other project had saved some; rewritten and rerun above) |
+| Company spec again, desktop and phone, repeated twice | 38 passed |
+| Gateway project, including the company unavailable test | 60 passed |
+| Palette, secret and brand checks, backend check | No output; backend at `aace603`, clean |
+
+### Decisions
+
+- The company spec runs on its own server (port 3108, mock mode). Submitting sets KYC to submitted for the whole server, which the Home checklist reads, so the main server's Home test (two of four steps done) must not see it. Desktop and phone share that server and so each saves a brand of its own.
+- The saved account number is never sent back, only its masked form, so it is typed again on each submit.
+
+### Not verified
+
+- Screenshots at 320px and the dev-mode smoke run were not done. The machine was saturated, so the full suite was not run, as instructed.
 
 ## 2026-11-11: Task 23, SMS dashboard tab
 

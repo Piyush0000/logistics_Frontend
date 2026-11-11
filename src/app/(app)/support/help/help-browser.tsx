@@ -92,8 +92,7 @@ export function HelpBrowser({
       {results.length === 0 ? (
         <EmptyState
           message="No articles match your search. Try a shorter word, or raise a ticket and we will help."
-          // The tickets screen is not built yet, so Next must not try to prefetch it.
-          action={{ label: 'Raise a ticket', href: TICKET_HREF, prefetch: false }}
+          action={{ label: 'Raise a ticket', href: TICKET_HREF }}
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">

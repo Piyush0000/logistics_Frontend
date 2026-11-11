@@ -1,3 +1,4 @@
+import { mockCompanyService } from '../company/mock';
 import { fromMock } from '../source';
 import type { OnboardingItem, OnboardingService } from './types';
 
@@ -15,6 +16,9 @@ const CHECKLIST: OnboardingItem[] = [
 
 export const mockOnboardingService: OnboardingService = {
   async getChecklist() {
-    return fromMock(CHECKLIST.map((item) => ({ ...item })));
+    // KYC counts as done once the details are submitted on the Company & KYC screen.
+    const company = await mockCompanyService.getCompany();
+    const kycDone = company.ok && company.data.kycStatus !== 'not_started';
+    return fromMock(CHECKLIST.map((item) => (item.id === 'kyc' ? { ...item, done: kycDone } : { ...item })));
   },
 };

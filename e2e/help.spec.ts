@@ -86,10 +86,12 @@ test('shows an empty state that offers a ticket', async ({ page }) => {
   await page.getByRole('searchbox', { name: 'Search help articles' }).fill('qqqqzzzz');
   const empty = page.getByTestId('empty-state');
   await expect(empty).toContainText('No articles match');
-  await expect(empty.getByRole('link', { name: 'Raise a ticket' })).toHaveAttribute(
-    'href',
-    '/support/tickets?new=1',
-  );
+  const link = empty.getByRole('link', { name: 'Raise a ticket' });
+  await expect(link).toHaveAttribute('href', '/support/tickets?new=1');
+
+  await link.click();
+  await expect(page).toHaveURL(/\/support\/tickets\?new=1$/);
+  await expect(page.getByRole('dialog', { name: 'New ticket' })).toBeVisible();
 });
 
 test('ignores bad URL input', async ({ page }) => {
@@ -108,11 +110,13 @@ test('ignores bad URL input', async ({ page }) => {
 test('opens a ticket from an article', async ({ page }) => {
   await signIn(page);
   await page.goto(`${ROUTE}/verify-a-webhook-signature`);
-  // The tickets screen is not built yet, so this checks the link, not the page it opens.
-  await expect(page.getByRole('link', { name: 'Raise a ticket' })).toHaveAttribute(
-    'href',
-    '/support/tickets?new=1',
-  );
+  const link = page.getByRole('link', { name: 'Raise a ticket' });
+  await expect(link).toHaveAttribute('href', '/support/tickets?new=1');
+
+  await link.click();
+  await expect(page).toHaveURL(/\/support\/tickets\?new=1$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Support tickets' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'New ticket' })).toBeVisible();
 });
 
 test('returns not found for an unknown article', async ({ page }) => {
