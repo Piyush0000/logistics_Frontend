@@ -6,15 +6,41 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 32 (Support Tickets), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 32, 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 30 (Courier Rules), 32 (Support Tickets), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 30, 32, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Task 28 is being built; Task 27 is in review |
+| **Waiting on** | Nothing: Tasks 27, 28 and 29 are being built in parallel; Task 30 is in review |
 | **Next step** | Merge Task 27, then Tasks 29 to 31 (Settings sections) and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
 
 
 
+
+## 2026-11-11: Task 30, Courier Rules
+
+- Added `/settings/courier-rules`. A Preference picker (Lowest cost, Fastest, Custom) and a Courier order list. Each courier has a position, an On/Off switch and Move up and Move down buttons, which are plain buttons so they work by keyboard and by tap. There is no dragging. The Courier Rules card on Settings is now live.
+- New `src/lib/data/courier-rules/` (types, input, mock, gateway, index). The courier list and labels are the existing `CARRIERS` and `carrierLabel`, not copied. The gateway service is `notAvailable()`. New variable `DATA_SOURCE_COURIER_RULES`, added to `.env.example` and to the port 3106 server. In gateway mode the card says "This data is not available yet." with Try again, and shows no sample label and no controls.
+- Rules are checked on the server by one function, `parseCourierRules`: a known preference, every courier exactly once in the order, only known couriers switched off, and at least one left on. The mock service runs it on every save. Move up and Move down swap a courier with its neighbour, so the same moves always give the same order.
+- Server actions `setPreferenceAction`, `moveCourierAction` and `setCourierEnabledAction` check the session first and then the input. Each takes one change and applies it to the rules as they are stored right now, so two people changing different couriers cannot undo each other. None accepts a whole rule set.
+- The screen shows a change at once and puts it back, with the reason, if the server refuses. At the top or bottom of the list a Move button is `aria-disabled`, not `disabled`: a disabled button loses keyboard focus, and a browser test caught that.
+- The last courier that is on has its switch locked, and the server refuses it too.
+- Help: one paragraph for Courier Rules in "What is available" of the Settings article. No article listed courier rules as planned.
+- Browser tests share one mock rule set between the desktop and phone runs, so each project moves, switches and sets only a courier and a preference of its own, and every check reads the order it finds. Move checks compare only the moved courier with a neighbour that is not the other project's courier.
+- The brief says the order engine reads `request.preference`, but the contract strips it and the backend has no settings route, so nothing is sent anywhere yet.
+- Not tested in the browser: switching off the last courier (it needs every other courier off in a set both projects share). It is covered by unit tests of the rule and of the server action.
+
+| Check | Result |
+|---|---|
+| Unit tests | 76 files, 695 tests passed (21 are this task: 16 data layer, 5 server actions) |
+| Lint, typecheck | 0 errors, 0 warnings |
+| Build | Passed, `/settings/courier-rules` listed |
+| Browser, courier-rules spec, desktop and phone, repeat 2 | 42 passed, 2 skipped (phone-only tap targets) |
+| Browser, settings and help specs, desktop and phone | 69 passed, 3 skipped (phone-only tests) |
+| Gateway project | 64 passed, including `shows courier rules as unavailable in gateway mode` |
+| Palette grep (D5), secret grep (D6) | No output; brand grep prints design-file comments only |
+| Backend check (D7) | `git status --porcelain` empty, HEAD `aace603` |
+| Encoding check | 0 |
+| Not run | Full browser suite (D2), dev-mode smoke (D3) and screenshots (D4), by instruction |
 
 ## 2026-11-11: Task 32, Support Tickets
 
