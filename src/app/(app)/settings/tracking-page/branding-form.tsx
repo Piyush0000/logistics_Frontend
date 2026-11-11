@@ -219,7 +219,7 @@ export function BrandingForm({ branding }: { branding: TrackingPageBranding }) {
               accept=".png,.svg,image/png,image/svg+xml"
               onChange={handleLogo}
               aria-invalid={logoError ? true : undefined}
-              className="block min-h-11 w-full min-w-0 text-base lg:text-sm"
+              className="block min-h-11 w-full min-w-0 rounded-control border border-secondary bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none lg:text-sm file:mr-3 file:rounded-control file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary"
             />
             <p className="mt-1 text-xs text-on-surface/60">
               PNG or SVG, up to 1 MB. Files are not uploaded yet. Only the file name is kept.
