@@ -16,6 +16,7 @@ const WIDTH = 320;
 const HEIGHT = 190;
 const TOP = 22; // room for the tallest value label
 const BOTTOM = 26; // room for the axis labels
+const BOTTOM_TWO_LINES = 38; // room for axis labels split over two lines
 const SIDE = 8;
 const RADIUS = 4;
 const MAX_BAR_WIDTH = 28; // a lone bar stays a bar, not a block
@@ -43,6 +44,16 @@ export function labelPlacement(centre: number, text: string, charWidth: number) 
   if (centre - half < SIDE) return { x: SIDE, anchor: 'start' as const };
   if (centre + half > WIDTH - SIDE) return { x: WIDTH - SIDE, anchor: 'end' as const };
   return { x: centre, anchor: 'middle' as const };
+}
+
+/** A label split over at most two lines, at the space nearest its middle. */
+export function wrapLabel(text: string): string[] {
+  const middle = text.length / 2;
+  let best = -1;
+  for (let index = text.indexOf(' '); index !== -1; index = text.indexOf(' ', index + 1)) {
+    if (best === -1 || Math.abs(index - middle) < Math.abs(best - middle)) best = index;
+  }
+  return best === -1 ? [text] : [text.slice(0, best), text.slice(best + 1)];
 }
 
 /** The text read out for the chart, so its figures are available without seeing the bars. */
@@ -87,6 +98,10 @@ export function BarChart({
 }) {
   const data = clean(input);
   const max = Math.max(1, ...data.map((d) => d.value));
+  // A chart of categories (statuses, couriers, reasons) shows every label, split over two lines,
+  // because a skipped category cannot be guessed. A chart of days thins its labels instead.
+  const categorical = categoryLabel !== 'Day';
+  const height = categorical ? HEIGHT + (BOTTOM_TWO_LINES - BOTTOM) : HEIGHT;
   const plotHeight = HEIGHT - TOP - BOTTOM;
   const slot = (WIDTH - SIDE * 2) / Math.max(1, data.length);
   const barWidth = Math.min(MAX_BAR_WIDTH, Math.max(4, slot - 6));
@@ -96,11 +111,13 @@ export function BarChart({
     slot,
     VALUE_CHAR,
   );
-  const axisStep = labelStep(
-    data.map((d) => d.label),
-    slot,
-    AXIS_CHAR,
-  );
+  const axisStep = categorical
+    ? 1
+    : labelStep(
+        data.map((d) => d.label),
+        slot,
+        AXIS_CHAR,
+      );
   const shows = (index: number, step: number) => (data.length - 1 - index) % step === 0;
 
   return (
@@ -108,7 +125,7 @@ export function BarChart({
       <svg
         role="img"
         aria-label={chartSummary(label, data, format)}
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        viewBox={`0 0 ${WIDTH} ${height}`}
         className="mx-auto block h-auto w-full max-w-lg"
       >
         <line
@@ -122,12 +139,8 @@ export function BarChart({
         {data.map((d, index) => {
           const x = SIDE + index * slot + (slot - barWidth) / 2;
           const height = d.value > 0 ? Math.max(2, (d.value / max) * plotHeight) : 0;
-          const centre = x + barWidth / 2;
-          const valueText = formatLabel(d.value);
-          const valueAt = labelPlacement(centre, valueText, VALUE_CHAR);
-          const axisAt = labelPlacement(centre, d.label, AXIS_CHAR);
           return (
-            <g key={`${d.label}-${index}`} aria-hidden="true">
+            <g key={`bar-${d.label}-${index}`} aria-hidden="true">
               {height > 0 ? (
                 <path data-bar={d.label} d={barPath(x, baseline - height, barWidth, height)} className="fill-primary">
                   <title>{`${full(d)}: ${format(d.value)}`}</title>
@@ -137,6 +150,24 @@ export function BarChart({
                   <title>{`${full(d)}: ${format(d.value)}`}</title>
                 </rect>
               )}
+            </g>
+          );
+        })}
+        {/* Labels are drawn after every bar, so a taller neighbouring bar never hides one. */}
+        {data.map((d, index) => {
+          const x = SIDE + index * slot + (slot - barWidth) / 2;
+          const height = d.value > 0 ? Math.max(2, (d.value / max) * plotHeight) : 0;
+          const centre = x + barWidth / 2;
+          const valueText = formatLabel(d.value);
+          const valueAt = labelPlacement(centre, valueText, VALUE_CHAR);
+          const lines = categorical ? wrapLabel(d.label) : [d.label];
+          const axisAt = labelPlacement(
+            centre,
+            lines.reduce((widest, line) => (line.length > widest.length ? line : widest), ''),
+            AXIS_CHAR,
+          );
+          return (
+            <g key={`label-${d.label}-${index}`} aria-hidden="true">
               {shows(index, valueStep) ? (
                 <text
                   data-value-label={d.label}
@@ -145,20 +176,30 @@ export function BarChart({
                   textAnchor={valueAt.anchor}
                   fontSize={11}
                   fontWeight={600}
-                  className="fill-on-surface/70"
+                  paintOrder="stroke"
+                  strokeWidth={3}
+                  strokeLinejoin="round"
+                  className="fill-on-surface/70 stroke-surface"
                 >
                   {valueText}
                 </text>
               ) : null}
               {shows(index, axisStep) ? (
                 <text
+                  data-axis-label={d.label}
                   x={axisAt.x}
                   y={baseline + 16}
                   textAnchor={axisAt.anchor}
                   fontSize={10}
                   className="fill-on-surface/70"
                 >
-                  {d.label}
+                  {lines.length === 1
+                    ? d.label
+                    : lines.map((line, row) => (
+                        <tspan key={line} x={axisAt.x} dy={row === 0 ? 0 : 11}>
+                          {line}
+                        </tspan>
+                      ))}
                 </text>
               ) : null}
             </g>

@@ -34,6 +34,7 @@ describe('statusLabel', () => {
     ['RTO_INITIATED', 'RTO initiated'],
     ['CREATE_REQUESTED', 'Booking requested'],
     ['CREATED', 'Booked'],
+    ['PICKED_UP', 'Picked up'],
   ])('labels %s', (status, label) => {
     expect(statusLabel(status)).toBe(label);
   });

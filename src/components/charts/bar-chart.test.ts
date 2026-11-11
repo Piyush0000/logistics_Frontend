@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { BarChart, chartSummary, labelPlacement, labelStep } from './bar-chart';
+import { BarChart, chartSummary, labelPlacement, labelStep, wrapLabel } from './bar-chart';
 
 const DATA = [
   { label: '5 Nov', value: 0 },
@@ -157,5 +157,28 @@ describe('labelStep', () => {
     expect(labelStep(['x'.repeat(10)], 62, 6)).toBe(2);
     // Text 90 wide in a 40 slot: 90 + 4 + 25 = 119, so every 3rd bar.
     expect(labelStep(['x'.repeat(15)], 40, 6)).toBe(3);
+  });
+});
+
+describe('category charts', () => {
+  const statuses = ['Manifested', 'In transit', 'Out for delivery', 'Delivered', 'RTO initiated', 'Failed'];
+
+  it('splits a long label over two lines at a space', () => {
+    expect(wrapLabel('Out for delivery')).toEqual(['Out for', 'delivery']);
+    expect(wrapLabel('RTO initiated')).toEqual(['RTO', 'initiated']);
+    expect(wrapLabel('Manifested')).toEqual(['Manifested']);
+  });
+
+  it('shows every category on the axis instead of skipping some', () => {
+    const html = render({
+      categoryLabel: 'Shipment status',
+      data: statuses.map((label, index) => ({ label, value: index + 1 })),
+    });
+    expect(html.match(/data-axis-label=/g)).toHaveLength(6);
+  });
+
+  it('still thins the labels of a day chart', () => {
+    const days = Array.from({ length: 30 }, (_, index) => ({ label: `${index + 1} Oct`, value: index }));
+    expect((render({ data: days }).match(/data-axis-label=/g) ?? []).length).toBeLessThan(30);
   });
 });

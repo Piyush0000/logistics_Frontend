@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   DELIVERED: 'Delivered',
   RTO_INITIATED: 'RTO initiated',
   RTO_DELIVERED: 'RTO delivered',
+  PICKED_UP: 'Picked up',
   CANCELLED: 'Cancelled',
   FAILED: 'Failed',
 };
