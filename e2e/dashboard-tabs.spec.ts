@@ -33,11 +33,11 @@ test.describe('dashboard tabs', () => {
     await expect(page.getByTestId('kpi-cards')).toBeVisible();
   });
 
-  test('keeps tabs that are not built disabled', async ({ page }) => {
-    await page.goto('/dashboard?tab=sms');
+  test('falls back to Overview for an unknown tab and enables every tab', async ({ page }) => {
+    await page.goto('/dashboard?tab=foo');
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByRole('tab', { name: 'SMS' })).toBeDisabled();
-    for (const name of ['Delivered', 'Revenue']) {
+    await expect(page.getByTestId('kpi-cards')).toBeVisible();
+    for (const name of ['Overview', 'Pickups', 'NDR', 'RTO', 'Delivered', 'Revenue', 'SMS']) {
       await expect(page.getByRole('tab', { name })).toBeEnabled();
     }
   });
@@ -248,6 +248,12 @@ test.describe('delivered tab', () => {
   });
 });
 
+const EXPECTED_VALUE_LABELS: Record<string, number> = {
+  'Freight spend per day': 6,
+  'COD collected per day': 5,
+};
+const EXPECTED_AXIS_LABELS = 6;
+
 test.describe('revenue tab', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard?tab=revenue');
@@ -279,11 +285,24 @@ test.describe('revenue tab', () => {
     for (const chart of ['Freight spend per day', 'COD collected per day']) {
       const svg = card.getByRole('img', { name: new RegExp(`^${chart}\\.`) });
       for (const selector of ['text[data-value-label]', 'text:not([data-value-label])']) {
-        const boxes = await svg.locator(selector).evaluateAll((nodes) =>
-          nodes.map((node) => node.getBoundingClientRect()).map((r) => ({ left: r.left, right: r.right })),
-        );
-        expect(boxes.length).toBeGreaterThan(1);
+        await expect(svg.locator(selector)).not.toHaveCount(0);
+        await page.evaluate(() => document.fonts.ready);
+        // One read for the frame and every label, so they come from the same layout.
+        const { frame, boxes } = await svg.evaluate((node, sel) => {
+          const rect = (el: Element) => {
+            const r = el.getBoundingClientRect();
+            return { left: r.left, right: r.right };
+          };
+          return { frame: rect(node), boxes: [...node.querySelectorAll(sel)].map(rect) };
+        }, selector);
+        // From labelStep for 30 bars: freight labels show every 5th bar, COD every 6th, axis every 5th, counting back from the last.
+        const expected = selector === 'text[data-value-label]' ? EXPECTED_VALUE_LABELS[chart]! : EXPECTED_AXIS_LABELS;
+        expect(boxes.length, `${chart} ${selector} labels`).toBe(expected);
         boxes.sort((a, b) => a.left - b.left);
+        for (const [i, box] of boxes.entries()) {
+          expect(box.left, `${chart} ${selector} label ${i} left edge`).toBeGreaterThanOrEqual(frame.left);
+          expect(box.right, `${chart} ${selector} label ${i} right edge`).toBeLessThanOrEqual(frame.right);
+        }
         for (let i = 1; i < boxes.length; i += 1) {
           expect(boxes[i]!.left, `${chart} ${selector} label ${i}`).toBeGreaterThanOrEqual(boxes[i - 1]!.right);
         }
@@ -303,6 +322,55 @@ test.describe('revenue tab', () => {
       page.getByRole('tab', { name: 'Revenue' }),
       page.getByRole('link', { name: 'Last 7 days' }),
       page.getByRole('link', { name: 'Last 30 days' }),
+    ]);
+  });
+});
+
+test.describe('sms tab', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/dashboard?tab=sms');
+    await expect(page.getByTestId('sms-tab-card')).toBeVisible();
+  });
+
+  test('shows the tiles, the sample label and a chart by shipment status', async ({ page }) => {
+    await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('href', '/dashboard?tab=sms');
+    const card = page.getByTestId('sms-tab-card');
+    await expect(card.getByText('Sample data')).toBeVisible();
+    await expect(card.getByTestId('tile-Sent')).toContainText('236');
+    await expect(card.getByTestId('tile-Delivered')).toContainText('229');
+    await expect(card.getByTestId('tile-Failed')).toContainText('7');
+    await expect(card.getByTestId('tile-Delivery rate')).toContainText('97.0%');
+    await expect(card.getByRole('img', { name: /^Messages by shipment status\./ })).toBeVisible();
+    await expect(card.locator('[data-bar]')).toHaveCount(6);
+  });
+
+  test('switches to 30 days', async ({ page }) => {
+    await page.getByRole('link', { name: 'Last 30 days' }).click();
+    await expect(page).toHaveURL(/\/dashboard\?tab=sms&range=30$/);
+    const card = page.getByTestId('sms-tab-card');
+    await expect(card.getByTestId('tile-Sent')).toContainText('1,000');
+    await expect(card.getByTestId('tile-Delivery rate')).toContainText('98.0%');
+  });
+
+  test('links to buyer notification settings', async ({ page }) => {
+    const link = page.getByRole('link', { name: 'Manage buyer notifications' });
+    await expect(link).toHaveAttribute('href', '/settings/notifications');
+  });
+
+  test('does not scroll sideways at any size', async ({ page }) => {
+    await page.goto('/dashboard?tab=sms&range=30');
+    await expect(page.getByTestId('sms-tab-card').locator('[data-bar]')).toHaveCount(6);
+    await expectNoSidewaysScroll(page, SIZES);
+  });
+
+  test('keeps tap targets touch-sized on phones', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone');
+    await expectTapTargets(page, [
+      page.getByRole('tab', { name: 'SMS' }),
+      page.getByRole('link', { name: 'Last 7 days' }),
+      page.getByRole('link', { name: 'Last 30 days' }),
+      page.getByRole('link', { name: 'Manage buyer notifications' }),
     ]);
   });
 });

@@ -11,6 +11,7 @@ import { NdrTab } from './tabs/ndr-tab';
 import { OverviewTab } from './tabs/overview-tab';
 import { PickupsTab } from './tabs/pickups-tab';
 import { RevenueTab } from './tabs/revenue-tab';
+import { SmsTab } from './tabs/sms-tab';
 import { RtoTab } from './tabs/rto-tab';
 
 export const metadata: Metadata = { title: 'Dashboard | Evoc Logistics' };
@@ -41,6 +42,8 @@ export default async function DashboardPage({
         <RtoTab />
       ) : tab === 'delivered' ? (
         <DeliveredTab range={range} />
+      ) : tab === 'sms' ? (
+        <SmsTab range={range} />
       ) : tab === 'revenue' ? (
         <RevenueTab range={range} />
       ) : (

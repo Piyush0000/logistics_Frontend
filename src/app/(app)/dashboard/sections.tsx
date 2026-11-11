@@ -64,13 +64,21 @@ const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
   { id: 'rto', label: 'RTO', enabled: true },
   { id: 'delivered', label: 'Delivered', enabled: true },
   { id: 'revenue', label: 'Revenue', enabled: true },
-  { id: 'sms', label: 'SMS', enabled: false },
+  { id: 'sms', label: 'SMS', enabled: true },
 ];
 
 /** The tab named by `?tab=`, or Overview when it is missing, unknown or not built yet. */
 export function parseTab(value: unknown): DashboardTab {
-  const tab = parseEnum(value, TABS.map((entry) => entry.id));
-  return TABS.find((entry) => entry.id === tab)?.enabled ? tab! : 'overview';
+  return resolveTab(value, TABS);
+}
+
+/** `parseTab` over any tab list, so the disabled branch can be tested while every real tab is enabled. */
+export function resolveTab(
+  value: unknown,
+  tabs: readonly { id: DashboardTab; enabled: boolean }[],
+): DashboardTab {
+  const tab = parseEnum(value, tabs.map((entry) => entry.id));
+  return tabs.find((entry) => entry.id === tab)?.enabled ? tab! : 'overview';
 }
 
 const tabHref = (id: DashboardTab) => (id === 'overview' ? '/dashboard' : `/dashboard?tab=${id}`);
