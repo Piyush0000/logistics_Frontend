@@ -1,3 +1,4 @@
+import { CARRIERS } from '@logicore/contracts';
 import { ChevronLeft, ChevronRight, PackageOpen } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -7,12 +8,22 @@ import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
 import { walletService } from '@/lib/data/wallet';
-import { buildPageHref } from '@/lib/url-params';
+import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params';
 import { OrderFilters } from './filters';
 import { OrdersCards } from './orders-cards';
 import { OrdersTable } from './orders-table';
 
 export const metadata: Metadata = { title: 'Orders | Evoc Logistics' };
+
+const STATUSES = [
+  'MANIFESTED',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'RTO_INITIATED',
+  'RTO_DELIVERED',
+  'FAILED',
+] as const;
 
 interface OrdersPageProps {
   searchParams: Promise<{
@@ -28,15 +39,18 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   if (!session) redirect('/login');
 
   const params = await searchParams;
-  const page = Number(params.page) || 1;
+  const status = parseEnum(params.status, STATUSES);
+  const carrier = parseEnum(params.carrier, CARRIERS);
+  const search = parseText(params.search, 100);
+  const page = parsePage(params.page);
   const limit = 50;
 
   const [wallet, ordersResult] = await Promise.all([
     walletService().getBalance(),
     ordersService().listOrders({
-      status: params.status,
-      carrier: params.carrier,
-      search: params.search,
+      status,
+      carrier,
+      search: search || undefined,
       page,
       limit,
     }),
@@ -45,7 +59,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const totalPages = ordersResult.ok ? Math.ceil(ordersResult.data.total / limit) || 1 : 1;
 
   const createPaginationLink = (newPage: number) =>
-    buildPageHref('/orders', { status: params.status, carrier: params.carrier, search: params.search }, newPage);
+    buildPageHref('/orders', { status, carrier, search }, newPage);
 
   return (
     <AppShell email={session.email} wallet={wallet}>
@@ -66,7 +80,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         {/* Filter Bar */}
         <OrderFilters />
 
-        {ordersResult.source === 'gateway' && params.search ? (
+        {ordersResult.source === 'gateway' && search ? (
           <p data-testid="search-scope-note" className="text-xs text-on-surface/70">
             Search covers the shipments on this page only.
           </p>

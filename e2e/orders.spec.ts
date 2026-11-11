@@ -22,6 +22,17 @@ test.describe('Orders screen', () => {
       await expect(page.getByRole('tab', { name: 'In Transit' })).toBeVisible();
     });
 
+    test('ignores bad URL input', async ({ page }) => {
+      for (const query of ['?page=abc', '?page=-1', '?page=1.5', '?status=FOO', '?carrier=FOO']) {
+        const response = await page.goto(`/orders${query}`);
+        expect(response?.status()).toBe(200);
+        await expect(page.getByRole('heading', { level: 1, name: 'Shipments & Orders' })).toBeVisible();
+        // A bad value is dropped, so the unfiltered list still shows.
+        await expect(page.getByTestId('orders-empty')).toHaveCount(0);
+        await expect(page.getByTestId('orders-error')).toHaveCount(0);
+      }
+    });
+
     test('filters list by status tabs', async ({ page }, testInfo) => {
       await page.goto('/orders');
       await page.getByRole('tab', { name: 'Delivered', exact: true }).click();
