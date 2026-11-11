@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { carrierLabel } from '@/components/orders/carrier-badge';
 import { getDemoSession } from '@/lib/auth/session';
+import { createSerialQueue } from '@/lib/serial';
 import type { DataResult } from '@/lib/data/source';
 import {
   courierRulesService,
@@ -24,25 +25,36 @@ function carrierRulesError(result: Extract<DataResult<unknown>, { ok: false }>):
   return result.error.kind === 'unauthorized' ? SIGN_IN_AGAIN : result.error.message;
 }
 
+const inOrder = createSerialQueue();
+
+type Change =
+  | { ok: true; value: CourierRules }
+  | { ok: true; unchanged: string }
+  | { ok: false; message: string };
+
 /**
  * Each action changes one thing on the rules as they are stored right now, then saves. None of them
- * accepts a whole rule set, so two people changing different couriers cannot undo each other.
+ * accepts a whole rule set, and the read, change and save run one request at a time, so overlapping
+ * requests within this server cannot undo each other. A real backend has to enforce this too.
  */
-async function change(
-  apply: (rules: CourierRules) => ReturnType<typeof setPreference>,
+function change(
+  apply: (rules: CourierRules) => Change,
   describe: (rules: CourierRules) => string,
 ): Promise<RulesActionResult> {
-  const service = courierRulesService();
-  const current = await service.get();
-  if (!current.ok) return { ok: false, message: carrierRulesError(current) };
+  return inOrder(async () => {
+    const service = courierRulesService();
+    const current = await service.get();
+    if (!current.ok) return { ok: false, message: carrierRulesError(current) };
 
-  const next = apply(current.data);
-  if (!next.ok) return { ok: false, message: next.message };
+    const next = apply(current.data);
+    if (!next.ok) return { ok: false, message: next.message };
+    if ('unchanged' in next) return { ok: true, message: next.unchanged, rules: current.data };
 
-  const saved = await service.save(next.value);
-  if (!saved.ok) return { ok: false, message: carrierRulesError(saved) };
-  revalidatePath('/settings/courier-rules');
-  return { ok: true, message: describe(saved.data), rules: saved.data };
+    const saved = await service.save(next.value);
+    if (!saved.ok) return { ok: false, message: carrierRulesError(saved) };
+    revalidatePath('/settings/courier-rules');
+    return { ok: true, message: describe(saved.data), rules: saved.data };
+  });
 }
 
 export async function setPreferenceAction(preference: unknown): Promise<RulesActionResult> {
@@ -58,7 +70,14 @@ export async function moveCourierAction(carrier: unknown, direction: unknown): P
   if (!isCarrier(carrier)) return { ok: false, message: 'Choose a courier from the list.' };
   if (direction !== 'up' && direction !== 'down') return { ok: false, message: 'Choose up or down.' };
   return change(
-    (rules) => ({ ok: true, value: { ...rules, priority: moveCourier(rules.priority, carrier, direction) } }),
+    (rules) => {
+      const at = rules.priority.indexOf(carrier);
+      if (direction === 'up' && at === 0) return { ok: true, unchanged: 'Already at the top.' };
+      if (direction === 'down' && at === rules.priority.length - 1) {
+        return { ok: true, unchanged: 'Already at the bottom.' };
+      }
+      return { ok: true, value: { ...rules, priority: moveCourier(rules.priority, carrier, direction) } };
+    },
     () => `Moved ${carrierLabel(carrier)} ${direction}.`,
   );
 }

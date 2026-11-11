@@ -30,11 +30,15 @@ export function RulesPanel({ initial }: { initial: CourierRules }) {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-      {feedback ? (
-        <p
-          role={feedback.ok ? 'status' : 'alert'}
-          className={`rounded-control p-3 text-sm [overflow-wrap:anywhere] ${feedback.ok ? 'bg-success/15' : 'bg-error/10'}`}
-        >
+      {/* The status region is always on the page, so screen readers announce what is put into it. */}
+      <p
+        role="status"
+        className={`rounded-control text-sm [overflow-wrap:anywhere] ${feedback?.ok ? 'bg-success/15 p-3' : 'sr-only'}`}
+      >
+        {feedback?.ok ? feedback.message : ''}
+      </p>
+      {feedback && !feedback.ok ? (
+        <p role="alert" className="rounded-control bg-error/10 p-3 text-sm [overflow-wrap:anywhere]">
           {feedback.message}
         </p>
       ) : null}

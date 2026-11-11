@@ -5,7 +5,7 @@ const session = vi.hoisted(() => ({ current: { email: 'ops@example.com' } as { e
 vi.mock('@/lib/auth/session', () => ({ getDemoSession: async () => session.current }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-import { courierRulesService, LAST_COURIER_MESSAGE } from '@/lib/data/courier-rules';
+import { courierRulesService, LAST_COURIER_MESSAGE, moveCourier } from '@/lib/data/courier-rules';
 import { moveCourierAction, setCourierEnabledAction, setPreferenceAction } from './actions';
 
 async function rules() {
@@ -64,5 +64,27 @@ describe('courier rule actions', () => {
       message: LAST_COURIER_MESSAGE,
     });
     expect((await rules()).disabled).toHaveLength(CARRIERS.length - 1);
+  });
+
+  it('keeps both changes when two actions overlap', async () => {
+    const [a, b, c] = CARRIERS;
+    const results = await Promise.all([
+      moveCourierAction(c, 'up'),
+      setCourierEnabledAction(a, false),
+      setPreferenceAction('custom'),
+      moveCourierAction(b, 'down'),
+    ]);
+    expect(results.every((result) => result.ok)).toBe(true);
+    const stored = await rules();
+    expect(stored.preference).toBe('custom');
+    expect(stored.disabled).toEqual([a]);
+    expect(stored.priority).toEqual(moveCourier(moveCourier([...CARRIERS], c, 'up'), b, 'down'));
+  });
+
+  it('says so, and saves nothing, when a move is already at the end', async () => {
+    const last = CARRIERS[CARRIERS.length - 1];
+    expect(await moveCourierAction(CARRIERS[0], 'up')).toMatchObject({ ok: true, message: 'Already at the top.' });
+    expect(await moveCourierAction(last, 'down')).toMatchObject({ ok: true, message: 'Already at the bottom.' });
+    expect((await rules()).priority).toEqual([...CARRIERS]);
   });
 });

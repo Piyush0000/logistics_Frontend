@@ -1,5 +1,8 @@
+import { mkdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { fillDetails, openLogin, signIn } from './helpers';
+import { e2ePort, e2eUrl, fillDetails, openLogin, signIn } from './helpers';
 import { expectNoSidewaysScroll, expectSignedOutRedirect, expectTapTargets, SIZES } from './screen-checks';
 
 const ROUTE = '/settings/courier-rules';
@@ -21,27 +24,34 @@ async function openRules(page: Page) {
 const order = (page: Page) =>
   page.getByTestId('courier-row').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-name')));
 
-/** Expects `first` to be listed above `second`. Only their own order is checked, because the other project moves other couriers. */
-const expectBefore = (page: Page, first: string, second: string) =>
-  expect
-    .poll(async () => {
-      const names = await order(page);
-      return names.indexOf(first) < names.indexOf(second);
-    })
-    .toBe(true);
+/**
+ * The move tests run on their own server (port 3110), so nothing else changes the order while they
+ * read it, and they take this lock so the desktop and phone runs do not move couriers at the same
+ * time. That lets them assert the exact index a courier lands on, with no neighbour guessed
+ * beforehand. A directory is made and removed as the lock, because making one is atomic.
+ */
+const LOCK = join(tmpdir(), `courier-rules-moves-${e2ePort(3110)}.lock`);
 
-/** A direction to move `name` in whose neighbour is not the other project's courier, which it may be moving at the same time. */
-async function pickMove(page: Page, name: string) {
-  const other = Object.values(COURIER).find((courier) => courier !== name);
-  const names = await order(page);
-  const at = names.indexOf(name);
-  const options = [
-    { direction: 'up' as const, neighbour: names[at - 1] },
-    { direction: 'down' as const, neighbour: names[at + 1] },
-  ].filter((option): option is { direction: 'up' | 'down'; neighbour: string } => !!option.neighbour);
-  const pick = options.find((option) => option.neighbour !== other) ?? options[0];
-  if (!pick) throw new Error('no courier to swap with');
-  return pick;
+async function withMoveLock(run: () => Promise<void>) {
+  const deadline = Date.now() + 120_000;
+  for (;;) {
+    try {
+      mkdirSync(LOCK);
+      break;
+    } catch {
+      // A lock left by a run that crashed is older than any test, so it is cleared.
+      try {
+        if (Date.now() - statSync(LOCK).mtimeMs > 90_000) rmSync(LOCK, { recursive: true, force: true });
+      } catch {}
+      if (Date.now() > deadline) throw new Error('Waited too long for the courier move lock.');
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+  try {
+    await run();
+  } finally {
+    rmSync(LOCK, { recursive: true, force: true });
+  }
 }
 
 test.describe('courier rules', () => {
@@ -85,42 +95,6 @@ test.describe('courier rules', () => {
     await mine.check();
     await expect(page.getByRole('status').filter({ hasText: 'Preference saved.' })).toBeVisible();
     await expect(page.getByRole('radio', { name: label })).toBeChecked();
-  });
-
-  test('moves a courier up and down with buttons', async ({ page }, testInfo) => {
-    await openRules(page);
-    const name = COURIER[projectOf(testInfo)];
-    const { direction, neighbour } = await pickMove(page, name);
-    const reverse = direction === 'up' ? 'down' : 'up';
-
-    await page.getByRole('button', { name: `Move ${name} ${direction}`, exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: `Moved ${name} ${direction}.` })).toBeVisible();
-    await expectBefore(page, direction === 'up' ? name : neighbour, direction === 'up' ? neighbour : name);
-
-    await page.getByRole('button', { name: `Move ${name} ${reverse}`, exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: `Moved ${name} ${reverse}.` })).toBeVisible();
-    await expectBefore(page, direction === 'up' ? neighbour : name, direction === 'up' ? name : neighbour);
-    expect(new Set(await order(page)).size).toBe(5);
-  });
-
-  test('moves a courier up with the keyboard', async ({ page }, testInfo) => {
-    await openRules(page);
-    const name = COURIER[projectOf(testInfo)];
-    const { direction, neighbour } = await pickMove(page, name);
-    const reverse = direction === 'up' ? 'down' : 'up';
-    const [upper, lower] = direction === 'up' ? [name, neighbour] : [neighbour, name];
-
-    await page.getByRole('button', { name: `Move ${name} ${direction}`, exact: true }).focus();
-    await page.keyboard.press('Enter');
-    await expect(page.getByRole('status').filter({ hasText: `Moved ${name} ${direction}.` })).toBeVisible();
-    await expectBefore(page, upper, lower);
-    // The button keeps focus through the move, so the same key can move it again.
-    await expect(page.getByRole('button', { name: `Move ${name} ${direction}`, exact: true })).toBeFocused();
-
-    // Put it back with the keyboard too, so the order the other project sees is close to what it expects.
-    await page.getByRole('button', { name: `Move ${name} ${reverse}`, exact: true }).focus();
-    await page.keyboard.press('Space');
-    await expectBefore(page, lower, upper);
   });
 
   test('switches a courier off and on', async ({ page }, testInfo) => {
@@ -170,5 +144,69 @@ test.describe('courier rules', () => {
       page.getByRole('button', { name: `Move ${name} up`, exact: true }),
       page.getByRole('button', { name: `Move ${name} down`, exact: true }),
     ]);
+  });
+});
+
+test.describe('courier moves', () => {
+  test.use({ baseURL: e2eUrl(3110) });
+
+  // Moves the courier one place, away from the end it is next to, and returns where it landed.
+  async function moveOnce(page: Page, name: string, how: (button: ReturnType<Page['getByRole']>) => Promise<void>) {
+    const before = (await order(page)).indexOf(name);
+    expect(before).toBeGreaterThanOrEqual(0);
+    const direction = before === 0 ? 'down' : 'up';
+    const button = page.getByRole('button', { name: `Move ${name} ${direction}`, exact: true });
+    await how(button);
+    await expect(page.getByRole('status').filter({ hasText: `Moved ${name} ${direction}.` })).toBeVisible();
+    // Read from the page after the click: exactly one place, in the direction asked, from where it was.
+    await expect.poll(async () => (await order(page)).indexOf(name)).toBe(before + (direction === 'up' ? -1 : 1));
+    expect(new Set(await order(page)).size).toBe(5);
+    return { before, direction } as const;
+  }
+
+  test('moves a courier up and down with buttons', async ({ page }, testInfo) => {
+    await withMoveLock(async () => {
+      await openRules(page);
+      const name = COURIER[projectOf(testInfo)];
+      const { before, direction } = await moveOnce(page, name, (button) => button.click());
+      const reverse = direction === 'up' ? 'down' : 'up';
+
+      await page.getByRole('button', { name: `Move ${name} ${reverse}`, exact: true }).click();
+      await expect(page.getByRole('status').filter({ hasText: `Moved ${name} ${reverse}.` })).toBeVisible();
+      await expect.poll(async () => (await order(page)).indexOf(name)).toBe(before);
+    });
+  });
+
+  test('moves a courier up with the keyboard', async ({ page }, testInfo) => {
+    await withMoveLock(async () => {
+      await openRules(page);
+      const name = COURIER[projectOf(testInfo)];
+      const { before, direction } = await moveOnce(page, name, async (button) => {
+        await button.focus();
+        await page.keyboard.press('Enter');
+      });
+      // The button keeps focus through the move, so the same key can move it again.
+      await expect(page.getByRole('button', { name: `Move ${name} ${direction}`, exact: true })).toBeFocused();
+
+      const reverse = direction === 'up' ? 'down' : 'up';
+      await page.getByRole('button', { name: `Move ${name} ${reverse}`, exact: true }).focus();
+      await page.keyboard.press('Space');
+      await expect.poll(async () => (await order(page)).indexOf(name)).toBe(before);
+    });
+  });
+
+  test('does not move the first courier up', async ({ page }) => {
+    await withMoveLock(async () => {
+      await openRules(page);
+      const first = (await order(page))[0];
+      expect(first).toBeTruthy();
+      // The first courier cannot go up: the button stays, is marked, and the order does not change.
+      const before = await order(page);
+      const top = page.getByRole('button', { name: `Move ${first} up`, exact: true });
+      await expect(top).toHaveAttribute('aria-disabled', 'true');
+      await top.click({ force: true });
+      await expect(page.getByRole('status').filter({ hasText: 'Moved' })).toHaveCount(0);
+      expect(await order(page)).toEqual(before);
+    });
   });
 });

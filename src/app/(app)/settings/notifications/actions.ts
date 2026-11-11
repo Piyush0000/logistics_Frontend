@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { getDemoSession } from '@/lib/auth/session';
+import { createSerialQueue } from '@/lib/serial';
 import {
   applyNotificationChanges,
   notificationService,
@@ -19,12 +20,7 @@ export type NotificationActionResult =
 const SIGN_IN_AGAIN = 'Sign in again.';
 
 // Read, merge and save must not interleave with another save, or the later one would write back the older state.
-let queue: Promise<unknown> = Promise.resolve();
-function inOrder<T>(task: () => Promise<T>): Promise<T> {
-  const run = queue.then(task, task);
-  queue = run.catch(() => undefined);
-  return run;
-}
+const inOrder = createSerialQueue();
 
 /**
  * Saves only the events the merchant changed. The changes go on top of the settings as they are now, so

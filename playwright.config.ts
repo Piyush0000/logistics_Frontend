@@ -78,5 +78,12 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
     },
+    {
+      // Mock mode, for the courier move tests. They read the exact order, so nothing else may move couriers here.
+      command: 'pnpm exec next start -p ' + e2ePort(3110),
+      url: e2eUrl(3110) + '/login',
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
   ],
 });
