@@ -14,7 +14,7 @@ export interface PickupsSummary {
 export const CHART_DAYS = 7;
 
 /** 2026-11-05 as "5 Nov". The day is a calendar date, so UTC is used only to name the month. */
-function dayLabel(day: string): string {
+export function dayLabel(day: string): string {
   const month = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short' }).format(
     new Date(`${day}T00:00:00Z`),
   );

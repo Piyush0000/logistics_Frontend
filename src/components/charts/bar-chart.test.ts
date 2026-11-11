@@ -69,4 +69,54 @@ describe('BarChart', () => {
   it('names the table column Day by default', () => {
     expect(render()).toContain('<th scope="col">Day</th>');
   });
+
+  it('shows compact value labels but keeps full figures in the summary, titles and table', () => {
+    const html = render({
+      data: [
+        { label: 'a', value: 12345600 },
+        { label: 'b', value: 500 },
+      ],
+      format: (n) => `INR ${n}`,
+      formatLabel: (n) => `~${n}`,
+    });
+    expect(html).toContain('>~12345600</text>');
+    expect(html).toContain('INR 12345600');
+    expect(html).toContain('<td>INR 12345600</td>');
+    expect(html).not.toContain('>INR 12345600</text>');
+  });
+
+  it('thins value and axis labels when they would overlap, and keeps the latest day', () => {
+    const days = Array.from({ length: 30 }, (_, i) => ({ label: `${i + 1} Nov`, value: 12345600 + i }));
+    const html = render({ data: days, formatLabel: (n) => `₹${n}` });
+    const valueLabels = html.match(/data-value-label=/g)!.length;
+    expect(valueLabels).toBeGreaterThan(2);
+    expect(valueLabels).toBeLessThan(15);
+    expect(html).toContain('data-value-label="30 Nov"');
+    expect(html.match(/>\d+ Nov<\/text>/g)!.length).toBeLessThan(15);
+    // Every bar and every table row is still there.
+    expect(html.match(/data-bar=/g)).toHaveLength(30);
+    expect(html.match(/<tr>/g)).toHaveLength(31);
+  });
+
+  it('caps the width of a single bar', () => {
+    const html = render({ data: [{ label: 'Only', value: 5 }] });
+    const d = html.match(/data-bar="Only" d="([^"]+)"/)![1]!;
+    const left = Number(d.match(/^M([\d.]+) /)![1]);
+    const right = Number(d.match(/H[\d.]+Q([\d.]+) /)![1]);
+    expect(right - left).toBeLessThanOrEqual(28);
+    expect(right - left).toBeGreaterThan(10);
+  });
+
+  it('draws NaN, negative and infinite values as empty bars', () => {
+    const data = [
+      { label: 'a', value: Number.NaN },
+      { label: 'b', value: -5 },
+      { label: 'c', value: Number.POSITIVE_INFINITY },
+      { label: 'd', value: 3 },
+    ];
+    const html = render({ data });
+    expect(html).not.toMatch(/NaN|Infinity|-5/);
+    expect(html.match(/data-bar=/g)).toHaveLength(4);
+    expect(chartSummary('x', data)).toBe('x. a: 0, b: 0, c: 0, d: 3. Highest: d, 3.');
+  });
 });
