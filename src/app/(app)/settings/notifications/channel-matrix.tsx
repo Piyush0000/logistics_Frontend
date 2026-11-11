@@ -59,11 +59,11 @@ export function ChannelMatrix({
       <caption className="sr-only">Which channels send a message for each shipment event</caption>
       <thead>
         <tr className="border-b border-secondary text-left">
-          <th scope="col" className="w-[40%] py-2 pr-2 font-medium sm:w-1/2">
+          <th scope="col" className="w-[29%] py-2 pr-2 text-xs font-medium sm:w-1/2 sm:text-sm">
             Shipment event
           </th>
           {NOTIFY_CHANNELS.map((channel) => (
-            <th key={channel} scope="col" className="px-1 py-2 text-center font-medium">
+            <th key={channel} scope="col" className="px-0 py-2 text-center text-xs font-medium sm:px-1 sm:text-sm">
               <span className="[overflow-wrap:anywhere]">{CHANNEL_LABELS[channel]}</span>
             </th>
           ))}
@@ -72,7 +72,7 @@ export function ChannelMatrix({
       <tbody>
         {NOTIFY_EVENTS.map((event) => (
           <tr key={event} className="border-b border-secondary last:border-0">
-            <th scope="row" className="py-1 pr-2 text-left font-normal break-words">
+            <th scope="row" className="py-1 pr-2 text-left text-xs font-normal break-words sm:text-sm">
               {statusLabel(event)}
             </th>
             {NOTIFY_CHANNELS.map((channel) => (
