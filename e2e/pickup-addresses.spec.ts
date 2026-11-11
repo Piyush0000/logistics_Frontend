@@ -181,3 +181,22 @@ test('fills origin from a saved address on Create Shipment', async ({ page }) =>
   // The delivery side is not touched.
   await expect(page.locator('#destination_city')).toHaveValue('Mumbai');
 });
+
+test('keeps edited origin fields after a failed submit', async ({ page }) => {
+  await signIn(page);
+  await page.goto(CREATE);
+  await page.getByLabel('Use saved address').selectOption({ label: 'Gurugram store, Gurugram' });
+  await expect(page.locator('#origin_pincode')).toHaveValue('122001');
+
+  await page.locator('#origin_pincode').fill('012345');
+  await page.getByTestId('submit-shipment').click();
+
+  // The error points at the value that was typed, and it is still there.
+  await expect(page.getByText(/Indian pincodes must be 6 digits/)).toBeVisible();
+  await expect(page.locator('#origin_pincode')).toHaveValue('012345');
+  await expect(page.locator('#origin_city')).toHaveValue('Gurugram');
+
+  // Choosing a saved address again starts again from that address.
+  await page.getByLabel('Use saved address').selectOption({ label: 'Bengaluru warehouse, Bengaluru' });
+  await expect(page.locator('#origin_pincode')).toHaveValue('560100');
+});

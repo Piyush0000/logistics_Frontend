@@ -620,6 +620,9 @@ test.describe('pickup addresses with no route', () => {
     await expect(page.getByTestId('address-item')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Add address' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1, name: 'Pickup Addresses' })).toBeVisible();
+  });
+});
+
 test.describe('company with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 

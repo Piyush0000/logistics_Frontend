@@ -22,10 +22,18 @@ export function CreateShipmentForm({
   const [state, formAction, pending] = useActionState(createShipmentAction, INITIAL_STATE);
   const [paymentType, setPaymentType] = useState<'COD' | 'PREPAID'>('PREPAID');
   const [savedId, setSavedId] = useState('');
+  // The values of the last failed submit that choosing a saved address has replaced.
+  const [replacedValues, setReplacedValues] = useState(state.values);
   const saved = savedAddresses.find((entry) => entry.id === savedId);
 
   // A submitted form resets its fields, so the fields start from what was sent.
   const v = (name: string, fallback: string) => state.values?.[name] ?? fallback;
+  // Origin fields: what was sent wins after a failed submit, so edits are never undone. Choosing a
+  // saved address afterwards starts again from that address.
+  const origin = (name: string, savedValue: string | undefined, fallback: string) =>
+    state.values && state.values !== replacedValues
+      ? v(name, fallback)
+      : (savedValue ?? fallback);
 
   if (state.ok) {
     return (
@@ -107,7 +115,10 @@ export function CreateShipmentForm({
                 <select
                   id="saved_address"
                   value={savedId}
-                  onChange={(event) => setSavedId(event.target.value)}
+                  onChange={(event) => {
+                    setSavedId(event.target.value);
+                    setReplacedValues(state.values);
+                  }}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-base focus:border-primary focus:outline-none lg:text-sm"
                 >
                   <option value="">Type the address below</option>
@@ -128,7 +139,7 @@ export function CreateShipmentForm({
                 id="origin_name"
                 name="origin_name"
                 required
-                defaultValue={saved ? saved.address.name : v("origin_name", "Bengaluru Central Hub")}
+                defaultValue={origin("origin_name", saved?.address.name, "Bengaluru Central Hub")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('origin.name') ? (
@@ -146,7 +157,7 @@ export function CreateShipmentForm({
                   name="origin_phone"
                   type="tel"
                   required
-                  defaultValue={saved ? saved.address.phone : v("origin_phone", "9876543210")}
+                  defaultValue={origin("origin_phone", saved?.address.phone, "9876543210")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('origin.phone') ? (
@@ -162,7 +173,7 @@ export function CreateShipmentForm({
                   name="origin_pincode"
                   required
                   maxLength={6}
-                  defaultValue={saved ? saved.address.pincode : v("origin_pincode", "560100")}
+                  defaultValue={origin("origin_pincode", saved?.address.pincode, "560100")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
                 {getError('origin.pincode') ? (
@@ -179,7 +190,7 @@ export function CreateShipmentForm({
                 id="origin_line1"
                 name="origin_line1"
                 required
-                defaultValue={saved ? saved.address.line1 : v("origin_line1", "Plot 42, Electronic City Phase 1")}
+                defaultValue={origin("origin_line1", saved?.address.line1, "Plot 42, Electronic City Phase 1")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('origin.line1') ? (
@@ -196,7 +207,7 @@ export function CreateShipmentForm({
                   id="origin_city"
                   name="origin_city"
                   required
-                  defaultValue={saved ? saved.address.city : v("origin_city", "Bengaluru")}
+                  defaultValue={origin("origin_city", saved?.address.city, "Bengaluru")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -208,7 +219,7 @@ export function CreateShipmentForm({
                   id="origin_state"
                   name="origin_state"
                   required
-                  defaultValue={saved ? saved.address.state : v("origin_state", "Karnataka")}
+                  defaultValue={origin("origin_state", saved?.address.state, "Karnataka")}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>

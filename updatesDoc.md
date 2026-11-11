@@ -13,6 +13,20 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
 
+## 2026-11-11: Task 27, fix round 1
+
+- Create Shipment: after a failed submit, the origin fields now keep what the person typed. Before, the saved address won and snapped the fields back, so the error pointed at a value they could no longer see. Choosing a saved address again starts again from that address. New browser test `keeps edited origin fields after a failed submit`.
+- Editing a saved address no longer sends the default flag unless it is ticked (fixes a stale list in a second tab). The label field's extra 10 characters are now explained in a comment.
+- The Settings help article has a Pickup Addresses paragraph. Merged Tasks 25, 26 and 32 (`3b069e5`); the merge commit also carried a broken `e2e/gateway.spec.ts` closing, fixed in this round.
+
+| Check | Result |
+|---|---|
+| Lint, build (includes typecheck) | 0 errors, 0 warnings |
+| Unit tests | 679 passed |
+| Browser, pickup-addresses spec, desktop and phone, `--repeat-each=2` | 46 passed, 2 skipped (phone-only), 0 failed |
+| Browser, b2c and help specs, desktop (interrupted run) | passed so far, 0 failed |
+| Not run | orders, settings and help on phone, gateway project (machine too slow) |
+
 ## 2026-11-11: Task 27, Pickup Addresses
 
 - `/settings/pickup-addresses` lists saved addresses as cards (the same on desktop and phone), with the Settings section list on the left on desktop and a Back to Settings link on phones. Add, edit and delete addresses (delete asks first). Label 1 to 40 characters; the address is checked with the shared `AddressSchema` (6-digit pincode not starting with 0, phone 10 to 15 digits), and the server answers per field. At most 25 addresses. There is always exactly one default: the first address is it, Make default moves it, and the default cannot be deleted while others exist.

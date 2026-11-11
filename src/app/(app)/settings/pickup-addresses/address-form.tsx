@@ -77,7 +77,9 @@ export function AddressForm({
     state: entry?.address.state ?? '',
     pincode: entry?.address.pincode ?? '',
   });
-  const [isDefault, setIsDefault] = useState(entry?.isDefault ?? false);
+  // An edit starts unticked, so saving it never claims the default unless it is ticked here. The
+  // default itself is kept by the server, which stops the only default from losing the flag.
+  const [isDefault, setIsDefault] = useState(false);
   const [errors, setErrors] = useState<AddressFieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -107,6 +109,7 @@ export function AddressForm({
   return (
     <Dialog title={entry ? 'Edit pickup address' : 'Add pickup address'} onClose={onClose}>
       <form noValidate onSubmit={handleSubmit} className="grid gap-4">
+        {/* Ten extra characters, so that a too-long label can be typed and the server explains the limit. */}
         <Field label="Label" maxLength={MAX_LABEL_LENGTH + 10} {...bind('label')} />
         <Field label="Contact name" autoComplete="name" {...bind('name')} />
         <Field label="Phone" type="tel" inputMode="tel" autoComplete="tel" {...bind('phone')} />
