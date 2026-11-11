@@ -1,7 +1,7 @@
 # Evoc Logistics frontend design
 
 **Date:** 2026-11-04
-**Status:** Approved 2026-11-04
+**Status:** Approved 2026-11-04. Built in full on branch `feature/full-frontend` (Tasks 1 to 37); the "Built in" column of the navigation map below names the task that delivered each screen, and every entry is `live`
 **Backend baseline:** `Evoc_ships` at commit `aace6033`, clean working tree
 
 ## 1. Goal
@@ -187,7 +187,7 @@ The frontend runs on port 3100, so it can sit beside `apps/dashboard` on 3000.
 
 - Support-key screens.
 - Real login, OTP or email delivery, until the backend provides them.
-- Screens beyond Stage 2, until directed.
+- Screens beyond the 37-task plan (section 11), until directed. Stage 2 and every planned screen are built; see `Readme.md` for the current screen table.
 
 ## 11. Navigation and scope addendum (2026-11-10)
 
