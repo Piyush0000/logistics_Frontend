@@ -6,11 +6,37 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 22, Task 33 (Help Centre) and Task 36 (not-found and error pages), both built ahead of order, of 37 are done |
+| **Current stage** | Full frontend build, on branch `t32`, cut from `feature/full-frontend`. Tasks 1 to 22, Task 32 (Support Tickets), Task 33 (Help Centre) and Task 36 (not-found and error pages), the last three built ahead of order, of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Task 24 is being built |
+| **Waiting on** | Task 32 is waiting for review. Its branch does not change the planned-item check in `e2e/dashboard.spec.ts`, which needs the fallback Task 24 adds |
 | **Next step** | Task 23 (SMS tab), Task 24 (Settings and Profile) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 32, Support Tickets
+
+- Added `/support/tickets` and `/support/tickets/[id]`. The list has a status filter (`?status=open|awaiting_you|resolved`, anything else shows every status), pages of 10, a table on desktop and cards on phones. New ticket opens a form: subject 5 to 120 characters, category, one optional AWB (checked with `parseAwbQuery`, at most 40 characters), message 20 to 5,000 characters. The ticket page shows the thread and a reply form. Replying to a resolved ticket (and to one awaiting you) sets it to Open. A resolved ticket shows `This ticket is resolved. Reply to reopen it.`
+- New `src/lib/data/support/` (types, input, mock, gateway, index). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_SUPPORT`, added to `.env.example` and the port 3106 server. In gateway mode the card says "This data is not available yet." and the New ticket button is hidden.
+- Server actions `createTicketAction` and `replyAction` check the session first, then check the input again.
+- Help Centre: `?new=1` opens the New ticket form. Closing it drops `?new=1`. I removed the two `prefetch={false}` overrides, because the route now exists. I rewrote the two articles that said Support Tickets was not built (side menu article and the ticket article). Support Tickets is now `live` in `NAV`.
+- Help tests that only checked the link now click it and expect the form.
+- Dashboard test `shows planned items as unavailable` fails on this branch, with 4 failures (desktop and phone, repeated twice). It picks a planned child item, and Support Tickets was the last one; Settings is planned but has no children. Task 24 adds a fallback for this, and I did not edit that logic.
+- No `loading.tsx` for the tickets list. A `loading.tsx` above `[id]` makes an unknown ticket answer 200 instead of 404, so the list loads without a skeleton, as Orders does.
+- Browser tests that change data use rows no other run touches: the reopen test takes its own resolved ticket by project, repeat and retry (tk-009 to tk-020); every other test raises a ticket with a unique subject.
+- Empty state: the list has an empty message, but no status filter matches nothing in the sample (every status has rows), so there is no browser test for it.
+
+| Check | Result |
+|---|---|
+| Unit tests | 63 files, 578 tests passed |
+| Lint, typecheck | 0 errors, 0 warnings |
+| Build | Passed |
+| Browser, support-tickets spec, desktop and phone, repeat 2 | 72 passed, 4 skipped (phone-only and desktop-only tests) |
+| Browser, support-tickets, help, dashboard, desktop and phone, repeat 2 (before the not-found fix) | 256 passed, 20 skipped, 8 failed: 4 not-found (fixed, see above) and 4 dashboard planned-item (known) |
+| Gateway project | 59 passed |
+| Palette grep (D5), secret grep (D6) | No output; brand grep prints design-file comments only |
+| Encoding check | 0 |
+| Backend check (D7) | status clean, HEAD aace603 |
+
+Not run, by instruction: the full browser suite, the dev smoke and screenshots (D2 to D4).
 
 ## 2026-11-11: Task 36, not-found and error pages
 

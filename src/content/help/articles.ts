@@ -44,7 +44,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Items that are greyed out',
         paragraphs: [
-          'A greyed-out item is planned but not built yet. Point at it to see that it is not available yet. At the moment this applies to Settings and Support Tickets.',
+          'A greyed-out item is planned but not built yet. Point at it to see that it is not available yet. At the moment this applies to Settings.',
         ],
       },
       {
@@ -336,7 +336,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Raise a ticket',
         paragraphs: [
-          'Every article ends with a Raise a ticket link. The Support Tickets screen is not built yet, so the link may not open a page for now. It will be the place to ask for help once it is ready.',
+          'Every article ends with a Raise a ticket link. It opens the Support Tickets screen with the new ticket form ready. Give a short subject, pick a category, add one AWB if the problem is about a shipment, and describe what happened. Replies from support appear in the ticket, and replying to a resolved ticket reopens it. Tickets currently show sample data, so nothing you raise reaches a person yet.',
         ],
       },
     ],
