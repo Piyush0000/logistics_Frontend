@@ -581,6 +581,23 @@ test.describe('profile with no route', () => {
   });
 });
 
+test.describe('buyer notifications with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows notifications as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/notifications', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('notifications-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('switch')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save notifications' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Buyer notifications' })).toBeVisible();
+  });
+});
+
 test.describe('rate card with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 

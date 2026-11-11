@@ -45,7 +45,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Buyer Notifications',
     description: 'Choose which messages your buyers get about their parcels.',
     href: '/settings/notifications',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Tracking Page',

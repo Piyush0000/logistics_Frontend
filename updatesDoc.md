@@ -6,12 +6,35 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 28 (Buyer Notifications), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 28, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Tasks 25, 26 and 32 are being built |
 | **Next step** | Tasks 25, 26 and 32, then Tasks 27 to 31 (Settings sections) and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+
+## 2026-11-11: Task 28, Buyer Notifications
+
+- New `/settings/notifications`. A switch for each shipment event (Manifested, In transit, Out for delivery, Delivered, RTO initiated) and channel (SMS, Email, WhatsApp), and one message for each event with a live preview using invented sample values. One Save sends the switches and messages together.
+- Messages may use only `{{buyer_name}}`, `{{awb}}`, `{{courier}}`, `{{tracking_link}}` and `{{store_name}}`. Any other variable shows `Unknown variable: {{x}}` (one line each) and blocks saving. The server action and the mock service check again, and also require 1 to 480 characters. The preview is rendered as React text, so markup in a message shows as typed.
+- Each message shows its length and `Sends as N messages by SMS` (160 characters a message, `smsParts` in `src/lib/templates.ts`).
+- Data in `src/lib/data/notifications/`, picked by `DATA_SOURCE_NOTIFICATIONS` (in `.env.example` and the 3106 server). The gateway service is `notAvailable()`. Event names are normalized shipment statuses, the same values the SMS tab counts by, and labels come from `statusLabel`.
+- Settings hub card and section list: Buyer Notifications is live. Dashboard SMS tab: the `prefetch={false}` override is removed now that the route exists, and a new test clicks the link through. Help article "Settings" no longer lists buyer notifications as planned.
+- Switches are native checkboxes with `role="switch"`, so tests read them with `isChecked`, not `aria-checked`.
+- Shared sample store: desktop and phone each change their own row (Out for delivery and RTO initiated). Each save sends the whole form, so tests that check what was saved read the state first and retry the whole save and reload.
+- Files: new `src/app/(app)/settings/notifications/` (page, loading, notification-editor, channel-matrix, template-editor, actions, actions test), `src/lib/templates.ts` and test, `src/lib/data/notifications/` (types, input, mock, gateway, index, test), `e2e/notifications.spec.ts`. Changed: `settings-nav.tsx`, `sms-tab.tsx`, `articles.ts`, `e2e/dashboard-tabs.spec.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`. `e2e/settings.spec.ts` did not need a change.
+
+| Check | Result |
+|---|---|
+| Browser spec written first, run before the page existed | 15 failed, 1 skipped (heading not found) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 70 files, 624 tests passed |
+| Browser, notifications spec, desktop and phone, repeat 2 | 62 passed, 2 skipped (single-size), 0 failed |
+| Browser, settings, notifications, help and dashboard-tabs specs, desktop and phone, offset 1800 | 158 passed, 10 skipped, 0 failed |
+| Browser, gateway project | 61 passed, 0 failed (includes the new no-route test) |
+| Palette, secret and brand checks (D5, D6) | No output (brand grep shows only design-file comments) |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 23, SMS dashboard tab
 
