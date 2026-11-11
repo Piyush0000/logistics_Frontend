@@ -194,6 +194,7 @@ test('returns not found for an unknown ticket id', async ({ page }) => {
   for (const id of ['tk-no-such-ticket', 'x'.repeat(300)]) {
     const response = await page.goto(`${TICKETS}/${id}`);
     expect(response?.status(), id).toBe(404);
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
   }
 });
 
@@ -258,6 +259,19 @@ test.describe('new ticket', () => {
     await expect(messages.first()).toContainText('You');
     await expect(page.getByText(RESOLVED_NOTE)).toHaveCount(0);
   });
+});
+
+test('does not reopen the dialog on Back after creating from ?new=1', async ({ page }, testInfo) => {
+  await signIn(page);
+  await page.goto(`${TICKETS}?new=1`);
+  await expect(newTicketDialog(page)).toBeVisible();
+  const dialog = await fillTicket(page, { subject: uniqueSubject(testInfo, 'Back check'), body: BODY });
+  await dialog.getByRole('button', { name: 'Raise ticket' }).click();
+  await expect(page).toHaveURL(/\/support\/tickets\/tk-\d+$/);
+
+  await page.goBack();
+  await expect(page).not.toHaveURL(/new=1/);
+  await expect(newTicketDialog(page)).toHaveCount(0);
 });
 
 test.describe('reply', () => {

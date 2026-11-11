@@ -22,7 +22,11 @@ const FIELD =
 const CATEGORY_OPTIONS = TICKET_CATEGORIES.map((value) => ({ value, label: CATEGORY_LABELS[value] }));
 
 /** Asks for a subject, category, optional AWB and message, then raises the ticket and opens it. */
-export function NewTicketDialog({ onClose }: { onClose: () => void }) {
+/**
+ * `fromLink` is true when `?new=1` opened it. The ticket page then replaces that address, so Back
+ * does not return to the list with the form open again.
+ */
+export function NewTicketDialog({ onClose, fromLink = false }: { onClose: () => void; fromLink?: boolean }) {
   const router = useRouter();
   const subjectId = useId();
   const awbId = useId();
@@ -48,7 +52,11 @@ export function NewTicketDialog({ onClose }: { onClose: () => void }) {
     setMessage(null);
     startTransition(async () => {
       const result = await createTicketAction(input);
-      if (result.ok) router.push(`/support/tickets/${result.id}`);
+      if (result.ok) {
+        const href = `/support/tickets/${result.id}`;
+        if (fromLink) router.replace(href);
+        else router.push(href);
+      }
       else setMessage(result.message);
     });
   }

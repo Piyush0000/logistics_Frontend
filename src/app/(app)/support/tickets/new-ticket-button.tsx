@@ -25,7 +25,7 @@ export function NewTicketButton({ startOpen, closeHref }: { startOpen: boolean; 
         <Plus aria-hidden="true" className="size-4" />
         New ticket
       </button>
-      {open ? <NewTicketDialog onClose={close} /> : null}
+      {open ? <NewTicketDialog onClose={close} fromLink={startOpen} /> : null}
     </>
   );
 }
