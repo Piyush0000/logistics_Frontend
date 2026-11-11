@@ -545,6 +545,31 @@ test.describe('weight with no route', () => {
   });
 });
 
+test.describe('support tickets with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows tickets as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/support/tickets', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tickets-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('ticket-row')).toHaveCount(0);
+    await expect(page.getByTestId('ticket-item')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'New ticket', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Support tickets' })).toBeVisible();
+
+    // A ticket page shows the same card, not a made-up ticket or a not-found page.
+    await page.goto('/support/tickets/tk-001', { waitUntil: 'networkidle' });
+    const ticket = page.getByTestId('ticket-card');
+    await expect(ticket.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('ticket-message')).toHaveCount(0);
+  });
+});
+
 test.describe('weight settings with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 
@@ -595,6 +620,38 @@ test.describe('pickup addresses with no route', () => {
     await expect(page.getByTestId('address-item')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Add address' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1, name: 'Pickup Addresses' })).toBeVisible();
+test.describe('company with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows company details as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/company', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('company-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Company & KYC' })).toBeVisible();
+  });
+});
+
+test.describe('users and roles with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the team as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/users', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('team-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Invite user' })).toHaveCount(0);
+    await expect(page.getByTestId('member')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Users & Roles' })).toBeVisible();
+    // The role descriptions are plain text, so they still explain the roles.
+    await expect(page.getByTestId('roles-card')).toBeVisible();
   });
 });
 

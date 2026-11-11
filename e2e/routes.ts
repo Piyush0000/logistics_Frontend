@@ -33,12 +33,17 @@ export const APP_ROUTES = [
   '/tools/tracking',
   '/tools/tracking?awb=DEMOEK001',
   '/reports',
+  '/support/tickets',
+  '/support/tickets/tk-001',
+  '/support/tickets?new=1',
   '/support/help',
   '/support/help/verify-a-webhook-signature',
   '/channel-integrations',
   '/settings',
   '/settings/profile',
   '/settings/pickup-addresses',
+  '/settings/company',
+  '/settings/users',
 ] as const;
 
 /** Routes anyone can open without signing in. */

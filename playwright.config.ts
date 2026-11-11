@@ -68,7 +68,15 @@ export default defineConfig({
       url: e2eUrl(3106) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway', DATA_SOURCE_PICKUPS: 'gateway', DATA_SOURCE_INVOICES: 'gateway', DATA_SOURCE_WEIGHT: 'gateway', DATA_SOURCE_WEIGHT_SETTINGS: 'gateway', DATA_SOURCE_RATES: 'gateway', DATA_SOURCE_ANALYTICS: 'gateway', DATA_SOURCE_PROFILE: 'gateway', DATA_SOURCE_MESSAGES: 'gateway' },
+      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway', DATA_SOURCE_PICKUPS: 'gateway', DATA_SOURCE_INVOICES: 'gateway', DATA_SOURCE_WEIGHT: 'gateway', DATA_SOURCE_WEIGHT_SETTINGS: 'gateway', DATA_SOURCE_RATES: 'gateway', DATA_SOURCE_ANALYTICS: 'gateway', DATA_SOURCE_PROFILE: 'gateway', DATA_SOURCE_MESSAGES: 'gateway', DATA_SOURCE_COMPANY: 'gateway', DATA_SOURCE_TEAM: 'gateway', DATA_SOURCE_SUPPORT: 'gateway' },
+    },
+    {
+      // Mock mode, for specs that submit company details. That sets KYC to submitted for the whole
+      // server, which the Home checklist reads, so it must not be the main server.
+      command: 'pnpm exec next start -p ' + e2ePort(3108),
+      url: e2eUrl(3108) + '/login',
+      reuseExistingServer: false,
+      timeout: 60_000,
     },
   ],
 });
