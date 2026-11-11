@@ -2,5 +2,7 @@
 export function deliveryRate(sent: number, delivered: number): string {
   if (!Number.isFinite(sent) || !Number.isFinite(delivered) || sent <= 0) return '—';
   const share = Math.min(100, Math.max(0, (delivered / sent) * 100));
-  return `${share.toFixed(1)}%`;
+  // Rounding must not claim every message arrived when some did not.
+  const text = share.toFixed(1);
+  return `${delivered < sent && text === '100.0' ? '99.9' : text}%`;
 }

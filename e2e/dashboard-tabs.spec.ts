@@ -248,6 +248,12 @@ test.describe('delivered tab', () => {
   });
 });
 
+const EXPECTED_VALUE_LABELS: Record<string, number> = {
+  'Freight spend per day': 6,
+  'COD collected per day': 5,
+};
+const EXPECTED_AXIS_LABELS = 6;
+
 test.describe('revenue tab', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard?tab=revenue');
@@ -279,15 +285,20 @@ test.describe('revenue tab', () => {
     for (const chart of ['Freight spend per day', 'COD collected per day']) {
       const svg = card.getByRole('img', { name: new RegExp(`^${chart}\\.`) });
       for (const selector of ['text[data-value-label]', 'text:not([data-value-label])']) {
-        const boxes = await svg.locator(selector).evaluateAll((nodes) =>
-          nodes.map((node) => node.getBoundingClientRect()).map((r) => ({ left: r.left, right: r.right })),
-        );
-        expect(boxes.length, `${chart} ${selector} labels`).toBeGreaterThan(1);
+        await expect(svg.locator(selector)).not.toHaveCount(0);
+        await page.evaluate(() => document.fonts.ready);
+        // One read for the frame and every label, so they come from the same layout.
+        const { frame, boxes } = await svg.evaluate((node, sel) => {
+          const rect = (el: Element) => {
+            const r = el.getBoundingClientRect();
+            return { left: r.left, right: r.right };
+          };
+          return { frame: rect(node), boxes: [...node.querySelectorAll(sel)].map(rect) };
+        }, selector);
+        // From labelStep for 30 bars: freight labels show every 5th bar, COD every 6th, axis every 5th, counting back from the last.
+        const expected = selector === 'text[data-value-label]' ? EXPECTED_VALUE_LABELS[chart]! : EXPECTED_AXIS_LABELS;
+        expect(boxes.length, `${chart} ${selector} labels`).toBe(expected);
         boxes.sort((a, b) => a.left - b.left);
-        const frame = await svg.evaluate((node) => {
-          const r = node.getBoundingClientRect();
-          return { left: r.left, right: r.right };
-        });
         for (const [i, box] of boxes.entries()) {
           expect(box.left, `${chart} ${selector} label ${i} left edge`).toBeGreaterThanOrEqual(frame.left);
           expect(box.right, `${chart} ${selector} label ${i} right edge`).toBeLessThanOrEqual(frame.right);

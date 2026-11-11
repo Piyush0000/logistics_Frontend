@@ -12,6 +12,11 @@ describe('deliveryRate', () => {
     expect(deliveryRate(7, 7)).toBe('100.0%');
   });
 
+  it('never rounds up to 100.0% while some messages were not delivered', () => {
+    expect(deliveryRate(10000, 9996)).toBe('99.9%');
+    expect(deliveryRate(10000, 10000)).toBe('100.0%');
+  });
+
   it('shows a dash when nothing was sent, and stays within 0 to 100', () => {
     expect(deliveryRate(0, 0)).toBe('—');
     expect(deliveryRate(Number.NaN, 4)).toBe('—');

@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { BarChart, chartSummary } from './bar-chart';
+import { BarChart, chartSummary, labelPlacement, labelStep } from './bar-chart';
 
 const DATA = [
   { label: '5 Nov', value: 0 },
@@ -118,5 +118,44 @@ describe('BarChart', () => {
     expect(html).not.toMatch(/NaN|Infinity|-5/);
     expect(html.match(/data-bar=/g)).toHaveLength(4);
     expect(chartSummary('x', data)).toBe('x. a: 0, b: 0, c: 0, d: 3. Highest: d, 3.');
+  });
+});
+
+describe('labelPlacement', () => {
+  it('centres a label that fits, as for a single bar in the middle', () => {
+    expect(labelPlacement(160, '5 Nov', 5.6)).toEqual({ x: 160, anchor: 'middle' });
+  });
+
+  it('anchors the first label to the left margin and the last to the right margin', () => {
+    expect(labelPlacement(13, '10 Nov', 5.6)).toEqual({ x: 8, anchor: 'start' });
+    expect(labelPlacement(307, '10 Nov', 5.6)).toEqual({ x: 312, anchor: 'end' });
+  });
+
+  it('clamps both ends of a two-bar chart and keeps them apart', () => {
+    const slot = (320 - 16) / 2;
+    const first = labelPlacement(8 + slot / 2, '₹1,23,456', 6.6);
+    const last = labelPlacement(8 + slot * 1.5, '₹1,23,456', 6.6);
+    expect(first.anchor).toBe('middle');
+    expect(last.anchor).toBe('middle');
+    expect(last.x - first.x).toBeGreaterThan(60);
+  });
+
+  it('keeps a clamped label inside the svg', () => {
+    const first = labelPlacement(10, 'x'.repeat(20), 6.6);
+    expect(first).toEqual({ x: 8, anchor: 'start' });
+  });
+});
+
+describe('labelStep', () => {
+  it('shows every label when they fit', () => {
+    expect(labelStep(['1', '2'], 150, 6)).toBe(1);
+  });
+
+  it('leaves room for the clamp shift on a wide slot with a near-widest label', () => {
+    // Text 60 wide in a 62 slot: it fits with the 4 gap, but a clamped edge label moves
+    // 60/2 - 62/2 = 0 here and more once the text outgrows the slot, so the step stays 2 or more.
+    expect(labelStep(['x'.repeat(10)], 62, 6)).toBe(2);
+    // Text 90 wide in a 40 slot: 90 + 4 + 25 = 119, so every 3rd bar.
+    expect(labelStep(['x'.repeat(15)], 40, 6)).toBe(3);
   });
 });

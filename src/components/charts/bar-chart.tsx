@@ -27,16 +27,18 @@ const LABEL_GAP = 4;
  * Show every `step`-th label, counting back from the last bar so the latest one is always
  * shown, when the widest label is wider than a bar's slot.
  */
-function labelStep(texts: readonly string[], slot: number, charWidth: number): number {
-  const widest = Math.max(0, ...texts.map((text) => text.length)) * charWidth + LABEL_GAP;
-  return Math.max(1, Math.ceil(widest / slot));
+export function labelStep(texts: readonly string[], slot: number, charWidth: number): number {
+  const text = Math.max(0, ...texts.map((entry) => entry.length)) * charWidth;
+  // An edge label that is clamped moves up to this far towards its neighbour, so leave room for it.
+  const clampShift = Math.max(0, text / 2 - slot / 2);
+  return Math.max(1, Math.ceil((text + LABEL_GAP + clampShift) / slot));
 }
 
 /**
  * Where a label goes. It is centred on its bar, except that one too wide to fit between the
  * svg's edges and the margin is anchored to that edge, so the first and last labels never clip.
  */
-function labelPlacement(centre: number, text: string, charWidth: number) {
+export function labelPlacement(centre: number, text: string, charWidth: number) {
   const half = (text.length * charWidth) / 2;
   if (centre - half < SIDE) return { x: SIDE, anchor: 'start' as const };
   if (centre + half > WIDTH - SIDE) return { x: WIDTH - SIDE, anchor: 'end' as const };
