@@ -675,6 +675,23 @@ test.describe('users and roles with no route', () => {
   });
 });
 
+test.describe('courier rules with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows courier rules as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/courier-rules', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('rules-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('courier-row')).toHaveCount(0);
+    await expect(page.getByRole('radio')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Courier Rules' })).toBeVisible();
+  });
+});
+
 test.describe('rate card with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 
