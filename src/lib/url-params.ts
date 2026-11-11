@@ -1,10 +1,13 @@
 /** Safe parsing of URL search parameters, so bad input falls back instead of crashing a page. */
 
-/** A whole page number of 1 or more, else 1. */
+/** The backend's highest page number. */
+const MAX_PAGE = 10_000;
+
+/** A whole page number from 1 to 10,000, else 1. */
 export function parsePage(value: unknown): number {
   if (typeof value !== 'string' || !/^\d+$/.test(value)) return 1;
   const page = Number(value);
-  return Number.isSafeInteger(page) && page >= 1 ? page : 1;
+  return Number.isSafeInteger(page) && page >= 1 && page <= MAX_PAGE ? page : 1;
 }
 
 /** One of the `allowed` page sizes, else `fallback`. */

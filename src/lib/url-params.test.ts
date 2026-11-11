@@ -10,6 +10,10 @@ describe('parsePage', () => {
     expect(parsePage(undefined)).toBe(1);
     expect(parsePage(['2', '3'])).toBe(1);
     expect(parsePage('3')).toBe(3);
+    expect(parsePage('10000')).toBe(10000);
+    // Above the backend's cap of 10,000, so it falls back to 1 instead of drawing a 400.
+    expect(parsePage('10001')).toBe(1);
+    expect(parsePage('99999999999')).toBe(1);
   });
 });
 
