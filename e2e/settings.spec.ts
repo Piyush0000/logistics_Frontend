@@ -144,7 +144,15 @@ test.describe('profile', () => {
         '/channel-integrations',
       );
       await expect(list.getByRole('link', { name: 'Company & KYC' })).toHaveAttribute('href', '/settings/company');
-      await expect(list.getByRole('button', { name: 'Users & Roles' })).toBeDisabled();
+      // Whichever section is still planned shows as a disabled button; none left means all are live.
+      const planned = SETTINGS_SECTIONS.find((section) => section.status === 'planned');
+      if (planned) {
+        const button = list.getByRole('button', { name: planned.label, exact: true });
+        await expect(button).toBeDisabled();
+        await expect(button).toHaveAttribute('title', `${planned.label} is not available yet`);
+      } else {
+        await expect(list.getByRole('button')).toHaveCount(0);
+      }
     }
   });
 
