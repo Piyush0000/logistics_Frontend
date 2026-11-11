@@ -932,3 +932,19 @@ test.describe('dashboard SMS tab with no gateway route', () => {
     await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+test.describe('tracking page settings with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows tracking-page settings as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/tracking-page', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tracking-page-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Tracking Page' })).toBeVisible();
+  });
+});

@@ -6,7 +6,7 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 32 (Support Tickets), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 32, 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 29 (Tracking Page), 32 (Support Tickets), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 29, 32, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Task 28 is being built; Task 27 is in review |
 | **Next step** | Merge Task 27, then Tasks 29 to 31 (Settings sections) and 35 |
@@ -15,6 +15,29 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 
 
+
+## 2026-11-11: Task 29, Tracking Page
+
+- Added `/settings/tracking-page`: a branding form beside a live preview of the public tracking page (sample AWB `DEMOEK001`). Fields: display name (1 to 40 characters), optional support email and phone (checked), accent colour, show-courier switch, and a PNG or SVG logo up to 1 MB (only its name is kept). The page says `Changes apply to the public page once tracking-page settings are connected.`
+- The accent is limited to three palette tokens (Primary blue, Sky blue, Green), shown as radio options. The server action and `parseBrandingInput` refuse anything else, so a merchant cannot pick a colour that breaks the palette or contrast. Header text on each accent is chosen to stay readable.
+- All merchant text (display name, email, phone, logo name) is rendered as plain text by React and wrapped with `overflow-wrap`; a test enters `<img ... onerror>` and checks no image appears. There are no URL fields, so no link can be saved. Support email and phone are shown as text, not links.
+- New `src/lib/data/tracking-page/` (types, input, mock, gateway, index). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_TRACKING_PAGE`, in `.env.example` and appended to the end of the port 3106 `env` line. The server action `saveTrackingPageAction` checks the session first, then checks the input and logo again.
+- The public page `/track/[awb]` is not changed and does not read these settings, as the brief says. So browser tests that save here cannot change what other specs see. The desktop and phone runs share the mock store, so each saves its own display name. No new server port was needed.
+- Tracking Page is `live` in `SETTINGS_SECTIONS`. Help article "Settings, your profile and team members" now lists it as available.
+- Browser tap-target test targets the label of the courier checkbox and colour options, since the label is the touch target.
+
+| Check | Result |
+|---|---|
+| D1 `pnpm lint`, `typecheck` | 0 warnings, 0 errors |
+| D1 `pnpm test` | 76 files, 695 tests passed |
+| `pnpm build` | Compiled, Tracking Page route present |
+| Browser: settings, tracking-page, help, tracking, public-tracking, desktop and phone | 138 tests: 132 passed, 5 skipped (phone-only), 1 failed on first run (checkbox input 20px tall); fixed in the spec, re-run passed |
+| Browser: `--project=gateway` | 64 passed, including `shows tracking-page settings as unavailable in gateway mode` |
+| D5 palette grep | no output |
+| D6 secrets in `.next/static`, brand grep | no output |
+| D7 backend | clean, `aace603` |
+
+Not run: the full suite (D2), `dev-smoke` (D3) and screenshots (D4), as agreed for this task.
 
 ## 2026-11-11: Task 32, Support Tickets
 
