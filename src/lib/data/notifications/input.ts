@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { unknownVariables } from '../../templates';
-import { NOTIFY_CHANNELS, NOTIFY_EVENTS, type NotificationSettings, type NotifyEvent } from './types';
+import {
+  NOTIFY_CHANNELS,
+  NOTIFY_EVENTS,
+  type NotificationSettings,
+  type NotifyChannel,
+  type NotifyEvent,
+} from './types';
 
 export const MAX_TEMPLATE_LENGTH = 480;
 
@@ -45,4 +51,73 @@ export function parseNotificationInput(input: unknown): NotificationParse {
   }
   const message = Object.values(errors)[0] ?? 'Check the settings, then try again.';
   return { ok: false, message, errors };
+}
+
+/** Only what the merchant changed: per event, some channel switches and/or the message. */
+export interface NotificationChanges {
+  events: Partial<
+    Record<NotifyEvent, { matrix?: Partial<Record<NotifyChannel, boolean>>; template?: string }>
+  >;
+}
+
+const ChangesSchema = z.object({
+  events: z.object(
+    Object.fromEntries(
+      NOTIFY_EVENTS.map((e) => [
+        e,
+        z
+          .object({
+            matrix: z.object(Object.fromEntries(NOTIFY_CHANNELS.map((c) => [c, z.boolean().optional()]))).optional(),
+            template: z.string().optional(),
+          })
+          .optional(),
+      ]),
+    ),
+  ),
+});
+
+export type ChangesParse = { ok: true; value: NotificationChanges } | { ok: false; message: string };
+
+/** Checks the shape of a change. The messages themselves are checked after the change is applied. */
+export function parseNotificationChanges(input: unknown): ChangesParse {
+  const parsed = ChangesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: 'Check the settings, then try again.' };
+  return { ok: true, value: parsed.data as NotificationChanges };
+}
+
+/** Puts the changed events on top of the current settings and leaves every other event as it is. */
+export function applyNotificationChanges(
+  current: NotificationSettings,
+  changes: NotificationChanges,
+): NotificationSettings {
+  const next = structuredClone(current);
+  for (const event of NOTIFY_EVENTS) {
+    const change = changes.events[event];
+    if (!change) continue;
+    for (const channel of NOTIFY_CHANNELS) {
+      const on = change.matrix?.[channel];
+      if (on !== undefined) next.matrix[event][channel] = on;
+    }
+    if (change.template !== undefined) next.templates[event] = change.template;
+  }
+  return next;
+}
+
+/** What differs between two settings, so a save sends only that. */
+export function diffNotificationSettings(
+  base: NotificationSettings,
+  now: NotificationSettings,
+): NotificationChanges {
+  const events: NotificationChanges['events'] = {};
+  for (const event of NOTIFY_EVENTS) {
+    const change: NonNullable<NotificationChanges['events'][NotifyEvent]> = {};
+    for (const channel of NOTIFY_CHANNELS) {
+      if (base.matrix[event][channel] !== now.matrix[event][channel]) {
+        (change.matrix ??= {})[channel] = now.matrix[event][channel];
+      }
+    }
+    if (base.templates[event] !== now.templates[event]) change.template = now.templates[event];
+    if (change.matrix || change.template !== undefined) events[event] = change;
+  }
+  return { events };
 }

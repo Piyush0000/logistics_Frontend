@@ -108,3 +108,28 @@ describe('gateway service', () => {
     if (previous !== undefined) process.env.DATA_SOURCE_NOTIFICATIONS = previous;
   });
 });
+
+describe('changes', () => {
+  it('diffs only what changed and applies it onto other settings', async () => {
+    const { diffNotificationSettings, applyNotificationChanges } = await import('./input');
+    const base = await sample();
+    const edited = structuredClone(base);
+    edited.matrix.DELIVERED.whatsapp = !base.matrix.DELIVERED.whatsapp;
+    edited.templates.IN_TRANSIT = 'Changed {{awb}}';
+    const changes = diffNotificationSettings(base, edited);
+    expect(changes).toEqual({
+      events: {
+        DELIVERED: { matrix: { whatsapp: edited.matrix.DELIVERED.whatsapp } },
+        IN_TRANSIT: { template: 'Changed {{awb}}' },
+      },
+    });
+    expect(diffNotificationSettings(base, base)).toEqual({ events: {} });
+
+    const elsewhere = structuredClone(base);
+    elsewhere.templates.MANIFESTED = 'Saved elsewhere {{awb}}';
+    const merged = applyNotificationChanges(elsewhere, changes);
+    expect(merged.templates.MANIFESTED).toBe('Saved elsewhere {{awb}}');
+    expect(merged.templates.IN_TRANSIT).toBe('Changed {{awb}}');
+    expect(merged.matrix.DELIVERED.whatsapp).toBe(edited.matrix.DELIVERED.whatsapp);
+  });
+});

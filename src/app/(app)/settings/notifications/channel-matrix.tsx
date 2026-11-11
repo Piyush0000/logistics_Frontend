@@ -15,10 +15,12 @@ type Matrix = NotificationSettings['matrix'];
 function Switch({
   label,
   checked,
+  disabled,
   onChange,
 }: {
   label: string;
   checked: boolean;
+  disabled: boolean;
   onChange: (checked: boolean) => void;
 }) {
   return (
@@ -28,6 +30,7 @@ function Switch({
         role="switch"
         aria-label={label}
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
         className="peer absolute inset-0 cursor-pointer opacity-0"
       />
@@ -45,8 +48,10 @@ function Switch({
 export function ChannelMatrix({
   matrix,
   onToggle,
+  disabled,
 }: {
   matrix: Matrix;
+  disabled: boolean;
   onToggle: (event: NotifyEvent, channel: NotifyChannel, on: boolean) => void;
 }) {
   return (
@@ -75,6 +80,7 @@ export function ChannelMatrix({
                 <Switch
                   label={`${statusLabel(event)} by ${CHANNEL_LABELS[channel]}`}
                   checked={matrix[event][channel]}
+                  disabled={disabled}
                   onChange={(on) => onToggle(event, channel, on)}
                 />
               </td>

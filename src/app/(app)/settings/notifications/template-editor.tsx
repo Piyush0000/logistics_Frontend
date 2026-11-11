@@ -20,11 +20,13 @@ export function TemplateEditor({
   event,
   value,
   error,
+  disabled,
   onChange,
 }: {
   event: NotifyEvent;
   value: string;
   error?: string;
+  disabled: boolean;
   onChange: (value: string) => void;
 }) {
   const id = useId();
@@ -42,6 +44,8 @@ export function TemplateEditor({
         id={id}
         rows={4}
         value={value}
+        disabled={disabled}
+        autoComplete="off"
         aria-invalid={problems.length > 0 ? true : undefined}
         aria-describedby={`${id}-help`}
         onChange={(e) => onChange(e.target.value)}

@@ -2,7 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
-import { parseNotificationInput, type NotificationFieldErrors } from '@/lib/data/notifications/input';
+import {
+  diffNotificationSettings,
+  parseNotificationInput,
+  type NotificationFieldErrors,
+} from '@/lib/data/notifications/input';
 import {
   NOTIFY_EVENTS,
   type NotificationSettings,
@@ -17,6 +21,8 @@ import { TemplateEditor } from './template-editor';
 /** Both parts share one state and one Save, so the matrix and the messages are always saved together. */
 export function NotificationEditor({ initial }: { initial: NotificationSettings }) {
   const [settings, setSettings] = useState(initial);
+  // What the server held when this form last loaded or saved. A save sends only the differences from it.
+  const [baseline, setBaseline] = useState(initial);
   const [errors, setErrors] = useState<NotificationFieldErrors>({});
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -47,7 +53,12 @@ export function NotificationEditor({ initial }: { initial: NotificationSettings 
     setErrors({});
 
     startTransition(async () => {
-      const result = await saveNotificationsAction(parsed.value);
+      const result = await saveNotificationsAction(diffNotificationSettings(baseline, parsed.value));
+      if (result.ok) {
+        // Show the saved state, which also holds changes saved elsewhere to events this form did not touch.
+        setSettings(result.settings);
+        setBaseline(result.settings);
+      }
       setErrors(result.ok ? {} : (result.errors ?? {}));
       setFeedback({ ok: result.ok, message: result.message });
     });
@@ -62,7 +73,7 @@ export function NotificationEditor({ initial }: { initial: NotificationSettings 
         <p className="text-sm text-on-surface/70">
           Turn on the channels that send a message when a parcel reaches each state.
         </p>
-        <ChannelMatrix matrix={settings.matrix} onToggle={toggle} />
+        <ChannelMatrix matrix={settings.matrix} onToggle={toggle} disabled={pending} />
       </section>
 
       <section aria-labelledby="messages-heading" className="grid gap-3">
@@ -86,6 +97,7 @@ export function NotificationEditor({ initial }: { initial: NotificationSettings 
             value={settings.templates[event]}
             error={errors[event]}
             onChange={(text) => edit(event, text)}
+            disabled={pending}
           />
         ))}
       </section>

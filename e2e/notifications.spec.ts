@@ -5,14 +5,13 @@ import { expectNoSidewaysScroll, expectSignedOutRedirect, expectTapTargets, SIZE
 const ROUTE = '/settings/notifications';
 
 // The sample settings are shared by the desktop and phone runs, which can run at the same time, so
-// each project changes a row of its own. Each save sends the whole form, so a save from the other
-// project can undo a change. Tests that check what was saved read the state first and retry the whole
-// round trip, and never depend on the starting state.
+// each project changes events of its own, and a save sends only the events that changed, so one
+// project's save never undoes the other's. Tests read the state they start from and never depend on it.
 const projectOf = (testInfo: { project: { name: string } }) =>
   testInfo.project.name === 'phone' ? 'phone' : 'desktop';
 const OWN_ROW = {
-  desktop: { label: 'Out for delivery', event: 'OUT_FOR_DELIVERY' },
-  phone: { label: 'RTO initiated', event: 'RTO_INITIATED' },
+  desktop: { label: 'Out for delivery', other: 'Manifested', otherEvent: 'MANIFESTED' },
+  phone: { label: 'RTO initiated', other: 'In transit', otherEvent: 'IN_TRANSIT' },
 };
 const LABELS = ['Manifested', 'In transit', 'Out for delivery', 'Delivered', 'RTO initiated'];
 const CHANNELS = ['SMS', 'Email', 'WhatsApp'];
@@ -72,21 +71,43 @@ test.describe('buyer notifications', () => {
     await openNotifications(page);
     const toggle = page.getByRole('switch', { name: `${label} by WhatsApp`, exact: true });
 
-    await expect(async () => {
-      await page.goto(ROUTE);
-      await expect(toggle).toBeVisible();
-      const before = await toggle.isChecked();
+    const before = await toggle.isChecked();
 
-      await toggle.click();
-      await expect(toggle).toBeChecked({ checked: !before });
-      await saveButton(page).click();
-      await expect(
-        page.getByRole('status').filter({ hasText: 'Notification settings saved.' }),
-      ).toBeVisible();
+    await toggle.click();
+    await expect(toggle).toBeChecked({ checked: !before });
+    await saveButton(page).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Notification settings saved.' })).toBeVisible();
 
-      await page.reload();
-      await expect(toggle).toBeChecked({ checked: !before });
-    }).toPass();
+    await page.reload();
+    await expect(toggle).toBeChecked({ checked: !before });
+  });
+
+  test('keeps a change saved from another tab to an event this tab did not touch', async ({ page }, testInfo) => {
+    const { label, other, otherEvent } = OWN_ROW[projectOf(testInfo)];
+    // A new text each run, so the preview below can only show it once the page has handled the typing.
+    const stamp = `${projectOf(testInfo)} ${Date.now()}`;
+    const text = `Saved in the other tab (${stamp}): {{awb}}`;
+    await openNotifications(page);
+    const toggle = page.getByRole('switch', { name: `${label} by SMS`, exact: true });
+    const before = await toggle.isChecked();
+
+    // A second tab loads the same settings, edits another event's message and saves first.
+    const second = await page.context().newPage();
+    await second.goto(ROUTE, { waitUntil: 'networkidle' });
+    await messageBox(second, other).fill(text);
+    await expect(second.getByTestId(`preview-${otherEvent}`)).toContainText(`(${stamp}): EK1234567890`);
+    await saveButton(second).click();
+    await expect(second.getByRole('status').filter({ hasText: 'Notification settings saved.' })).toBeVisible();
+    await second.close();
+
+    // This tab still has the old message for that event, and saves only its own switch.
+    await toggle.click();
+    await saveButton(page).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Notification settings saved.' })).toBeVisible();
+
+    await page.reload();
+    await expect(toggle).toBeChecked({ checked: !before });
+    await expect(messageBox(page, other)).toHaveValue(text);
   });
 
   test('toggles a switch from the keyboard', async ({ page }, testInfo) => {
@@ -166,14 +187,11 @@ test.describe('buyer notifications', () => {
     const text = `Edited by ${projectOf(testInfo)}: {{buyer_name}}, parcel {{awb}}.`;
     await openNotifications(page);
 
-    await expect(async () => {
-      await page.goto(ROUTE);
-      await messageBox(page, label).fill(text);
-      await saveButton(page).click();
-      await expect(page.getByRole('status').filter({ hasText: 'Notification settings saved.' })).toBeVisible();
-      await page.reload();
-      await expect(messageBox(page, label)).toHaveValue(text);
-    }).toPass();
+    await messageBox(page, label).fill(text);
+    await saveButton(page).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Notification settings saved.' })).toBeVisible();
+    await page.reload();
+    await expect(messageBox(page, label)).toHaveValue(text);
   });
 
   test('does not scroll sideways at any size', async ({ page }) => {
