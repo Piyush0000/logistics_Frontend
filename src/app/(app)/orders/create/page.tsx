@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
+import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { resolveDataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import { CreateShipmentForm } from './create-form';
@@ -16,7 +17,10 @@ export default async function CreateShipmentPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const wallet = await walletService().getBalance();
+  const [wallet, addresses] = await Promise.all([
+    walletService().getBalance(),
+    pickupAddressService().list(),
+  ]);
 
   return (
     <AppShell email={session.email} wallet={wallet}>
@@ -42,7 +46,10 @@ export default async function CreateShipmentPage() {
         </div>
 
         {/* Booking Form */}
-        <CreateShipmentForm idempotencyKey={`idem-${randomUUID()}`} />
+        <CreateShipmentForm
+          idempotencyKey={`idem-${randomUUID()}`}
+          savedAddresses={addresses.ok ? addresses.data : []}
+        />
       </div>
     </AppShell>
   );

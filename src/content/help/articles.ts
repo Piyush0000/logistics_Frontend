@@ -312,7 +312,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'Settings is available with your Profile, Company & KYC, Users & Roles and a link to Channel Integrations. Pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
+          'Settings is available with your Profile, Company & KYC, Users & Roles, Pickup Addresses and a link to Channel Integrations. Buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {
@@ -320,6 +320,7 @@ export const ARTICLES: HelpArticle[] = [
         paragraphs: [
           'Profile is available now, under Settings. You can change your name and phone number and set a new password. Your sign-in email is shown but cannot be changed there. The Profile screen currently uses sample data.',
           'Company & KYC is available now, under Settings. Enter your legal and brand name, GSTIN, PAN, registered address and bank account, then add a GST certificate, a PAN card and a cancelled cheque as PDF, JPG or PNG files up to 5 MB each. After you submit, the status shows Submitted for review, and only the last 4 digits of your account number are shown. This screen currently uses sample data, and the files are not stored yet.',
+          'Pickup Addresses is available now, under Settings. Add, edit and delete the places couriers collect from, up to 25 addresses. One is always your default. To delete the default while you have others, first choose another address as the default. On Create Shipment, the Use saved address select fills in the pickup details for you. Pickup Addresses currently uses sample data.',
           'Webhooks and their signing secrets are available now, in Channel Integrations. See the article on getting shipment updates by webhook.',
           'Users & Roles is available now, under Settings. You can invite a teammate by email, choose their role (Admin, Operations, Finance or Viewer), change a role later and remove someone. You cannot change your own role or remove yourself, and at least one admin must always remain. The team list currently uses sample data, and in sample mode any signed-in user can make these changes; role-based limits come with the real backend.',
         ],

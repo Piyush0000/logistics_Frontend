@@ -33,7 +33,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Pickup Addresses',
     description: 'The places couriers collect your parcels from.',
     href: '/settings/pickup-addresses',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'API Keys & Channel Integrations',

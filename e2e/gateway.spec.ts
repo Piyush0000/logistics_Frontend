@@ -606,6 +606,23 @@ test.describe('profile with no route', () => {
   });
 });
 
+test.describe('pickup addresses with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows addresses as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/pickup-addresses', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('addresses-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('address-item')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add address' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Pickup Addresses' })).toBeVisible();
+  });
+});
+
 test.describe('company with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 
