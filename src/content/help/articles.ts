@@ -312,7 +312,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'Settings is available with your Profile and a link to Channel Integrations. Company details, team members and roles, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
+          'Settings is available with your Profile, Pickup Addresses and a link to Channel Integrations. Company details, team members and roles, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {

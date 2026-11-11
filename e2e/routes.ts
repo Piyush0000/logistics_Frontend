@@ -38,6 +38,7 @@ export const APP_ROUTES = [
   '/channel-integrations',
   '/settings',
   '/settings/profile',
+  '/settings/pickup-addresses',
 ] as const;
 
 /** Routes anyone can open without signing in. */

@@ -6,12 +6,31 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 27 (Pickup Addresses), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 27, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Tasks 25, 26 and 32 are being built |
 | **Next step** | Tasks 25, 26 and 32, then Tasks 27 to 31 (Settings sections) and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+
+## 2026-11-11: Task 27, Pickup Addresses
+
+- `/settings/pickup-addresses` lists saved addresses as cards (the same on desktop and phone), with the Settings section list on the left on desktop and a Back to Settings link on phones. Add, edit and delete addresses (delete asks first). Label 1 to 40 characters; the address is checked with the shared `AddressSchema` (6-digit pincode not starting with 0, phone 10 to 15 digits), and the server answers per field. At most 25 addresses. There is always exactly one default: the first address is it, Make default moves it, and the default cannot be deleted while others exist.
+- Create Shipment has an optional `Use saved address` select that fills the origin fields (and leaves the delivery side alone). It shows only when saved addresses load. Pickups and B2B already offered these addresses.
+- The data layer (`src/lib/data/pickup-addresses/`) already existed from Task 6 and Task 8, so it was reused unchanged. The gateway service is `notAvailable()`, selected by `DATA_SOURCE_PICKUP_ADDRESSES`, which was already in `.env.example` and the port 3106 server.
+- New files: `settings/pickup-addresses/` (`page.tsx`, `loading.tsx`, `address-list.tsx`, `address-form.tsx`, `actions.ts`, `actions.test.ts`) and `e2e/pickup-addresses.spec.ts`. Edited: `settings-nav.tsx` (card live), `orders/create/create-form.tsx` and `page.tsx` (saved address select), `help/articles.ts` (Settings article), `e2e/routes.ts`, `e2e/gateway.spec.ts`. `e2e/settings.spec.ts` needed no change, as it already reads the section list.
+- Decisions: the browser tests never change the default or fill the 25-address limit, because the sample store is shared with the Pickups and B2B tests (which rely on the seeded default). Those two rules are covered by the action unit tests instead. Browser tests add and delete rows of their own, named by project, repeat and retry.
+
+| Check | Result |
+|---|---|
+| Lint, typecheck | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 608 passed |
+| Browser, pickup-addresses spec, desktop and phone | 21 passed, 1 skipped (phone-only tap targets, on desktop) |
+| Browser, settings hub and sidebar, pickups, and the gateway project's pickup tests plus the new pickup-addresses gateway test, desktop, phone and gateway, offset 1600 | 64 passed, 4 skipped (single-size), 0 failed |
+| Browser, help spec, desktop | 13 passed, 1 skipped (phone-only), 0 failed (from an interrupted run; the phone half was not run) |
+| Palette, secret and brand checks (D5, D6) | No output |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared and heavily loaded) |
 
 ## 2026-11-11: Task 23, SMS dashboard tab
 
@@ -29,7 +48,7 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | Browser, gateway project | 59 passed |
 | Palette, secret and brand checks (D5, D6) | No output |
 | Backend check (D7) | Clean, HEAD aace603 |
-| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 24, Settings hub and Profile
 
@@ -124,7 +143,7 @@ Not run, by instruction: the full browser suite, the dev smoke and screenshots (
 | Browser, gateway project | 58 passed |
 | Palette, secret and brand checks (D5, D6) | No output, apart from design-file comments |
 | Backend check (D7) | Clean, HEAD aace603 |
-| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 33, Help Centre
 
