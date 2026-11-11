@@ -23,7 +23,7 @@ function submenuFor(pathname: string): string | null {
   return NAV.some((group) => group.label === label && group.children) ? label : null;
 }
 
-function ChildLink({ item, pathname }: { item: NavItem; pathname: string }) {
+export function ChildLink({ item, pathname }: { item: NavItem; pathname: string }) {
   const { label, href, icon: Icon } = item;
 
   if (item.status === 'planned') {

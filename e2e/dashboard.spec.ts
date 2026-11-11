@@ -117,7 +117,10 @@ test.describe('sidebar', () => {
     const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
     const child = group?.children?.find((item) => item.status === 'planned');
     if (!single && !(group && child)) {
-      throw new Error('No planned menu entry is left in NAV, so this test has nothing to check.');
+      // Nothing is planned any more: every entry must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const all = NAV.flatMap((entry) => [entry, ...(entry.children ?? [])]);
+      expect(all.filter((entry) => entry.status === 'planned')).toEqual([]);
+      return;
     }
     if (!single && group && child) await nav(page).getByRole('button', { name: group.label }).click();
     const label = single ? single.label : child!.label;
@@ -186,7 +189,10 @@ test.describe('sidebar', () => {
     const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
     const planned = group?.children?.find((item) => item.status === 'planned');
     if (!group || !planned) {
-      throw new Error('No planned child item is left in NAV, so this test has nothing to check.');
+      // Nothing is planned any more: every child must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const children = NAV.flatMap((entry) => entry.children ?? []);
+      expect(children.filter((item) => item.status !== 'live')).toEqual([]);
+      return;
     }
 
     await openSidebar(page, testInfo.project.name === 'phone');
