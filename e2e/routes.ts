@@ -45,6 +45,7 @@ export const APP_ROUTES = [
   '/settings/company',
   '/settings/users',
   '/settings/tracking-page',
+  '/settings/notifications',
 ] as const;
 
 /** Routes anyone can open without signing in. */

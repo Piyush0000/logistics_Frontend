@@ -43,7 +43,6 @@ export async function SmsTab({ range }: { range: Range }) {
           />
           <Link
             href="/settings/notifications"
-            prefetch={false}
             className="flex h-11 w-fit items-center rounded-full border border-secondary px-4 text-sm font-medium text-primary hover:bg-primary/10"
           >
             Manage buyer notifications

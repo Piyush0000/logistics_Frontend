@@ -1,0 +1,40 @@
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { AppShell } from '@/components/shell/app-shell';
+import { DataCard } from '@/components/ui/data-card';
+import { PageHeader } from '@/components/ui/page-header';
+import { getDemoSession } from '@/lib/auth/session';
+import { notificationService } from '@/lib/data/notifications';
+import { walletService } from '@/lib/data/wallet';
+import { SettingsNav } from '../settings-nav';
+import { NotificationEditor } from './notification-editor';
+
+export const metadata: Metadata = { title: 'Buyer notifications | Evoc Logistics' };
+
+export default async function NotificationsPage() {
+  const session = await getDemoSession();
+  if (!session) redirect('/login');
+
+  const [wallet, settings] = await Promise.all([walletService().getBalance(), notificationService().get()]);
+
+  return (
+    <AppShell email={session.email} wallet={wallet}>
+      <div className="grid gap-6">
+        <PageHeader
+          title="Buyer notifications"
+          description="Choose which messages your buyers get about their parcels."
+        />
+
+        <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <SettingsNav current="/settings/notifications" />
+
+          <div className="grid min-w-0 gap-6">
+            <DataCard testId="notifications-card" title="Messages to buyers" result={settings}>
+              {(data) => <NotificationEditor initial={data} />}
+            </DataCard>
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
