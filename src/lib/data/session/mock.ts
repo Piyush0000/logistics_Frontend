@@ -24,4 +24,8 @@ export const mockSessionService: SessionService = {
   async signInWithPassword(email) {
     return fromMock({ email });
   },
+
+  async requestPasswordReset() {
+    return fromMock({ demo: true });
+  },
 };

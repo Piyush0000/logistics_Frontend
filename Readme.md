@@ -24,6 +24,7 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 
 - **Email OTP:** use the code shown on screen, `123456`.
 - **Email + Password:** any password of 8 or more characters works.
+- **Forgot password:** the link under the password field opens `/forgot-password`. It gives the same message for any valid email and says no email is sent in demo mode.
 
 **Do not deploy the demo sign-in publicly.** It accepts any email. Replace it when the backend adds login routes, in `src/lib/data/session/gateway.ts`.
 
@@ -113,6 +114,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Screen | Design file | Stage | Data | Status |
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
+| Forgot password, at `/forgot-password` | [meracourierwala.com-design.md](meracourierwala.com-design.md) | Full build, Task 34 | `DATA_SOURCE_SESSION`: sample by default (no email is sent); in gateway mode it shows "Password reset is not available yet.", as the backend has no reset route | Done. Public page, linked from the password field on `/login`. Signed-in visitors go to the dashboard |
 | Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main. Tabs: Overview, Pickups (Task 20), NDR and RTO (Task 21) |
 | Dashboard Pickups tab, at `/dashboard?tab=pickups` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 20 | Scheduled today, Picked up today and Pending pickup tiles, plus a 7-day bar chart. Sample by default; unavailable in gateway mode, as the gateway has no pickups route | Done. Other tabs stay disabled until Tasks 21 to 23 |

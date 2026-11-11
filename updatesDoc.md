@@ -6,11 +6,31 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 21 and Task 33 (Help Centre, built ahead of order) of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 21, Task 33 (Help Centre) and Task 34 (Forgot password), both built ahead of order, of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing: Tasks 22 and 24 are being built |
 | **Next step** | Task 22 (Delivered and Revenue tabs), Task 24 (Settings and Profile) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 34, Forgot password
+
+- Added `/forgot-password` (public, `theme-auth`), using the login page's split layout and `BrandPanel`. Signed-in visitors go to `/dashboard`.
+- Email is checked with `emailSchema`. Every valid email gets the same message: "If an account exists for this email, a reset link is on its way." In demo mode it adds "Demo mode: no email is sent." There is a Back to sign in link.
+- `SessionService` gained `requestPasswordReset(email)`. The mock returns `{ demo: true }`. The gateway service returns "Password reset is not available yet." (`unavailable` kind), as the backend has no reset route.
+- Added a `Forgot password?` link under the password field in `login/fields.tsx`.
+- Files: `src/app/(auth)/forgot-password/` (`page.tsx`, `forgot-form.tsx`, `actions.ts`, `forgot-state.ts`, `actions.test.ts`), `src/lib/data/session/` (`types.ts`, `mock.ts`, `gateway.ts`, `session.test.ts`), `src/app/(auth)/login/fields.tsx`, `e2e/forgot-password.spec.ts`, `e2e/routes.ts`.
+- The action is public on purpose, so it has no session check.
+
+| Check | Result |
+|---|---|
+| Unit tests (`pnpm test`) | 60 files, 542 tests passed |
+| Lint, typecheck, build | 0 errors |
+| Browser, `login.spec.ts` + `forgot-password.spec.ts`, desktop and phone, offset 1200 | 113 passed, 15 skipped (size-specific), 0 failed |
+| Gateway project | 55 passed |
+| Palette, secret and brand greps | No output |
+| Backend check | status clean, HEAD aace603 |
+
+Not verified: the gateway message in a browser. A server with `DATA_SOURCE_SESSION=gateway` would break the `signIn` helper that every gateway test uses, so it is covered by unit tests only. Full e2e and dev-smoke were not run.
 
 ## 2026-11-11: Task 33, Help Centre
 

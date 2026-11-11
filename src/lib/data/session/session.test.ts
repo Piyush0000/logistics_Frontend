@@ -50,3 +50,29 @@ describe('sessionService', () => {
     });
   });
 });
+
+describe('requestPasswordReset', () => {
+  afterEach(() => {
+    delete process.env.DATA_SOURCE_SESSION;
+  });
+
+  it('answers the same way in demo mode for any email', async () => {
+    const first = await mockSessionService.requestPasswordReset('ops@example.com');
+    const second = await mockSessionService.requestPasswordReset('nobody@example.org');
+
+    expect(first).toEqual({ ok: true, source: 'mock', data: { demo: true } });
+    expect(second).toEqual(first);
+  });
+
+  it('reports that the gateway has no reset route yet', async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+
+    const result = await sessionService().requestPasswordReset('ops@example.com');
+
+    expect(result).toMatchObject({
+      ok: false,
+      source: 'gateway',
+      error: { kind: 'unavailable', message: 'Password reset is not available yet.' },
+    });
+  });
+});

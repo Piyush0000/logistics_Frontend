@@ -108,6 +108,12 @@ export function PasswordField({
       <p id={`${id}-hint`} className="mt-1.5 text-[13px] leading-5 text-on-surface/70">
         Demo mode: any password of 8 or more characters works.
       </p>
+      <Link
+        href="/forgot-password"
+        className="mt-1 inline-flex min-h-11 items-center text-sm font-extrabold text-primary underline-offset-2 hover:underline"
+      >
+        Forgot password?
+      </Link>
     </div>
   );
 }
