@@ -121,7 +121,7 @@ export const NAV: NavGroup[] = [
     label: 'Settings',
     icon: Settings,
     href: '/settings',
-    status: 'planned',
+    status: 'live',
     alsoActiveFor: ['/channel-integrations', '/settings'],
   },
   {
@@ -154,13 +154,19 @@ export function isActivePath(href: string, pathname: string): boolean {
   );
 }
 
+/**
+ * True when `pathname` belongs to this menu entry: its own page, a page below one of its items, or
+ * one of its `alsoActiveFor` prefixes. The sidebar and `activeGroupLabel` both use this one rule.
+ */
+export function isGroupActive(group: NavGroup, pathname: string): boolean {
+  return (
+    (group.href !== undefined && isActivePath(group.href, pathname)) ||
+    (group.children ?? []).some((item) => isActivePath(item.href, pathname)) ||
+    (group.alsoActiveFor ?? []).some((prefix) => isWithin(prefix, pathname))
+  );
+}
+
 /** The label of the group that owns `pathname`, whether or not its screen is live yet. */
 export function activeGroupLabel(pathname: string): string | null {
-  const group = NAV.find(
-    (entry) =>
-      (entry.href !== undefined && isActivePath(entry.href, pathname)) ||
-      (entry.children ?? []).some((item) => isActivePath(item.href, pathname)) ||
-      (entry.alsoActiveFor ?? []).some((prefix) => isWithin(prefix, pathname)),
-  );
-  return group?.label ?? null;
+  return NAV.find((entry) => isGroupActive(entry, pathname))?.label ?? null;
 }

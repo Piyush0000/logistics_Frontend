@@ -562,6 +562,25 @@ test.describe('weight settings with no route', () => {
   });
 });
 
+test.describe('profile with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the profile as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/profile', { waitUntil: 'networkidle' });
+
+    for (const id of ['profile-card', 'password-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Save profile' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Change password' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
+  });
+});
+
 test.describe('rate card with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 

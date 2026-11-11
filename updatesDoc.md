@@ -6,11 +6,45 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 20 of 37 are done |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Task 24 (Settings hub and Profile) is built and waiting for review |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 20 |
+| **Waiting on** | Review of Task 24 |
 | **Next step** | Task 21: next dashboard tab |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+
+## 2026-11-11: Task 24, Settings hub and Profile
+
+### What was done
+
+- `/settings` lists nine sections as cards. Profile and API Keys & Channel Integrations (the existing `/channel-integrations`) are live. The other seven show "Not available yet" and are disabled until their tasks.
+- `/settings/profile`: name (1 to 80 characters), phone (`+` and 10 to 15 digits), the sign-in email read-only, and a password change (8 or more characters, matching its confirmation, different from the current one). Server actions check the session and every rule again.
+- Settings pages share a section list on the left on desktop, and a Back to Settings link on phones.
+- Data in `src/lib/data/profile/`, selected by `DATA_SOURCE_PROFILE`. Gateway mode shows the profile and password change as unavailable (port 3106 test). The mock never keeps or returns a password.
+- Sidebar: Settings is live. One rule (`isGroupActive` in `nav-config.ts`) now decides both the current item and the open group, so Settings is current on `/settings`, `/settings/profile` and `/channel-integrations`. View Profile in the sidebar is now a link to the profile (it was a plain label saying it was not available).
+- `e2e/dashboard.spec.ts`: the test that checked Settings was a disabled button now takes its example from `NAV`, like the other planned-item test.
+
+### Files
+
+New: `src/app/(app)/settings/` (`page.tsx`, `loading.tsx`, `settings-nav.tsx`, `profile/` with `page.tsx`, `loading.tsx`, `profile-form.tsx`, `actions.ts`, `actions.test.ts`), `src/lib/data/profile/` (types, input, mock, gateway, index, tests), `e2e/settings.spec.ts`. Changed: `nav-config.ts`, `nav-config.test.ts`, `sidebar.tsx`, `e2e/dashboard.spec.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Browser spec written first, run before the pages existed | Failed on the missing pages (4 failed with `--max-failures=4`) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| `pnpm test` | 56 files, 536 tests passed |
+| `e2e/settings.spec.ts` and `e2e/dashboard.spec.ts`, desktop and phone | 115 passed, 9 skipped (single-size tests) |
+| `--project=gateway` | 53 passed, including the profile test |
+| `node scripts/dev-smoke.mjs` | `/settings` and `/settings/profile` HTTP 200 with an h1; BROWSER ERRORS: none |
+| Screenshots `/settings`, `/settings/profile` | Desktop, phone and 320px reviewed; no cut-off or misalignment |
+| Palette, brand and secret greps | No output apart from design-file comments |
+| Backend `Evoc_ships` | Clean, `aace603` |
+
+### Not verified
+
+- The full `pnpm test:e2e` run over all 937 tests did not finish. The machine was at 100% CPU from other runs and the run covered about 640 tests in over an hour, with no failure, before it was stopped. The older specs were not changed, apart from the one test in `dashboard.spec.ts`.
+- The gateway block for the profile was written before the page existed but was first run after it, so it has no separate failing run.
 
 ## 2026-11-11: Task 20, fix round 1
 

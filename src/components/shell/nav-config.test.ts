@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { activeGroupLabel, isActivePath, NAV } from './nav-config';
+import { activeGroupLabel, isActivePath, isGroupActive, NAV } from './nav-config';
 
 const APP_DIR = join(process.cwd(), 'src', 'app');
 
@@ -84,5 +84,22 @@ describe('activeGroupLabel', () => {
 
   it('returns null outside the menu', () => {
     expect(activeGroupLabel('/login')).toBeNull();
+  });
+});
+
+describe('Settings', () => {
+  const settings = NAV.find((entry) => entry.label === 'Settings');
+
+  it('is live and links to /settings', () => {
+    expect(settings).toMatchObject({ href: '/settings', status: 'live' });
+  });
+
+  it('is current on the hub, its pages and Channel Integrations, and nowhere else', () => {
+    for (const path of ['/settings', '/settings/profile', '/channel-integrations']) {
+      expect(isGroupActive(settings!, path), path).toBe(true);
+      expect(activeGroupLabel(path), path).toBe('Settings');
+    }
+    expect(isGroupActive(settings!, '/settingsx')).toBe(false);
+    expect(isGroupActive(settings!, '/orders')).toBe(false);
   });
 });

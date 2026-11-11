@@ -32,6 +32,8 @@ export const APP_ROUTES = [
   '/tools/tracking?awb=DEMOEK001',
   '/reports',
   '/channel-integrations',
+  '/settings',
+  '/settings/profile',
 ] as const;
 
 /** Routes anyone can open without signing in. */
