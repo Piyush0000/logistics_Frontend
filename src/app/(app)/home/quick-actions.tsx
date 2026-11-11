@@ -20,8 +20,6 @@ export function QuickActions() {
         <Link
           key={href}
           href={href}
-          // Some targets are not built yet. Their prefetch never finishes, which keeps the page "busy".
-          prefetch={false}
           className="flex min-h-14 min-w-0 items-center gap-3 rounded-card border border-secondary bg-surface p-3 text-sm font-medium transition-colors hover:border-primary active:bg-tertiary lg:p-card lg:text-base"
         >
           <span className="hidden size-9 shrink-0 min-[360px]:grid place-items-center rounded-control bg-muted text-primary">

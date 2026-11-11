@@ -29,7 +29,6 @@ export function OnboardingChecklist({ items }: { items: OnboardingItem[] }) {
           <li key={item.id}>
             <Link
               href={item.href}
-              prefetch={false}
               data-done={item.done}
               className="flex min-h-11 items-center gap-3 rounded-control px-1 py-2 text-sm hover:bg-tertiary"
             >

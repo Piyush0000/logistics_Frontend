@@ -69,7 +69,6 @@ export function CreateShipmentForm({
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             href={state.createdAwb ? `/orders/${state.createdAwb}` : "/orders"}
-            prefetch={false}
             className="inline-flex h-control min-h-[44px] items-center gap-1.5 rounded-control bg-primary px-5 text-sm font-medium text-tertiary hover:bg-primary/90"
           >
             <span>{state.createdAwb ? "View Shipment Details" : "View All Shipments"}</span>
