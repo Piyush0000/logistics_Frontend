@@ -28,7 +28,7 @@ describe('BarChart', () => {
 
   it('puts every value in a hidden table and as a value label', () => {
     const html = render();
-    expect(html).toContain('<table class="sr-only"');
+    expect(html).toContain('<div class="sr-only"><table>');
     expect(html.match(/<tr>/g)).toHaveLength(8);
     expect(html.match(/data-value-label=/g)).toHaveLength(7);
   });
@@ -49,5 +49,24 @@ describe('BarChart', () => {
     const html = render({ data: DATA.map((d) => ({ ...d, value: 0 })) });
     expect(html.match(/data-bar=/g)).toHaveLength(7);
     expect(html).not.toContain('NaN');
+  });
+
+  it('keeps the short label on the axis and the full label everywhere else', () => {
+    const html = render({
+      categoryLabel: 'Reason',
+      data: [
+        { label: 'Requested…', fullLabel: 'Customer requested future delivery date', value: 2 },
+        { label: 'Other', fullLabel: 'Other reasons', value: 1 },
+      ],
+    });
+    expect(html).toContain('Customer requested future delivery date: 2');
+    expect(html).toContain('<title>Customer requested future delivery date: 2</title>');
+    expect(html).toContain('<th scope="row">Customer requested future delivery date</th>');
+    expect(html).toContain('<th scope="col">Reason</th>');
+    expect(html).toContain('>Requested…</text>');
+  });
+
+  it('names the table column Day by default', () => {
+    expect(render()).toContain('<th scope="col">Day</th>');
   });
 });

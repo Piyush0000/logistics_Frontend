@@ -6,10 +6,10 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Task 24 (Settings hub and Profile) is built and waiting for review |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 21, 24 and 33 (Help Centre, built ahead of order) of 37 are done |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Review of Task 24 |
-| **Next step** | Task 21: next dashboard tab |
+| **Waiting on** | Nothing |
+| **Next step** | Tasks 22 and 23, then Task 25 onward |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
 ## 2026-11-11: Task 24, Settings hub and Profile
@@ -45,6 +45,59 @@ New: `src/app/(app)/settings/` (`page.tsx`, `loading.tsx`, `settings-nav.tsx`, `
 
 - The full `pnpm test:e2e` run over all 937 tests did not finish. The machine was at 100% CPU from other runs and the run covered about 640 tests in over an hour, with no failure, before it was stopped. The older specs were not changed, apart from the one test in `dashboard.spec.ts`.
 - The gateway block for the profile was written before the page existed but was first run after it, so it has no separate failing run.
+## 2026-11-11: Task 33, Help Centre
+
+- Added `/support/help` and `/support/help/[slug]`: 14 merchant articles in five topics, stored in `src/content/help/articles.ts`. No data source and no sample label, because the content ships with the app.
+- Search updates as you type (`searchArticles` in `src/lib/help-search.ts`: every word must match; title matches first, then summary, then body). The topic filter lives in the URL (`?category=`, an unknown value shows all). `?q=` sets a starting search.
+- Each article ends with Raise a ticket, linking to `/support/tickets?new=1` with prefetch off. That screen is Task 32 and does not exist yet, so the tests check the link, not the page.
+- An unknown slug gives a real 404. There is no `loading.tsx` under `help/`, so the status stays 404.
+- The webhook article is adapted from the backend guide with its exact header names. Features that are sample-only or not connected are described as such.
+- Help Centre is live in the sidebar. Routes added to `e2e/routes.ts`.
+- Part C skipped: static content, no gateway route or variable to test.
+
+| Check | Result |
+|---|---|
+| Unit tests (`pnpm exec vitest run`) | 56 files, 518 tests passed |
+| Lint, typecheck | 0 errors |
+| Browser, `help.spec.ts` | 23 passed, 1 skipped (phone-only check on desktop) |
+| Full browser run, offset 600 | 864 passed, 50 skipped, 0 failed |
+| `node scripts/dev-smoke.mjs` | Both help routes 200 with an h1; BROWSER ERRORS: none |
+| Palette, secret and brand greps | No output (brand hits are design-file comments only) |
+| Backend check | status clean, HEAD aace603 |
+
+Fix round 1: the empty-state Raise a ticket link also has prefetch off, topic chips keep the typed search (`?q=`), and the search box and `?q=` share one 100-character limit. `help.spec.ts` desktop and phone: 25 passed, 1 skipped.
+
+Not verified: the Raise a ticket destination (Task 32).
+
+## 2026-11-11: Task 21, Dashboard NDR and RTO tabs
+
+`/dashboard?tab=ndr` and `/dashboard?tab=rto` are built. Delivered, Revenue and SMS stay disabled.
+
+### Done
+
+- NDR tab: the four NDR figures from `ndrService().getNdrDashboard()`, a bar chart of NDR reasons, and a `View all NDR` link to `/ndr`. In gateway mode it shows "This data is not available yet." with Try again and no sample label.
+- RTO tab: in-progress and delivered counts from `rtoService().getSummary()`, a bar chart of RTO shipments by courier, and a `View all RTO` link to `/rto`. The chart counts every page of each stage's list (up to 20 pages per stage) and shows "Based on N of M RTO shipments." when it covers fewer than the counts. Any failing source turns the one card into the error with Try again.
+- Charts keep the full label (NDR reason) in their summary, bar title and hidden table, and the hidden table's first column is named per chart (Reason, Courier, Day). After merging, the full suite found that long reasons made the NDR tab scroll sideways at 320px, because `sr-only` does not clip a `<table>`. The hidden table now sits inside an `sr-only` div (commit 25f2e5f).
+- Pure, unit-tested aggregations: `ndrReasonCounts` (`src/lib/data/ndr/reasons.ts`: top five reasons, the rest as Other, short axis labels) and `rtoByCourier` (`src/lib/data/rto/courier.ts`).
+- `dashboard/page.tsx` is now one shell (wallet, ticker, heading, tab bar) that switches only the tab body. The Overview body moved unchanged to `tabs/overview-tab.tsx`. Every existing Overview test passes unchanged.
+- Tests: in `e2e/dashboard.spec.ts` only the list of disabled tabs changed (now Delivered, Revenue, SMS). In `e2e/dashboard-tabs.spec.ts` the "not built" test now opens `?tab=delivered`, since NDR is built. Routes added to `e2e/routes.ts`.
+
+### Decisions
+
+- Axis labels for NDR reasons are shortened ("Requested…", "Door locked") so they fit at 320px. The full reason stays in the data.
+
+### Verification (port offset 400)
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck` | 0 errors |
+| `pnpm test` | 56 files, 516 tests passed |
+| dashboard and dashboard-tabs specs, desktop and phone | 98 passed, 10 skipped (one-size tests) |
+| `--project=gateway` | 55 passed |
+| `node scripts/dev-smoke.mjs` | every route HTTP 200, BROWSER ERRORS: none |
+| Palette, secret and backend checks | no output; Evoc_ships clean at `aace603` |
+
+Not re-run after the last label change: the full `pnpm test:e2e`. Only the two tab specs and the gateway project were re-run.
 
 ## 2026-11-11: Task 20, fix round 1
 

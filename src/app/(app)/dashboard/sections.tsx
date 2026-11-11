@@ -60,8 +60,8 @@ export type DashboardTab = 'overview' | 'pickups' | 'ndr' | 'rto' | 'delivered' 
 const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
   { id: 'overview', label: 'Overview', enabled: true },
   { id: 'pickups', label: 'Pickups', enabled: true },
-  { id: 'ndr', label: 'NDR', enabled: false },
-  { id: 'rto', label: 'RTO', enabled: false },
+  { id: 'ndr', label: 'NDR', enabled: true },
+  { id: 'rto', label: 'RTO', enabled: true },
   { id: 'delivered', label: 'Delivered', enabled: false },
   { id: 'revenue', label: 'Revenue', enabled: false },
   { id: 'sms', label: 'SMS', enabled: false },

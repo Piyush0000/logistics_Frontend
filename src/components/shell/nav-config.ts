@@ -122,14 +122,14 @@ export const NAV: NavGroup[] = [
     icon: Settings,
     href: '/settings',
     status: 'live',
-    alsoActiveFor: ['/channel-integrations', '/settings'],
+    alsoActiveFor: ['/channel-integrations'],
   },
   {
     label: 'Help & Support',
     icon: CircleHelp,
     children: [
       { label: 'Support Tickets', href: '/support/tickets', status: 'planned', icon: Ticket },
-      { label: 'Help Centre', href: '/support/help', status: 'planned', icon: BookOpen },
+      { label: 'Help Centre', href: '/support/help', status: 'live', icon: BookOpen },
     ],
   },
 ];
