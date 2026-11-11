@@ -41,8 +41,11 @@ export const APP_ROUTES = [
   '/channel-integrations',
   '/settings',
   '/settings/profile',
+  '/settings/pickup-addresses',
   '/settings/company',
   '/settings/users',
+  '/settings/tracking-page',
+  '/settings/notifications',
   '/settings/courier-rules',
 ] as const;
 

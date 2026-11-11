@@ -358,6 +358,12 @@ test.describe('sms tab', () => {
     await expect(link).toHaveAttribute('href', '/settings/notifications');
   });
 
+  test('opens buyer notification settings', async ({ page }) => {
+    await page.getByRole('link', { name: 'Manage buyer notifications' }).click();
+    await expect(page).toHaveURL(/\/settings\/notifications$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Buyer notifications' })).toBeVisible();
+  });
+
   test('does not scroll sideways at any size', async ({ page }) => {
     await page.goto('/dashboard?tab=sms&range=30');
     await expect(page.getByTestId('sms-tab-card').locator('[data-bar]')).toHaveCount(6);

@@ -33,7 +33,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Pickup Addresses',
     description: 'The places couriers collect your parcels from.',
     href: '/settings/pickup-addresses',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'API Keys & Channel Integrations',
@@ -45,13 +45,13 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Buyer Notifications',
     description: 'Choose which messages your buyers get about their parcels.',
     href: '/settings/notifications',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Tracking Page',
     description: 'Set up the page your buyers open to follow a parcel.',
     href: '/settings/tracking-page',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Courier Rules',

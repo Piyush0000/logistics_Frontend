@@ -6,14 +6,11 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 26, 30 (Courier Rules), 32 (Support Tickets), 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 30, 32, 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 30, 32, 33, 34 and 36 of 37 are done; 28, 29, 30, 32, 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Tasks 27, 28 and 29 are being built in parallel; Task 30 is in review |
-| **Next step** | Merge Task 27, then Tasks 29 to 31 (Settings sections) and 35 |
+| **Waiting on** | Nothing: Tasks 31 and 35 are being built |
+| **Next step** | Merge Tasks 31 and 35, then the final regression (Task 37) |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
-
-
-
 
 
 ## 2026-11-11: Task 30, Courier Rules
@@ -41,6 +38,86 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 | Backend check (D7) | `git status --porcelain` empty, HEAD `aace603` |
 | Encoding check | 0 |
 | Not run | Full browser suite (D2), dev-mode smoke (D3) and screenshots (D4), by instruction |
+
+## 2026-11-11: Task 28, Buyer Notifications
+
+- New `/settings/notifications`. A switch for each shipment event (Manifested, In transit, Out for delivery, Delivered, RTO initiated) and channel (SMS, Email, WhatsApp), and one message for each event with a live preview using invented sample values. One Save sends the switches and messages together.
+- Messages may use only `{{buyer_name}}`, `{{awb}}`, `{{courier}}`, `{{tracking_link}}` and `{{store_name}}`. Any other variable shows `Unknown variable: {{x}}` (one line each) and blocks saving. The server action and the mock service check again, and also require 1 to 480 characters. The preview is rendered as React text, so markup in a message shows as typed.
+- Each message shows its length and `Sends as N messages by SMS` (160 characters a message, `smsParts` in `src/lib/templates.ts`).
+- Data in `src/lib/data/notifications/`, picked by `DATA_SOURCE_NOTIFICATIONS` (in `.env.example` and the 3106 server). The gateway service is `notAvailable()`. Event names are normalized shipment statuses, the same values the SMS tab counts by, and labels come from `statusLabel`.
+- Settings hub card and section list: Buyer Notifications is live. Dashboard SMS tab: the `prefetch={false}` override is removed now that the route exists, and a new test clicks the link through. Help article "Settings" no longer lists buyer notifications as planned.
+- Fix round 1: a save now sends only the events that changed (`{ events: { DELIVERED: { matrix, template } } }`). The server action reads the current settings, puts those events on top, checks the merged whole and saves it, one save at a time, so two saves to different events both survive (unit-tested). The form shows the merged result after saving. Switches and boxes are disabled while a save is pending. The browser tests no longer retry saves; one new test saves from a second tab first and checks the first tab's save does not undo it. Added Buyer Notifications to the Settings help article. Removed a comment that claimed `NotifyEvent` equals `MessageStats.byStatus`.
+- Switches are native checkboxes with `role="switch"`, so tests read them with `isChecked`, not `aria-checked`.
+- Shared sample store: desktop and phone each change their own row (Out for delivery and RTO initiated). Each save sends the whole form, so tests that check what was saved read the state first and retry the whole save and reload.
+- Files: new `src/app/(app)/settings/notifications/` (page, loading, notification-editor, channel-matrix, template-editor, actions, actions test), `src/lib/templates.ts` and test, `src/lib/data/notifications/` (types, input, mock, gateway, index, test), `e2e/notifications.spec.ts`. Changed: `settings-nav.tsx`, `sms-tab.tsx`, `articles.ts`, `e2e/dashboard-tabs.spec.ts`, `e2e/gateway.spec.ts`, `e2e/routes.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`. `e2e/settings.spec.ts` did not need a change.
+
+| Check | Result |
+|---|---|
+| Browser spec written first, run before the page existed | 15 failed, 1 skipped (heading not found) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 77 files, 699 tests passed (after merging main and the fix round) |
+| Browser, notifications spec, desktop and phone, repeat 2 | 62 passed, 2 skipped (single-size), 0 failed |
+| Browser, settings, notifications, help and dashboard-tabs specs, desktop and phone, offset 1800 | 158 passed, 10 skipped, 0 failed |
+| Browser, gateway project | 61 passed, 0 failed (includes the new no-route test) |
+| Palette, secret and brand checks (D5, D6) | No output (brand grep shows only design-file comments) |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+
+## 2026-11-11: Task 29, Tracking Page
+
+- Added `/settings/tracking-page`: a branding form beside a live preview of the public tracking page (sample AWB `DEMOEK001`). Fields: display name (1 to 40 characters), optional support email and phone (checked), accent colour, show-courier switch, and a PNG or SVG logo up to 1 MB (only its name is kept). The page says `Changes apply to the public page once tracking-page settings are connected.`
+- The accent is limited to three palette tokens (Primary blue, Sky blue, Green), shown as radio options. The server action and `parseBrandingInput` refuse anything else, so a merchant cannot pick a colour that breaks the palette or contrast. Header text on each accent is chosen to stay readable.
+- All merchant text (display name, email, phone, logo name) is rendered as plain text by React and wrapped with `overflow-wrap`; a test enters `<img ... onerror>` and checks no image appears. There are no URL fields, so no link can be saved. Support email and phone are shown as text, not links.
+- New `src/lib/data/tracking-page/` (types, input, mock, gateway, index). The gateway service is `notAvailable()`. New variable `DATA_SOURCE_TRACKING_PAGE`, in `.env.example` and appended to the end of the port 3106 `env` line. The server action `saveTrackingPageAction` checks the session first, then checks the input and logo again.
+- The public page `/track/[awb]` is not changed and does not read these settings, as the brief says. So browser tests that save here cannot change what other specs see. The desktop and phone runs share the mock store, so each saves its own display name. No new server port was needed.
+- Tracking Page is `live` in `SETTINGS_SECTIONS`. Help article "Settings, your profile and team members" now lists it as available.
+- Browser tap-target test targets the label of the courier checkbox and colour options, since the label is the touch target.
+
+| Check | Result |
+|---|---|
+| D1 `pnpm lint`, `typecheck` | 0 warnings, 0 errors |
+| D1 `pnpm test` | 76 files, 695 tests passed |
+| `pnpm build` | Compiled, Tracking Page route present |
+| Browser: settings, tracking-page, help, tracking, public-tracking, desktop and phone | 138 tests: 132 passed, 5 skipped (phone-only), 1 failed on first run (checkbox input 20px tall); fixed in the spec, re-run passed |
+| Browser: `--project=gateway` | 64 passed, including `shows tracking-page settings as unavailable in gateway mode` |
+| D5 palette grep | no output |
+| D6 secrets in `.next/static`, brand grep | no output |
+| D7 backend | clean, `aace603` |
+
+Not run: the full suite (D2), `dev-smoke` (D3) and screenshots (D4), as agreed for this task.
+
+## 2026-11-11: Task 27, fix round 1
+
+- Create Shipment: after a failed submit, the origin fields now keep what the person typed. Before, the saved address won and snapped the fields back, so the error pointed at a value they could no longer see. Choosing a saved address again starts again from that address. New browser test `keeps edited origin fields after a failed submit`.
+- Editing a saved address no longer sends the default flag unless it is ticked (fixes a stale list in a second tab). The label field's extra 10 characters are now explained in a comment.
+- The Settings help article has a Pickup Addresses paragraph. Merged Tasks 25, 26 and 32 (`3b069e5`); the merge commit also carried a broken `e2e/gateway.spec.ts` closing, fixed in this round.
+
+| Check | Result |
+|---|---|
+| Lint, build (includes typecheck) | 0 errors, 0 warnings |
+| Unit tests | 679 passed |
+| Browser, pickup-addresses spec, desktop and phone, `--repeat-each=2` | 46 passed, 2 skipped (phone-only), 0 failed |
+| Browser, b2c and help specs, desktop (interrupted run) | passed so far, 0 failed |
+| Not run | orders, settings and help on phone, gateway project (machine too slow) |
+
+## 2026-11-11: Task 27, Pickup Addresses
+
+- `/settings/pickup-addresses` lists saved addresses as cards (the same on desktop and phone), with the Settings section list on the left on desktop and a Back to Settings link on phones. Add, edit and delete addresses (delete asks first). Label 1 to 40 characters; the address is checked with the shared `AddressSchema` (6-digit pincode not starting with 0, phone 10 to 15 digits), and the server answers per field. At most 25 addresses. There is always exactly one default: the first address is it, Make default moves it, and the default cannot be deleted while others exist.
+- Create Shipment has an optional `Use saved address` select that fills the origin fields (and leaves the delivery side alone). It shows only when saved addresses load. Pickups and B2B already offered these addresses.
+- The data layer (`src/lib/data/pickup-addresses/`) already existed from Task 6 and Task 8, so it was reused unchanged. The gateway service is `notAvailable()`, selected by `DATA_SOURCE_PICKUP_ADDRESSES`, which was already in `.env.example` and the port 3106 server.
+- New files: `settings/pickup-addresses/` (`page.tsx`, `loading.tsx`, `address-list.tsx`, `address-form.tsx`, `actions.ts`, `actions.test.ts`) and `e2e/pickup-addresses.spec.ts`. Edited: `settings-nav.tsx` (card live), `orders/create/create-form.tsx` and `page.tsx` (saved address select), `help/articles.ts` (Settings article), `e2e/routes.ts`, `e2e/gateway.spec.ts`. `e2e/settings.spec.ts` needed no change, as it already reads the section list.
+- Decisions: the browser tests never change the default or fill the 25-address limit, because the sample store is shared with the Pickups and B2B tests (which rely on the seeded default). Those two rules are covered by the action unit tests instead. Browser tests add and delete rows of their own, named by project, repeat and retry.
+
+| Check | Result |
+|---|---|
+| Lint, typecheck | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 608 passed |
+| Browser, pickup-addresses spec, desktop and phone | 21 passed, 1 skipped (phone-only tap targets, on desktop) |
+| Browser, settings hub and sidebar, pickups, and the gateway project's pickup tests plus the new pickup-addresses gateway test, desktop, phone and gateway, offset 1600 | 64 passed, 4 skipped (single-size), 0 failed |
+| Browser, help spec, desktop | 13 passed, 1 skipped (phone-only), 0 failed (from an interrupted run; the phone half was not run) |
+| Palette, secret and brand checks (D5, D6) | No output |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared and heavily loaded) |
 
 ## 2026-11-11: Task 32, Support Tickets
 
@@ -155,7 +232,7 @@ Outside the brief: `e2e/settings.spec.ts` had a check that Company & KYC was a d
 | Browser, gateway project | 59 passed |
 | Palette, secret and brand checks (D5, D6) | No output |
 | Backend check (D7) | Clean, HEAD aace603 |
-| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 24, Settings hub and Profile
 
@@ -250,7 +327,7 @@ Not run, by instruction: the full browser suite, the dev smoke and screenshots (
 | Browser, gateway project | 58 passed |
 | Palette, secret and brand checks (D5, D6) | No output, apart from design-file comments |
 | Backend check (D7) | Clean, HEAD aace603 |
-| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+| Not run | `--repeat-each=2` of the new spec, the full gateway project, help spec on phone, full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
 
 ## 2026-11-11: Task 33, Help Centre
 

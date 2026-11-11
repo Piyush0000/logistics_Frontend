@@ -606,6 +606,40 @@ test.describe('profile with no route', () => {
   });
 });
 
+test.describe('pickup addresses with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows addresses as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/pickup-addresses', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('addresses-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('address-item')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add address' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Pickup Addresses' })).toBeVisible();
+  });
+});
+
+test.describe('buyer notifications with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows notifications as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/notifications', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('notifications-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('switch')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save notifications' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Buyer notifications' })).toBeVisible();
+  });
+});
+
 test.describe('company with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 
@@ -947,5 +981,21 @@ test.describe('dashboard SMS tab with no gateway route', () => {
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('tracking page settings with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows tracking-page settings as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/tracking-page', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tracking-page-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Tracking Page' })).toBeVisible();
   });
 });
