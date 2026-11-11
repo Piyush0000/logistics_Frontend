@@ -36,7 +36,7 @@ function Switch({
       />
       <span
         aria-hidden="true"
-        className="flex h-5 w-9 shrink-0 items-center rounded-full bg-secondary p-0.5 peer-checked:justify-end peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+        className="flex h-5 w-9 shrink-0 items-center rounded-full bg-on-surface/50 p-0.5 peer-checked:justify-end peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
       >
         <span className="size-4 rounded-full bg-surface" />
       </span>
