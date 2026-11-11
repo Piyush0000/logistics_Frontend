@@ -8,6 +8,7 @@ import type { DataResult, DataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import type { WalletTransaction } from '@/lib/data/wallet/types';
 import {
+  MAX_REPORT_ROWS,
   ORDER_PAGE_SIZE,
   TRUNCATED_NOTICE,
   mergeCapped,
@@ -123,6 +124,7 @@ async function walletRows(range: Range): Promise<Built> {
   const service = walletService();
   const entries: WalletTransaction[] = [];
   let source: DataSource = 'mock';
+  let truncated = false;
 
   for (let page = 1; page <= MAX_WALLET_PAGES; page += 1) {
     const result = await service.listTransactions({
@@ -136,12 +138,22 @@ async function walletRows(range: Range): Promise<Built> {
     source = result.source;
     entries.push(...result.data.entries);
     if (page >= result.data.pageCount) break;
+    // More pages exist, but the row cap or the page cap is reached.
+    if (entries.length >= MAX_REPORT_ROWS || page === MAX_WALLET_PAGES) {
+      truncated = true;
+      break;
+    }
   }
+  if (entries.length > MAX_REPORT_ROWS) truncated = true;
 
   return {
     ok: true,
     source,
-    data: entries.filter((entry) => inRange(entry.occurredAt, range)).map(walletRow),
+    data: entries
+      .filter((entry) => inRange(entry.occurredAt, range))
+      .slice(0, MAX_REPORT_ROWS)
+      .map(walletRow),
+    truncated,
   };
 }
 
