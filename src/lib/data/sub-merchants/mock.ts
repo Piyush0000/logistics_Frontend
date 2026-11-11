@@ -44,6 +44,7 @@ export function createMockSubMerchantService(seed: SubMerchant[] = SEED): SubMer
     async list({ page, search }) {
       const needle = search.trim().toLowerCase();
       const matches = items.filter((s) => !needle || s.name.toLowerCase().includes(needle));
+      // Reverse first so rows with equal dates keep newest-inserted first; sort is stable.
       const sorted = [...matches].reverse().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       const pageCount = Math.max(1, Math.ceil(sorted.length / SUB_MERCHANT_PAGE_SIZE));
       const current = Math.min(Math.max(page, 1), pageCount);
@@ -62,6 +63,9 @@ export function createMockSubMerchantService(seed: SubMerchant[] = SEED): SubMer
       const { value } = parsed;
       if (items.some((s) => s.email === value.email)) {
         return fail<SubMerchant>('conflict', 409, 'A seller with this email is already onboarded.');
+      }
+      if (value.gstin && items.some((s) => s.gstin === value.gstin)) {
+        return fail<SubMerchant>('conflict', 409, 'A seller with this GSTIN is already onboarded.');
       }
       const seller: SubMerchant = {
         id: `sm_${nextId++}`,

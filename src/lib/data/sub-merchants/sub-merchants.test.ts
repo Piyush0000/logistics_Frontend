@@ -69,6 +69,17 @@ describe('mock sub-merchant service', () => {
     expect(await service.onboard(input({ name: '' }))).toMatchObject({ ok: false, error: { kind: 'validation' } });
   });
 
+  it('rejects a duplicate GSTIN but allows several sellers with none', async () => {
+    const service = createMockSubMerchantService();
+    await service.onboard(input({ gstin: '27AAPFU0939F1ZV' }));
+    expect(await service.onboard(input({ email: 'other@example.com', gstin: '27aapfu0939f1zv' }))).toMatchObject({
+      ok: false,
+      error: { kind: 'conflict', message: 'A seller with this GSTIN is already onboarded.' },
+    });
+    expect((await service.onboard(input({ email: 'n1@example.com' }))).ok).toBe(true);
+    expect((await service.onboard(input({ email: 'n2@example.com' }))).ok).toBe(true);
+  });
+
   it('searches by name, ignoring case', async () => {
     const service = createMockSubMerchantService();
     const result = await service.list({ page: 1, search: 'KAVERI' });

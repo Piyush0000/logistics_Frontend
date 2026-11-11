@@ -12,6 +12,12 @@ const projectOf = (testInfo: TestInfo) => (testInfo.project.name === 'phone' ? '
 const tag = (testInfo: TestInfo) =>
   `${projectOf(testInfo)}-${testInfo.repeatEachIndex}-${testInfo.retry}-${Date.now()}`;
 
+// A valid GSTIN no other run uses: 4 digits from the clock, project, repeat and retry, outside the seeded 1000 to 1011.
+const uniqueGstin = (testInfo: TestInfo) => {
+  const n = (Date.now() % 1000) * 8 + (projectOf(testInfo) === 'phone' ? 4 : 0) + (testInfo.repeatEachIndex % 2) * 2 + (testInfo.retry % 2);
+  return `27AAPFU${1012 + n}F1ZV`;
+};
+
 const rows = (page: Page): Locator => page.getByTestId('sub-merchant').filter({ visible: true });
 const row = (page: Page, name: string): Locator =>
   page.getByTestId('sub-merchant').filter({ has: page.getByText(name, { exact: true }) }).filter({ visible: true });
@@ -54,7 +60,8 @@ test.describe('sub-merchants', () => {
     await openPage(page);
     const id = tag(testInfo);
     const name = `Seller ${id}`;
-    const dialog = await fillAndSubmit(page, name, `seller-${id}@example.com`, { gstin: '27aapfu0939f1zv' });
+    const gstin = uniqueGstin(testInfo);
+    const dialog = await fillAndSubmit(page, name, `seller-${id}@example.com`, { gstin: gstin.toLowerCase() });
 
     await expect(dialog).toBeHidden();
     await expect(page.getByRole('status').filter({ hasText: `${name} was onboarded.` })).toBeVisible();
@@ -62,7 +69,7 @@ test.describe('sub-merchants', () => {
     const added = row(page, name);
     await expect(added).toBeVisible();
     await expect(added.getByText(`seller-${id}@example.com`, { exact: true })).toBeVisible();
-    await expect(added.getByText('27AAPFU0939F1ZV', { exact: true })).toBeVisible();
+    await expect(added.getByText(gstin, { exact: true })).toBeVisible();
     await expect(added.getByText('Submitted for review', { exact: true })).toBeVisible();
   });
 
