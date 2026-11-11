@@ -5,6 +5,7 @@ export const emailSchema = z
   .string()
   .trim()
   .min(1, 'Enter your work email.')
+  .max(254, 'Enter a valid work email.')
   .email('Enter a valid work email.');
 
 export const otpSchema = z

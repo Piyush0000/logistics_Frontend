@@ -25,6 +25,10 @@ export const mockSessionService: SessionService = {
     return fromMock({ email });
   },
 
+  async signUp({ email }) {
+    return fromMock({ email });
+  },
+
   async requestPasswordReset() {
     return fromMock({ demo: true });
   },

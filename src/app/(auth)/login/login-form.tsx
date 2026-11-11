@@ -183,6 +183,15 @@ export function LoginForm() {
       >
         View terms and policies
       </Link>
+      <p className="text-center text-sm">
+        New here?{' '}
+        <Link
+          href="/signup"
+          className="inline-flex min-h-11 items-center font-extrabold text-primary underline-offset-2 hover:underline"
+        >
+          Create an account
+        </Link>
+      </p>
     </div>
   );
 }

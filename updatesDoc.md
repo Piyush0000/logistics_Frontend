@@ -6,13 +6,36 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 34 and 36 of 37 are done, except Task 35 (Sign up), which is in its fix round; 28 to 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 36 of 37 are done; 28 to 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Task 35 is in its fix round |
-| **Next step** | Merge Task 35, then the final regression and handover (Task 37) |
+| **Waiting on** | Nothing |
+| **Next step** | Task 37: full regression, real-gateway check and handover |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
 
+
+
+## 2026-11-11: Task 35, Sign up and onboarding
+
+- New public page `/signup`: company (2 to 80), name (1 to 80), work email, phone (`^\+?[0-9]{10,15}$`), password (8 to 128) and the terms. The button stays disabled until every field is valid and the terms are ticked. The server action checks everything again, then creates the demo session and opens `/home`. A signed-in visitor goes to `/dashboard`.
+- `/login` has a `New here? Create an account` link, and `/signup` links back with `Sign in`.
+- `SessionService.signUp` is new. The mock returns only the email, so the password is never stored or returned. The gateway service returns `Sign-in is not available yet.`, and the action shows it and creates no session (unit-tested with `DATA_SOURCE_SESSION=gateway`).
+- Ruling carried out: `emailSchema` now has `.max(254)`, shared by login, forgot password and sign up, with a unit test at 254 and 255 characters. Sign up also caps every other field on the server.
+- Browser tests that create an account use an email unique to the project, repeat and retry.
+- Files: new `src/app/(auth)/signup/` (page, signup-form, signup-fields, signup-state, actions, actions test), `src/lib/auth/signup-schema.ts` and test, `e2e/signup.spec.ts`. Changed: `login-schema.ts` and test, `login-form.tsx`, `src/lib/data/session/` (types, mock, gateway, session test), `e2e/routes.ts`, `Readme.md`.
+
+| Check | Result |
+|---|---|
+| Browser spec written first, run before the page existed | 15 failed, 4 passed (heading and form not found) |
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| Unit tests (`pnpm test`) | 82 files, 744 tests passed |
+| Browser, login, forgot-password, signup and home specs, desktop and phone, offset 1800 | 154 passed, 20 skipped (single-size), 0 failed |
+| Browser, gateway project | 66 passed, 0 failed |
+| Palette and brand checks (D5, D6) | No output |
+| Backend check (D7) | Clean, HEAD aace603 |
+| Not run | Full browser suite, dev-smoke and screenshots (kept focused, as the machine is shared) |
+
+- Fix round 1: `/signup` now shows `Demo mode: no account is created or stored, and any email works.` (browser test added). `signUpAction` redirects to `/home` when a session already exists and never replaces it (unit test). The login `Create an account` link is in the phone tap-target check. Results: lint and typecheck clean, 745 unit tests passed, browser signup and login specs on desktop and phone 112 passed, 14 skipped, 0 failed.
 
 ## 2026-11-11: Task 31, Sub-merchants
 

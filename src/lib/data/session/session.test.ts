@@ -76,3 +76,34 @@ describe('requestPasswordReset', () => {
     });
   });
 });
+
+describe('signUp', () => {
+  afterEach(() => {
+    delete process.env.DATA_SOURCE_SESSION;
+  });
+
+  const input = {
+    company: 'Acme Traders',
+    name: 'Asha Rao',
+    email: 'asha@example.com',
+    phone: '9876543210',
+    password: 'long-enough-1',
+  };
+
+  it('returns only the email and never the password', async () => {
+    const result = await mockSessionService.signUp(input);
+
+    expect(result).toEqual({ ok: true, source: 'mock', data: { email: 'asha@example.com' } });
+    expect(JSON.stringify(result)).not.toContain(input.password);
+  });
+
+  it('reports that the gateway has no sign-up route yet', async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+
+    expect(await sessionService().signUp(input)).toMatchObject({
+      ok: false,
+      source: 'gateway',
+      error: { kind: 'unavailable', message: 'Sign-in is not available yet.' },
+    });
+  });
+});
