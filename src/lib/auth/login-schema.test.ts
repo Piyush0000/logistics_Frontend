@@ -51,4 +51,9 @@ describe('passwordSchema', () => {
   it('rejects seven characters', () => {
     expect(passwordSchema.safeParse('1234567').success).toBe(false);
   });
+
+  it('accepts 128 characters and rejects 129', () => {
+    expect(passwordSchema.safeParse('a'.repeat(128)).success).toBe(true);
+    expect(passwordSchema.safeParse('a'.repeat(129)).success).toBe(false);
+  });
 });
