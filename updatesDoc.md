@@ -6,13 +6,64 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 36 of 37 are done; 28 to 36 were built ahead of order |
+| **Current stage** | Task 37, full regression and handover, done. All 37 tasks are complete on branch `feature/full-frontend`, which is ready to merge |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
 | **Waiting on** | Nothing |
-| **Next step** | Task 37: full regression, real-gateway check and handover |
+| **Next step** | Merge `feature/full-frontend`. Then the follow-up list below |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
 
+
+
+## 2026-11-11: Task 37, Full regression, real-gateway check and handover
+
+### Final summary
+
+- **Screens:** 41 screens, checked as 47 route variants (tabs and query forms) by dev-smoke and the screenshots. Every sidebar entry and every settings section is live.
+- **Unit tests:** 88 files, 792 tests passed.
+- **Browser tests:** 1,241 passed, 75 skipped (single-size tests), 0 failed, over the desktop, phone and gateway projects.
+- **Dev-smoke:** 50 routes under `next dev`, `BROWSER ERRORS: none`.
+- **Backend:** `Evoc_ships` is clean at `aace603`.
+
+### Verification
+
+| Step | Result |
+|---|---|
+| Route list (`e2e/routes.ts`) covers every navigation entry, settings section, `/track/DEMOEK001`, `/forgot-password`, `/signup`, and now the Delivered, Revenue and SMS dashboard tabs | Yes |
+| Clean install: `rm -rf node_modules .next`, `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm test:e2e`, `node scripts/dev-smoke.mjs`, run as one chain on the final code | Every command exited 0 |
+| Screenshots of every route at desktop, phone and 320px, reviewed by eye | Done; defects fixed (below) |
+| Real gateway (Docker steps) | Not run: Docker not installed |
+| `git -C ../Evoc_ships status --porcelain` and HEAD | Empty, `aace603` |
+
+### Fixes made in this task
+
+- `/orders` now parses `page`, `status`, `carrier` and `search` like B2C does, so bad input never reaches the gateway (browser test added).
+- `parsePage` falls back to 1 above 10,000, the backend cap.
+- The login password schema is capped at 128 characters, like sign up.
+- Making a pickup address the default is one service call (`makeDefault`), not a stale read and save.
+- A capped wallet export ends with the `# Truncated` line (route unit test added).
+- The Delivered, Revenue and SMS tabs are in `e2e/routes.ts`.
+- Removed `prefetch={false}` from three links whose routes now exist. Updated the stale 3106 server comment and the design spec status and scope.
+- Readme: added the Analytics and Messages data-source rows, corrected the dashboard tab rows, the port list and the Settings row, and added the "Adding a screen" checklist.
+- Screenshot findings: the off state of every switch was nearly invisible (#e5e5e5 on white), so it now uses on-surface at 50%. The tracking-page logo input was unstyled and now matches the KYC inputs. Bar charts of categories skipped axis labels (four of six SMS bars had no name); they now show every label over two lines. Value labels are drawn above all bars with a halo, so the 30-day Revenue labels are no longer hidden. The SMS status PICKED_UP now reads Picked up. The WhatsApp heading and row names no longer break mid-word on narrow phones.
+- Not reproduced: Task 28's report of doubled text when typing in a Buyer Notifications message before hydration. With scripts delayed 1.5 seconds, text typed early is not doubled (the box returns to the saved text once the page loads, so early typing is lost). No fix made.
+
+### Not verified
+
+| Item | Why |
+|---|---|
+| The real gateway, including the 8 demo shipments and the Create Shipment 503 message | Docker is not installed on this machine |
+| Real sign-in, sign-up and password reset | The backend has none; all are demo |
+| Anything on a real phone or in browsers other than Chromium | Only Playwright Chromium at desktop, Pixel 7 and 320px sizes was used |
+| Live data for every feature marked "No" in the Readme data-source table | The gateway has no route for them; they show sample data, or "not available" in gateway mode |
+| Screenshot review of full-page images of open dialogs | The screenshots script captures a modal at page size, so New ticket on 320px shows the dialog cut off; the browser tests cover the dialogs |
+
+### Follow-up list
+
+- Typing into a Buyer Notifications message box before the page hydrates is lost, not doubled. A "pick up pre-hydration input" step, as on login and sign up, would keep it.
+- The Pickups, NDR and RTO phone tab strip scrolls sideways to reach the later tabs, with no visual hint.
+- Further items from the whole-branch review will be added here when the controller sends them.
+- API key management and the developer sandbox, cancel shipment, label download, real-time updates, real sign-in, and live data for each `notAvailable()` feature all wait on backend routes.
 
 
 ## 2026-11-11: Task 35, Sign up and onboarding
