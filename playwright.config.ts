@@ -36,6 +36,8 @@ export default defineConfig({
       url: e2eUrl(3101) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
+      // Only this server serves the error-page test route; every other server answers it with 404.
+      env: { E2E_ERROR_ROUTE: 'on' },
     },
     {
       command: 'node e2e/stub-gateway.mjs',
