@@ -581,6 +581,22 @@ test.describe('profile with no route', () => {
   });
 });
 
+test.describe('company with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows company details as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/company', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('company-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Company & KYC' })).toBeVisible();
+  });
+});
+
 test.describe('rate card with no route', () => {
   test.use({ baseURL: e2eUrl(3106) });
 

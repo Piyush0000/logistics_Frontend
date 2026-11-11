@@ -143,7 +143,8 @@ test.describe('profile', () => {
         'href',
         '/channel-integrations',
       );
-      await expect(list.getByRole('button', { name: 'Company & KYC' })).toBeDisabled();
+      await expect(list.getByRole('link', { name: 'Company & KYC' })).toHaveAttribute('href', '/settings/company');
+      await expect(list.getByRole('button', { name: 'Users & Roles' })).toBeDisabled();
     }
   });
 

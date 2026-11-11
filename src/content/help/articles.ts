@@ -312,13 +312,14 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Not available yet',
         paragraphs: [
-          'Settings is available with your Profile and a link to Channel Integrations. Company details, team members and roles, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
+          'Settings is available with your Profile, Company & KYC and a link to Channel Integrations. Team members and roles, pickup addresses, buyer notifications and the tracking page are still planned and show as Not available yet on the Settings page.',
         ],
       },
       {
         heading: 'What is available',
         paragraphs: [
           'Profile is available now, under Settings. You can change your name and phone number and set a new password. Your sign-in email is shown but cannot be changed there. The Profile screen currently uses sample data.',
+          'Company & KYC is available now, under Settings. Enter your legal and brand name, GSTIN, PAN, registered address and bank account, then add a GST certificate, a PAN card and a cancelled cheque as PDF, JPG or PNG files up to 5 MB each. After you submit, the status shows Submitted for review, and only the last 4 digits of your account number are shown. This screen currently uses sample data, and the files are not stored yet.',
           'Webhooks and their signing secrets are available now, in Channel Integrations. See the article on getting shipment updates by webhook.',
         ],
       },

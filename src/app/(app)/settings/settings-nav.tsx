@@ -21,7 +21,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: 'Company & KYC',
     description: 'Your business details and verification documents.',
     href: '/settings/company',
-    status: 'planned',
+    status: 'live',
   },
   {
     label: 'Users & Roles',

@@ -6,12 +6,50 @@ A running record of what has been done on the Evoc Logistics frontend. Newest en
 
 | | |
 |---|---|
-| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 24, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
+| **Current stage** | Full frontend build, on branch `feature/full-frontend`. Tasks 1 to 25, 33 (Help Centre), 34 (Forgot password) and 36 (not-found and error pages) of 37 are done; 33, 34 and 36 were built ahead of order |
 | **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing: Tasks 25, 26 and 32 are being built |
-| **Next step** | Tasks 25, 26 and 32, then Tasks 27 to 31 (Settings sections) and 35 |
+| **Waiting on** | Nothing: Tasks 27 and 28 are being built; 26 and 32 are approved and merging |
+| **Next step** | Merge Tasks 26 and 32, then Tasks 27 to 31 (Settings sections) and 35 |
 | **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
 
+
+
+## 2026-11-11: Task 25, Company & KYC
+
+### What was done
+
+- `/settings/company`: legal and brand name, GSTIN and PAN (uppercased as you type), registered address (the shared `AddressSchema`: contact name, phone, two lines, city, state, 6-digit pincode), and bank account (holder, 9 to 18 digit account number, IFSC with a 0 as the fifth character). Three documents are needed: GST certificate, PAN card and cancelled cheque, each PDF, JPG or PNG up to 5 MB, one per kind. A kind already on file does not need a new file.
+- A status badge shows the KYC status. Submitting sets it to Submitted for review. After saving, only the last 4 digits of the account number are shown, and the number is typed again on each submit.
+- Only each file's name, type and size go to the server action, as in weight disputes, so the 2 MB server action limit does not apply. The files are not stored yet.
+- The mock Home checklist reads the same company store, so the KYC step shows done after submitting.
+- Rules live in `src/lib/kyc.ts` (patterns, `parseCompanyInput`, `checkDocuments`, `maskAccount`). Data is in `src/lib/data/company/`, selected by `DATA_SOURCE_COMPANY`. Gateway mode shows the screen as unavailable, because the backend has no merchant onboarding route.
+- The Settings hub card and section list now link to Company & KYC. The Help article on Settings no longer lists company details as planned.
+
+### Files
+
+New: `src/lib/kyc.ts` and its test, `src/lib/data/company/` (types, mock, gateway, index, test), `src/app/(app)/settings/company/` (page, loading, company-form, kyc-documents, actions and its test), `e2e/company.spec.ts`.
+Changed: `src/lib/data/onboarding/mock.ts` (KYC done follows the company store), `settings-nav.tsx`, `src/content/help/articles.ts`, `e2e/routes.ts`, `e2e/gateway.spec.ts`, `playwright.config.ts`, `.env.example`, `Readme.md`.
+Outside the brief: `e2e/settings.spec.ts` had a check that Company & KYC was a disabled button. It now checks the link, and uses Users & Roles for the disabled example.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck` | 0 errors, 0 warnings |
+| `pnpm test` | 614 passed |
+| Settings, company and help specs, desktop and phone | 87 passed, 4 skipped, 1 failed (a company test that assumed no documents were on file, because the other project had saved some; rewritten and rerun above) |
+| Company spec again, desktop and phone, repeated twice | 38 passed |
+| Gateway project, including the company unavailable test | 60 passed |
+| Palette, secret and brand checks, backend check | No output; backend at `aace603`, clean |
+
+### Decisions
+
+- The company spec runs on its own server (port 3108, mock mode). Submitting sets KYC to submitted for the whole server, which the Home checklist reads, so the main server's Home test (two of four steps done) must not see it. Desktop and phone share that server and so each saves a brand of its own.
+- The saved account number is never sent back, only its masked form, so it is typed again on each submit.
+
+### Not verified
+
+- Screenshots at 320px and the dev-mode smoke run were not done. The machine was saturated, so the full suite was not run, as instructed.
 
 ## 2026-11-11: Task 23, SMS dashboard tab
 
