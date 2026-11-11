@@ -49,4 +49,4 @@ export const APP_ROUTES = [
 ] as const;
 
 /** Routes anyone can open without signing in. */
-export const PUBLIC_ROUTES = ['/login', '/forgot-password', '/terms', '/track/DEMOEK001'] as const;
+export const PUBLIC_ROUTES = ['/login', '/forgot-password', '/signup', '/terms', '/track/DEMOEK001'] as const;

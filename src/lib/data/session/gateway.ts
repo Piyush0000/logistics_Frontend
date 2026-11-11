@@ -16,5 +16,6 @@ export const gatewaySessionService: SessionService = {
   requestOtp: notAvailable,
   verifyOtp: notAvailable,
   signInWithPassword: notAvailable,
+  signUp: notAvailable,
   requestPasswordReset: unavailable('Password reset is not available yet.'),
 };

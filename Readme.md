@@ -25,6 +25,7 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 - **Email OTP:** use the code shown on screen, `123456`.
 - **Email + Password:** any password of 8 or more characters works.
 - **Forgot password:** the link under the password field opens `/forgot-password`. It gives the same message for any valid email and says no email is sent in demo mode.
+- **Create an account:** the `New here? Create an account` link on `/login` opens `/signup`. Enter company, name, work email, phone and a password of 8 to 128 characters, and accept the terms. The demo creates a session and opens `/home`. Nothing is stored, and the password is never kept or returned.
 
 **Do not deploy the demo sign-in publicly.** It accepts any email. Replace it when the backend adds login routes, in `src/lib/data/session/gateway.ts`.
 
@@ -120,6 +121,7 @@ Screens are built for phones and desktops. Dashboard controls are 32px on deskto
 | Screen | Design file | Stage | Data | Status |
 |---|---|---|---|---|
 | Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
+| Sign up, at `/signup` | [meracourierwala.com-design.md](meracourierwala.com-design.md) | Full build, Task 35 | `DATA_SOURCE_SESSION`: sample by default (nothing is stored, the password is never kept); in gateway mode it shows "Sign-in is not available yet.", as the backend has no sign-up route | Done. Public page, linked from `/login`. Signed-in visitors go to the dashboard. Success opens `/home` |
 | Forgot password, at `/forgot-password` | [meracourierwala.com-design.md](meracourierwala.com-design.md) | Full build, Task 34 | `DATA_SOURCE_SESSION`: sample by default (no email is sent); in gateway mode it shows "Password reset is not available yet.", as the backend has no reset route | Done. Public page, linked from the password field on `/login`. Signed-in visitors go to the dashboard |
 | Home, at `/home` | [sharkship.in-design.md](sharkship.in-design.md) | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
 | Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Merged to main. Tabs: Overview, Pickups (Task 20), NDR and RTO (Task 21) |
