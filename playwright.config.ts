@@ -63,7 +63,9 @@ export default defineConfig({
       env: { ...gatewayData, GATEWAY_URL: e2eUrl(3199) },
     },
     {
-      // Wallet, COD and setup progress in real-data mode, which have no gateway routes yet.
+      // Real-data mode for every feature the gateway has no route for (wallet, COD, NDR, setup,
+      // B2B, pickups, invoices, weight, rates, analytics, profile, messages, company, team, support,
+      // tracking page, notifications, courier rules and sub-merchants), to test their unavailable states.
       command: 'pnpm exec next start -p ' + e2ePort(3106),
       url: e2eUrl(3106) + '/login',
       reuseExistingServer: false,
