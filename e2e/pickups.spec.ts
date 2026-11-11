@@ -266,7 +266,7 @@ test.describe('manifest', () => {
   test('shows a plain page for an unknown pickup', async ({ page }) => {
     // The loading screen starts the response before the page decides, so the status stays 200.
     await page.goto(`${PICKUPS}/manifest-print/${'x'.repeat(300)}`);
-    await expect(page.getByText('This page could not be found.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
     await expect(page.getByTestId('manifest-awb')).toHaveCount(0);
   });
 
