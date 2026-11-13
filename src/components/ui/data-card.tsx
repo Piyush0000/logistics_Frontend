@@ -23,11 +23,11 @@ export function DataCard<T>({
   return (
     <section
       data-testid={testId}
-      className="min-w-0 rounded-card border border-secondary bg-surface p-card"
+      className="motion-rise min-w-0 rounded-card border border-secondary bg-surface p-card"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">{title}</h2>
+          <h2 className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">{title}</h2>
           {result.source === 'mock' ? <SampleBadge /> : null}
         </div>
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

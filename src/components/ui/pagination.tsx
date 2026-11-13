@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 const STEP =
-  'inline-flex size-11 items-center justify-center rounded-control border border-secondary bg-surface lg:size-9';
+  'inline-flex size-11 items-center justify-center rounded-control border border-secondary bg-surface transition-colors duration-150 lg:size-9';
 
 function Step({
   enabled,

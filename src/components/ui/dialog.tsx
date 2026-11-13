@@ -34,12 +34,14 @@ export function Dialog({
       onClose={() => {
         if (!ref.current?.open) onClose();
       }}
-      className={`m-auto w-[calc(100vw-2rem)] rounded-card bg-surface p-card text-on-surface shadow-md backdrop:bg-on-surface/50 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:rounded-none ${
-        wide ? 'max-w-3xl' : 'max-w-lg'
+      // Desktop: a centred card. Below 64rem: a bottom sheet that slides up, with a grab handle.
+      className={`m-auto w-[calc(100vw-2rem)] rounded-card border border-secondary bg-surface p-card text-on-surface shadow-[0_24px_60px_rgb(7_11_22/0.25)] backdrop:bg-[#070b16]/55 backdrop:backdrop-blur-[2px] lg:animate-[evoc-rise_250ms_var(--ease-evoc)] max-lg:mb-0 max-lg:max-h-[90dvh] max-lg:w-full max-lg:max-w-full max-lg:animate-[evoc-sheet-up_250ms_var(--ease-evoc)] max-lg:rounded-b-none max-lg:rounded-t-[20px] max-lg:pb-[max(1rem,env(safe-area-inset-bottom))] ${
+        wide ? 'lg:max-w-3xl' : 'lg:max-w-lg'
       }`}
     >
+      <span aria-hidden="true" className="mx-auto -mt-2 mb-3 block h-1.5 w-10 rounded-full bg-secondary lg:hidden" />
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 id={id} className="font-heading text-xl leading-7">
+        <h2 id={id} className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">
           {title}
         </h2>
         <button
@@ -57,7 +59,7 @@ export function Dialog({
 }
 
 export const PRIMARY_BUTTON =
-  'inline-flex h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-on-primary disabled:bg-primary/50';
+  'inline-flex h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-semibold text-on-primary transition-[background-color,transform] duration-150 enabled:hover:bg-accent enabled:active:scale-[.97] disabled:bg-primary/50';
 
 export const SECONDARY_BUTTON =
-  'inline-flex h-control items-center justify-center gap-2 rounded-control border border-secondary px-4 text-sm font-medium hover:bg-muted disabled:text-on-surface/60';
+  'inline-flex h-control items-center justify-center gap-2 rounded-control border border-secondary bg-surface px-4 text-sm font-medium transition-[background-color,border-color,transform] duration-150 enabled:hover:border-primary/40 enabled:hover:bg-muted enabled:active:scale-[.97] disabled:text-on-surface/60';

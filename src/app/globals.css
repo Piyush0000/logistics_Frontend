@@ -121,6 +121,18 @@
   }
 }
 
+/* Every existing card (rounded-card + bg-surface) turns to glass in dark mode on wider screens, so the
+   screens built before the redesign pick up the Midnight Glass look without per-screen edits. */
+@media (min-width: 48rem) {
+  [data-theme='dark'] .rounded-card.bg-surface:not(dialog) {
+    background-color: transparent;
+    background-image: linear-gradient(160deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02));
+    border-color: rgb(255 255 255 / 0.09);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
 /* Hover lift for cards that link somewhere. */
 @utility lift {
   transition:
@@ -176,6 +188,15 @@
   }
   50% {
     transform: scaleX(1);
+  }
+}
+
+@keyframes evoc-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }
 

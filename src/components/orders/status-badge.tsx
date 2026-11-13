@@ -56,7 +56,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   return (
     <span
       data-testid="status-badge"
-      className={`inline-flex items-center rounded-full border leading-tight ${sizeClasses} ${config.className}`}
+      className={`inline-flex items-center rounded-full border leading-tight transition-colors duration-250 dark:bg-transparent ${sizeClasses} ${config.className}`}
     >
       {config.label}
     </span>
