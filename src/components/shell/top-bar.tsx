@@ -8,6 +8,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { userLabel } from '@/lib/format/user';
 import { AwbSearch } from './awb-search';
+import { CommandPalette } from './command-palette';
 import { useDismiss } from './use-dismiss';
 
 function Dropdown({
@@ -132,6 +133,7 @@ export function TopBar({
 
         <div className="order-last flex w-full min-w-0 items-center gap-2 lg:order-none lg:w-auto lg:flex-1 lg:gap-3">
           <AwbSearch />
+          <CommandPalette />
           <QuickMenu />
         </div>
 
