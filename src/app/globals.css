@@ -31,6 +31,8 @@
   --color-success: var(--c-success);
   --color-warning: var(--c-warning);
   --color-error: var(--c-error);
+  --color-series-2: var(--c-series-2);
+  --color-series-3: var(--c-series-3);
 
   --font-heading: var(--theme-font-heading);
   --font-display: var(--theme-font-display);
@@ -56,6 +58,8 @@
   --c-success: #16a34a;
   --c-warning: #d97706;
   --c-error: #dc2626;
+  --c-series-2: #0d9488;
+  --c-series-3: #d97706;
   --shadow-lift: 0 8px 22px rgb(23 36 58 / 0.12);
   --page-glow: none;
 }
@@ -73,6 +77,8 @@
   --c-success: #4ade80;
   --c-warning: #fbbf24;
   --c-error: #f87171;
+  --c-series-2: #0d9488;
+  --c-series-3: #d97706;
   --shadow-lift: none;
   --page-glow:
     radial-gradient(60rem 30rem at 80% -10%, rgb(24 62 235 / 0.3), transparent),
@@ -157,27 +163,39 @@
 }
 
 @utility motion-grow {
-  transform-origin: bottom;
   animation: evoc-grow 700ms var(--ease-evoc) both;
 }
 
+@utility motion-reveal-x {
+  animation: evoc-reveal-x 900ms var(--ease-evoc) both;
+}
+
+/* Arrival and chart motion never change an element's box (opacity and clip-path only), so layout
+   measurements and clicks are never thrown off mid-animation. */
 @keyframes evoc-rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
 @keyframes evoc-grow {
   from {
-    transform: scaleY(0.05);
+    clip-path: inset(100% 0 0 0);
   }
   to {
-    transform: scaleY(1);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes evoc-reveal-x {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 

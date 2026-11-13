@@ -142,7 +142,12 @@ export function BarChart({
           return (
             <g key={`bar-${d.label}-${index}`} aria-hidden="true">
               {height > 0 ? (
-                <path data-bar={d.label} d={barPath(x, baseline - height, barWidth, height)} className="fill-primary">
+                <path
+                  data-bar={d.label}
+                  d={barPath(x, baseline - height, barWidth, height)}
+                  className="motion-grow fill-primary transition-opacity duration-150 hover:opacity-80"
+                  style={{ animationDelay: `${Math.min(index, 20) * 25}ms` }}
+                >
                   <title>{`${full(d)}: ${format(d.value)}`}</title>
                 </path>
               ) : (
