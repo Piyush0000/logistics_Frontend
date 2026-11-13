@@ -8,12 +8,20 @@ const DURATION_MS = 700;
  * Counts up to `value` the first time it scrolls into view. The server render and reduced-motion users
  * get the final value straight away, so nothing ever shows a wrong number for long.
  */
+const FORMATS = {
+  /** 3902 */
+  plain: (n: number) => String(Math.round(n)),
+  /** 3,902 (Indian grouping) */
+  grouped: (n: number) => Math.round(n).toLocaleString('en-IN'),
+} as const;
+
+/** A format name, not a function, so server components can pass it. */
 export function AnimatedNumber({
   value,
-  format = (n) => Math.round(n).toLocaleString('en-IN'),
+  format = 'grouped',
 }: {
   value: number;
-  format?: (n: number) => string;
+  format?: keyof typeof FORMATS;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [shown, setShown] = useState<number | null>(null);
@@ -45,7 +53,7 @@ export function AnimatedNumber({
 
   return (
     <span ref={ref} className="tabular-nums">
-      {format(shown ?? value)}
+      {FORMATS[format](shown ?? value)}
     </span>
   );
 }

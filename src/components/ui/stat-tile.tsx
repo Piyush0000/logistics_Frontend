@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { AnimatedNumber } from './animated-number';
 
 export type StatTone = 'primary' | 'success' | 'warning' | 'accent' | 'error';
 
@@ -55,6 +56,7 @@ export function StatTile({
   tone = 'primary',
   delta,
   spark,
+  animate = false,
 }: {
   label: string;
   value: string | number;
@@ -63,6 +65,8 @@ export function StatTile({
   tone?: StatTone;
   delta?: { text: string; good: boolean; direction: 'up' | 'down' | 'flat' };
   spark?: number[];
+  /** Count up to a numeric value on first view (numbers only; strings keep the two-tone style). */
+  animate?: boolean;
 }) {
   const [lead, rest] = splitTwoTone(String(value));
   const arrow = delta ? { up: '↗', down: '↘', flat: '→' }[delta.direction] : '';
@@ -74,9 +78,15 @@ export function StatTile({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm leading-5 text-on-surface/70">{label}</span>
-        <span className="block font-mono text-xl leading-7 font-medium break-words">
-          {lead}
-          {rest ? <span className="text-on-surface/45">{rest}</span> : null}
+        <span className="block font-mono text-base leading-7 font-medium tracking-tight break-words min-[420px]:text-lg sm:text-xl">
+          {animate && typeof value === 'number' ? (
+            <AnimatedNumber value={value} format="plain" />
+          ) : (
+            <>
+              {lead}
+              {rest ? <span className="text-on-surface/45">{rest}</span> : null}
+            </>
+          )}
         </span>
         {delta ? (
           <span

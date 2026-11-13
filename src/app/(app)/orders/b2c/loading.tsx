@@ -5,7 +5,7 @@ export default function B2cLoading() {
     <div
       role="status"
       aria-label="Loading B2C shipments"
-      className="grid gap-4 p-4 lg:gap-5 lg:p-8 lg:pl-28"
+      className="grid gap-4 lg:gap-5"
     >
       {BLOCKS.map((height, index) => (
         <div key={index} className={`${height} animate-pulse rounded-card bg-muted`} />
