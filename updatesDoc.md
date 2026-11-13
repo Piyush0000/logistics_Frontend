@@ -6,10 +6,25 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Redesign (branch `feature/redesign`), Phase 1 foundation done; Phase 2 (Home, Dashboard, Smart insights, ⌘K) next |
-| **Waiting on** | Nothing until the Phase 2 sign-off screenshots |
-| **Next step** | Phase 2, then the user's sign-off on Home and Dashboard in both looks |
+| **Current stage** | Redesign (branch `feature/redesign`), Phases 1 and 2 done (foundation; Home, Dashboard, Smart insights, ⌘K) |
+| **Waiting on** | The user's sign-off on Home and Dashboard (desktop and phone, light and dark) |
+| **Next step** | After sign-off: Phase 3 module passes (Shipments, NDR/RTO/Pickups, Finances, Reports/Tools, Settings, Support, sign-in and public pages) |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
+
+## 2026-11-14: Redesign Phase 2, Home, Dashboard, insights and ⌘K
+
+### What changed
+
+- **Smart insights** (`src/lib/insights/`): rules over data the services already return: open NDRs, weight discrepancies, setup steps left, low wallet (under ₹500), high RTO share (over 15% with at least 20 closed shipments), pickups today, next COD payout, and "Nothing needs you right now". Sample-based insights carry the Sample data badge. No AI service; chat comes when the backend adds one.
+- **⌘K command search:** ⌘K / Ctrl+K, the "⌘K" button in the top bar or the search icon on phones. Jump to any screen, run quick actions (Create shipment, Bulk upload, Recharge wallet, New ticket, Track a shipment), or paste one or more AWBs to track them.
+- **Home:** figures that count up, Needs you today, Smart insights (right column on wide screens, after the figures on phones), a delivery-success gauge, a shipments-by-stage bar, Get started and Recent shipments. Each group streams in on its own.
+- **Dashboard:** new KPI cards, notice bar (static, with a live dot, replacing the scrolling ticker), segmented tabs with a scroll hint on phones; the tab's data streams in behind a skeleton while the header and tabs show at once. Pickups and RTO pages after the first are now fetched in parallel (same caps).
+- `src/lib/data/request-cache.ts` shares the wallet, shipment counts, NDR and checklist loads across the wallet chip, Home cards and insights, once per request.
+
+### Test assertions edited without running them
+
+- None in this phase. Kept on purpose: "Welcome, {name}" on Home, the ticker's test id and "Sample notice:" text, the dashboard tab names.
+- New unit tests written, not run: `src/lib/insights/rules.test.ts`.
 
 ## 2026-11-14: Redesign Phase 1, foundation
 

@@ -130,6 +130,9 @@ People choose Light, Dark or System (the default) in the account menu; sign-in p
 - **Shell:** the menu, top bar and wallet chip render once in `src/app/(app)/layout.tsx` and stay mounted between pages. Phones and tablets (below 1024px) get a bottom tab bar: Home, Shipments, Create, Wallet, More.
 - **Building blocks:** `src/components/ui` (cards, stat tiles with two-tone figures, fields, dialogs that become bottom sheets on phones, Loader, Skeleton, AnimatedNumber, tableStyles) and `src/components/charts` (bar, line, gauge, sparkline, segment bar, fill meter).
 
+- **Smart insights** (`src/lib/insights/`): rule-based notes built from the merchant's own data, shown on Home as Needs you today and Smart insights. No AI service is used.
+- **⌘K command search** (`src/components/shell/command-palette.tsx`): screens, quick actions and AWB tracking from anywhere.
+
 Screenshots of both looks: `node scripts/screenshots.mjs [--dark] [route ...]` after `pnpm build`.
 
 | Screen | Look | Stage | Data | Status |

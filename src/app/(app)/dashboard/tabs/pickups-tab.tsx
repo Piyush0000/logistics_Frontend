@@ -8,18 +8,19 @@ import type { DataResult } from '@/lib/data/source';
 
 const MAX_PAGES = 20;
 
+/** Page 1 first (it says how many pages there are), then the rest at once, capped at MAX_PAGES. */
 async function allPickups(): Promise<DataResult<Pickup[]>> {
   const service = pickupsService();
-  const items: Pickup[] = [];
-  let source: 'mock' | 'gateway' = 'mock';
-  for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const result = await service.listPickups({ page });
-    if (!result.ok) return result;
-    source = result.source;
-    items.push(...result.data.items);
-    if (result.data.page >= result.data.pageCount) break;
-  }
-  return { ok: true, source, data: items };
+  const first = await service.listPickups({ page: 1 });
+  if (!first.ok) return first;
+  const last = Math.min(first.data.pageCount, MAX_PAGES);
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(0, last - 1) }, (_, index) => service.listPickups({ page: index + 2 })),
+  );
+  const failed = rest.find((result) => !result.ok);
+  if (failed && !failed.ok) return failed;
+  const items = [first, ...rest].flatMap((result) => (result.ok ? result.data.items : []));
+  return { ok: true, source: first.source, data: items };
 }
 
 /** Tiles and a 7-day chart. One card, so a failed source shows one error with Try again. */

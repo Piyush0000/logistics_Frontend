@@ -1,18 +1,34 @@
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { getDemoSession } from '@/lib/auth/session';
-import { parseRange } from '@/lib/data/analytics/totals';
-import { formatDateRange } from '@/lib/format/date';
-import { AlertTicker, OverviewTabs, PageHeading, parseTab } from './sections';
-import { DeliveredTab } from './tabs/delivered-tab';
-import { NdrTab } from './tabs/ndr-tab';
-import { OverviewTab } from './tabs/overview-tab';
-import { PickupsTab } from './tabs/pickups-tab';
-import { RevenueTab } from './tabs/revenue-tab';
-import { SmsTab } from './tabs/sms-tab';
-import { RtoTab } from './tabs/rto-tab';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getDemoSession } from "@/lib/auth/session";
+import { parseRange } from "@/lib/data/analytics/totals";
+import { formatDateRange } from "@/lib/format/date";
+import { AlertTicker, OverviewTabs, PageHeading, parseTab } from "./sections";
+import { DeliveredTab } from "./tabs/delivered-tab";
+import { NdrTab } from "./tabs/ndr-tab";
+import { OverviewTab } from "./tabs/overview-tab";
+import { PickupsTab } from "./tabs/pickups-tab";
+import { RevenueTab } from "./tabs/revenue-tab";
+import { SmsTab } from "./tabs/sms-tab";
+import { RtoTab } from "./tabs/rto-tab";
 
-export const metadata: Metadata = { title: 'Dashboard | Evoc Ships' };
+export const metadata: Metadata = { title: "Dashboard | Evoc Ships" };
+
+function TabSkeleton() {
+  return (
+    <div role="status" aria-label="Loading" className="grid gap-4 lg:gap-5">
+      <div className="grid grid-cols-2 gap-3 lg:gap-5 xl:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-32 rounded-card" />
+        ))}
+      </div>
+      <Skeleton className="h-48 rounded-card" />
+      <Skeleton className="h-40 rounded-card" />
+    </div>
+  );
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -20,7 +36,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ tab?: string | string[]; range?: string | string[] }>;
 }) {
   const session = await getDemoSession();
-  if (!session) redirect('/login');
+  if (!session) redirect("/login");
 
   const params = await searchParams;
   const tab = parseTab(params.tab);
@@ -31,21 +47,24 @@ export default async function DashboardPage({
       <AlertTicker />
       <PageHeading dateRange={formatDateRange(new Date())} />
       <OverviewTabs active={tab} />
-      {tab === 'pickups' ? (
-        <PickupsTab />
-      ) : tab === 'ndr' ? (
-        <NdrTab />
-      ) : tab === 'rto' ? (
-        <RtoTab />
-      ) : tab === 'delivered' ? (
-        <DeliveredTab range={range} />
-      ) : tab === 'sms' ? (
-        <SmsTab range={range} />
-      ) : tab === 'revenue' ? (
-        <RevenueTab range={range} />
-      ) : (
-        <OverviewTab />
-      )}
+      {/* The header and tabs show at once; the tab's data streams in behind its own skeleton. */}
+      <Suspense key={`${tab}-${range}`} fallback={<TabSkeleton />}>
+        {tab === "pickups" ? (
+          <PickupsTab />
+        ) : tab === "ndr" ? (
+          <NdrTab />
+        ) : tab === "rto" ? (
+          <RtoTab />
+        ) : tab === "delivered" ? (
+          <DeliveredTab range={range} />
+        ) : tab === "sms" ? (
+          <SmsTab range={range} />
+        ) : tab === "revenue" ? (
+          <RevenueTab range={range} />
+        ) : (
+          <OverviewTab />
+        )}
+      </Suspense>
     </>
   );
 }

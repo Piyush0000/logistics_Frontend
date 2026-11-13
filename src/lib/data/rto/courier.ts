@@ -28,28 +28,28 @@ export interface CollectedRto {
 
 type ListPage = (query: { stage: RtoStage; page: number }) => Promise<DataResult<OrderListResult>>;
 
-/** Every RTO shipment, read page by page for each stage, up to 20 pages per stage. */
+/** Every RTO shipment for each stage, up to 20 pages per stage, the later pages fetched in parallel. */
 export async function collectRto(listPage: ListPage): Promise<DataResult<CollectedRto>> {
   const perStage = await Promise.all(
     RTO_STAGES.map(async (stage) => {
-      const items: OrderSummary[] = [];
-      let total = 0;
-      let capped = false;
-      let source: 'mock' | 'gateway' = 'mock';
-      for (let page = 1; ; page += 1) {
-        const result = await listPage({ stage, page });
-        if (!result.ok) return result;
-        source = result.source;
-        items.push(...result.data.items);
-        total = result.data.total;
-        const pageCount = Math.ceil(result.data.total / Math.max(1, result.data.limit));
-        if (page >= pageCount) break;
-        if (page >= MAX_PAGES_PER_STAGE) {
-          capped = true;
-          break;
-        }
-      }
-      return { ok: true as const, source, data: { items, total, capped } };
+      // Page 1 says how many pages exist; the rest (up to the cap) are fetched at once.
+      const first = await listPage({ stage, page: 1 });
+      if (!first.ok) return first;
+      const pageCount = Math.ceil(first.data.total / Math.max(1, first.data.limit));
+      const last = Math.min(pageCount, MAX_PAGES_PER_STAGE);
+      const rest = await Promise.all(
+        Array.from({ length: Math.max(0, last - 1) }, (_, index) => listPage({ stage, page: index + 2 })),
+      );
+      const failed = rest.find((result) => !result.ok);
+      if (failed && !failed.ok) return failed;
+      const pages = [first, ...rest].flatMap((result) => (result.ok ? [result] : []));
+      const items = pages.flatMap((result) => result.data.items);
+      const total = pages[pages.length - 1]!.data.total;
+      return {
+        ok: true as const,
+        source: first.source,
+        data: { items, total, capped: pageCount > MAX_PAGES_PER_STAGE },
+      };
     }),
   );
   const failed = perStage.find((r) => !r.ok);
