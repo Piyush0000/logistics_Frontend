@@ -77,13 +77,13 @@ function Wallet({ wallet }: { wallet: DataResult<WalletBalance> }) {
       <Link
         href="/finances/wallet"
         data-testid="wallet"
-        className="flex h-control flex-col items-end justify-center rounded-l-control bg-primary px-3 text-tertiary lg:flex-row lg:items-center lg:gap-2"
+        className="flex h-control flex-col items-end justify-center rounded-l-control bg-primary px-3 text-on-primary lg:flex-row lg:items-center lg:gap-2"
       >
         <span className="text-sm leading-4 font-semibold">
           {wallet.ok ? formatPaise(wallet.data.availablePaise) : 'Unavailable'}
         </span>
         {wallet.source === 'mock' ? (
-          <span className="text-[10px] leading-3 text-tertiary/80">Sample</span>
+          <span className="text-[10px] leading-3 text-on-primary/80">Sample</span>
         ) : null}
       </Link>
       <button
@@ -125,7 +125,7 @@ function AccountMenu({ email }: { email: string }) {
       <form action={signOutAction} className="mt-2">
         <button
           type="submit"
-          className="h-control w-full rounded-control bg-primary px-3 text-sm font-medium text-tertiary"
+          className="h-control w-full rounded-control bg-primary px-3 text-sm font-medium text-on-primary"
         >
           Sign out
         </button>
@@ -157,7 +157,7 @@ export function TopBar({
         >
           <Menu aria-hidden="true" className="size-6" />
         </button>
-        <span className="rounded-control bg-primary text-tertiary max-[359px]:hidden lg:hidden">
+        <span className="rounded-control bg-primary text-on-primary max-[359px]:hidden lg:hidden">
           <BrandMark compact />
         </span>
 

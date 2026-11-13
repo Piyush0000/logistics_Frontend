@@ -57,7 +57,7 @@ export function Dialog({
 }
 
 export const PRIMARY_BUTTON =
-  'inline-flex h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-tertiary disabled:bg-primary/50';
+  'inline-flex h-control items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-on-primary disabled:bg-primary/50';
 
 export const SECONDARY_BUTTON =
   'inline-flex h-control items-center justify-center gap-2 rounded-control border border-secondary px-4 text-sm font-medium hover:bg-muted disabled:text-on-surface/60';

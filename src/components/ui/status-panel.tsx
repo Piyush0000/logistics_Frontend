@@ -2,7 +2,7 @@ import { TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export const PANEL_PRIMARY =
-  'inline-flex h-11 items-center justify-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control';
+  'inline-flex h-11 items-center justify-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary lg:h-control';
 export const PANEL_SECONDARY =
   'inline-flex h-11 items-center justify-center rounded-control border border-secondary bg-surface px-4 text-sm font-medium text-on-surface lg:h-control';
 

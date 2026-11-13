@@ -28,7 +28,7 @@ export function StageProgressBar({ progress }: { progress: StageProgress }) {
           >
             <span
               className={`grid size-7 place-items-center rounded-full border ${
-                reached ? 'border-primary bg-primary text-tertiary' : 'border-secondary bg-tertiary text-on-surface/40'
+                reached ? 'border-primary bg-primary text-on-primary' : 'border-secondary bg-tertiary text-on-surface/40'
               }`}
             >
               {reached ? <Check aria-hidden="true" className="size-4" /> : <span className="text-xs">{index + 1}</span>}

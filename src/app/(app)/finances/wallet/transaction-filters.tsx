@@ -79,7 +79,7 @@ export function TransactionFilters({
         <div className="flex gap-3 md:col-span-2 md:justify-end xl:col-span-1 xl:col-start-4 xl:row-span-2 xl:row-start-1 xl:self-center">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-tertiary md:flex-none"
+            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary md:flex-none"
           >
             Apply
           </button>

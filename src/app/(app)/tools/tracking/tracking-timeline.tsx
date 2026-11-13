@@ -16,7 +16,7 @@ export function TrackingTimeline({ events }: { events: TrackingEvent[] }) {
             <div
               className={`grid size-7 shrink-0 place-items-center rounded-full border ${
                 index === 0
-                  ? 'border-primary bg-primary text-tertiary'
+                  ? 'border-primary bg-primary text-on-primary'
                   : 'border-secondary bg-tertiary text-on-surface/50'
               }`}
             >

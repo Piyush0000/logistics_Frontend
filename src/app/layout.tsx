@@ -1,19 +1,25 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Sans, Inter, Manrope } from 'next/font/google';
+import { Geist_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { ThemeScript } from '@/components/theme/theme-script';
+import { ThemeWatcher } from '@/components/theme/theme-toggle';
 import './globals.css';
 
-const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' });
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
-const plex = IBM_Plex_Sans({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-plex',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-geist-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Evoc Logistics',
+  title: 'Evoc Ships',
   description: 'Shipping control panel for orders, tracking and COD.',
 };
 
@@ -21,13 +27,22 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#184FA2',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#EEF0F5' },
+    { media: '(prefers-color-scheme: dark)', color: '#070B16' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${inter.variable} ${plex.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${jakarta.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body>
+        <ThemeWatcher />
+        {children}
+      </body>
     </html>
   );
 }

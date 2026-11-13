@@ -62,7 +62,7 @@ export default async function B2cShipmentsPage({ searchParams }: B2cPageProps) {
           actions={
             <Link
               href="/orders/create"
-              className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary hover:bg-primary/90 lg:h-control"
+              className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary/90 lg:h-control"
             >
               Create B2C shipment
             </Link>

@@ -145,7 +145,7 @@ export function NdrView({ data }: NdrViewProps) {
                       <button
                         type="button"
                         onClick={() => setSelectedItem({ item, action: 'REATTEMPT' })}
-                        className="inline-flex h-8 items-center gap-1 rounded-control bg-primary px-2.5 text-xs font-medium text-tertiary hover:bg-primary/90"
+                        className="inline-flex h-8 items-center gap-1 rounded-control bg-primary px-2.5 text-xs font-medium text-on-primary hover:bg-primary/90"
                       >
                         <RotateCw className="size-3" />
                         <span>Reattempt</span>
@@ -208,7 +208,7 @@ export function NdrView({ data }: NdrViewProps) {
                   <button
                     type="button"
                     onClick={() => setSelectedItem({ item, action: 'REATTEMPT' })}
-                    className="inline-flex min-h-[44px] items-center gap-1 rounded-control bg-primary px-3 text-xs font-semibold text-tertiary"
+                    className="inline-flex min-h-[44px] items-center gap-1 rounded-control bg-primary px-3 text-xs font-semibold text-on-primary"
                   >
                     <RotateCw className="size-3.5" />
                     <span>Reattempt</span>

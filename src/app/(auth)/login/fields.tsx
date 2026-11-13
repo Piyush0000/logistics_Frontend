@@ -179,7 +179,7 @@ export function SubmitButton({
       type="submit"
       disabled={disabled || pending}
       aria-busy={pending}
-      className="flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 font-extrabold text-tertiary transition-colors enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-primary/50"
+      className="flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 font-extrabold text-on-primary transition-colors enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-primary/50"
     >
       {pending ? <LoaderCircle aria-hidden="true" className="size-5 animate-spin" /> : null}
       {pending ? pendingLabel : children}

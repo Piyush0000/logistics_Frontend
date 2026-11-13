@@ -30,7 +30,7 @@ export function TicketsFilter({ status, path }: { status: TicketStatus | undefin
         <div className="flex gap-3">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-tertiary sm:flex-none"
+            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary sm:flex-none"
           >
             Apply
           </button>

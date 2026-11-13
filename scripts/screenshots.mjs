@@ -1,10 +1,11 @@
 // Saves desktop, phone and 320px screenshots of routes, served from the production build.
 // Run `pnpm build` first.
 //
-// Usage: node scripts/screenshots.mjs [--menu] [route ...]
+// Usage: node scripts/screenshots.mjs [--menu] [--dark] [route ...]
 //   In Git Bash, prefix MSYS_NO_PATHCONV=1 so '/dashboard' is not turned into a Windows path.
 //   With no routes, it takes every route in e2e/routes.ts.
 //   --menu also saves each size with the sidebar open, as <slug>-<size>-menu.png.
+//   --dark emulates a dark-mode browser (the app follows it by default) and adds -dark to file names.
 // Output: test-results/screenshots/<slug>-{desktop,phone,small}.png
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
@@ -125,6 +126,8 @@ async function openMenu(page) {
 async function main() {
   const args = process.argv.slice(2);
   const withMenu = args.includes('--menu');
+  const dark = args.includes('--dark');
+  const suffix = dark ? '-dark' : '';
   const given = args.filter((arg) => !arg.startsWith('--'));
   const routes = given.length > 0 ? given : [...new Set(quoted(ROUTES_TEXT))];
   for (const route of routes) {
@@ -144,7 +147,7 @@ async function main() {
   const saved = [];
   try {
     for (const [size, options] of Object.entries(SIZES)) {
-      const context = await browser.newContext(options);
+      const context = await browser.newContext({ ...options, colorScheme: dark ? 'dark' : 'light' });
       const page = await context.newPage();
       // Public pages first, while signed out, then the signed-in pages.
       const ordered = [
@@ -159,12 +162,12 @@ async function main() {
           signedIn = true;
         }
         await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
-        const file = join(OUT, `${slug(route)}-${size}.png`);
+        const file = join(OUT, `${slug(route)}-${size}${suffix}.png`);
         await page.screenshot({ path: file, fullPage: true });
         saved.push(file);
         if (withMenu && !PUBLIC.has(route)) {
           await openMenu(page);
-          const menuFile = join(OUT, `${slug(route)}-${size}-menu.png`);
+          const menuFile = join(OUT, `${slug(route)}-${size}${suffix}-menu.png`);
           await page.screenshot({ path: menuFile });
           saved.push(menuFile);
         }

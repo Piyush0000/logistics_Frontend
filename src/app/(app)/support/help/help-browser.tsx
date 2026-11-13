@@ -16,7 +16,7 @@ export const TICKET_HREF = '/support/tickets?new=1';
 const PATH = '/support/help';
 
 const CHIP = 'inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium lg:h-control';
-const CHIP_ON = 'border-primary bg-primary text-tertiary';
+const CHIP_ON = 'border-primary bg-primary text-on-primary';
 
 function topicHref(category: HelpCategory | undefined, query: string): string {
   const params = new URLSearchParams();

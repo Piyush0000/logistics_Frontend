@@ -69,7 +69,7 @@ export function CreateShipmentForm({
         <div className="flex flex-wrap justify-center gap-3">
           <Link
             href={state.createdAwb ? `/orders/${state.createdAwb}` : "/orders"}
-            className="inline-flex h-control min-h-[44px] items-center gap-1.5 rounded-control bg-primary px-5 text-sm font-medium text-tertiary hover:bg-primary/90"
+            className="inline-flex h-control min-h-[44px] items-center gap-1.5 rounded-control bg-primary px-5 text-sm font-medium text-on-primary hover:bg-primary/90"
           >
             <span>{state.createdAwb ? "View Shipment Details" : "View All Shipments"}</span>
             <ChevronRight className="size-4" />
@@ -550,7 +550,7 @@ export function CreateShipmentForm({
           type="submit"
           disabled={pending}
           data-testid="submit-shipment"
-          className="inline-flex h-control min-h-[44px] items-center rounded-control bg-primary px-6 text-sm font-medium text-tertiary shadow-sm hover:bg-primary/90 disabled:opacity-50"
+          className="inline-flex h-control min-h-[44px] items-center rounded-control bg-primary px-6 text-sm font-medium text-on-primary shadow-sm hover:bg-primary/90 disabled:opacity-50"
         >
           {pending ? 'Booking Shipment...' : 'Book Shipment'}
         </button>

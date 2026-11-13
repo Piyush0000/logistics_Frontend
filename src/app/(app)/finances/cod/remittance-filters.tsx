@@ -59,7 +59,7 @@ export function RemittanceFilters({
         <div className="flex gap-3 self-end md:justify-end">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-tertiary md:flex-none"
+            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary md:flex-none"
           >
             Apply
           </button>

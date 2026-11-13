@@ -19,7 +19,7 @@ const TABLE_BUTTON =
 const CARD_BUTTON =
   'inline-flex min-h-11 flex-1 items-center justify-center rounded-control border px-4 text-sm font-medium disabled:opacity-50';
 const ACCEPT = 'border-secondary bg-surface hover:border-primary hover:text-primary';
-const DISPUTE = 'border-primary bg-primary text-tertiary';
+const DISPUTE = 'border-primary bg-primary text-on-primary';
 
 interface RowProps {
   item: WeightDiscrepancy;

@@ -15,7 +15,7 @@ export function RangeToggle({ tab, range }: { tab: string; range: Range }) {
             href={days === 7 ? `/dashboard?tab=${tab}` : `/dashboard?tab=${tab}&range=${days}`}
             aria-current={selected ? 'true' : undefined}
             className={`flex h-11 items-center rounded-full px-4 text-sm whitespace-nowrap ${
-              selected ? 'bg-primary font-medium text-tertiary' : 'text-on-surface hover:bg-primary/10'
+              selected ? 'bg-primary font-medium text-on-primary' : 'text-on-surface hover:bg-primary/10'
             }`}
           >
             Last {days} days

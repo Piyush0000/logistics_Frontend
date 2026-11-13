@@ -6,7 +6,7 @@ export const PREVIEW_AWB = 'DEMOEK001';
 // Whole class names, so Tailwind can see them. Each accent is a palette token, and the header text
 // is chosen per accent to stay readable on it.
 const ACCENT_STYLE: Record<TrackingAccent, { fill: string; header: string }> = {
-  primary: { fill: 'bg-primary', header: 'bg-primary text-tertiary' },
+  primary: { fill: 'bg-primary', header: 'bg-primary text-on-primary' },
   accent: { fill: 'bg-accent', header: 'bg-accent text-on-surface' },
   success: { fill: 'bg-success', header: 'bg-success text-on-surface' },
 };

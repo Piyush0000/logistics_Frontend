@@ -71,7 +71,7 @@ function PayloadDetail({
             aria-pressed={value === event}
             onClick={() => onSelect(value)}
             className={`inline-flex min-h-11 items-center rounded-full px-3 font-mono text-xs [overflow-wrap:anywhere] lg:min-h-8 ${
-              value === event ? 'bg-primary text-tertiary' : 'bg-muted text-primary'
+              value === event ? 'bg-primary text-on-primary' : 'bg-muted text-primary'
             }`}
           >
             {value}

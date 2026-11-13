@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: 'COD Remittance | Evoc Logistics' };
 const rupees = (paise: number) => formatPaise(paise, { decimals: 0 });
 
 const EXPORT_BUTTON =
-  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control px-4 text-sm font-medium text-tertiary sm:w-auto';
+  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control px-4 text-sm font-medium text-on-primary sm:w-auto';
 
 export default async function CodRemittancePage({
   searchParams,

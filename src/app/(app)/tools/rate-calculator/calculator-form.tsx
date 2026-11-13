@@ -165,7 +165,7 @@ export function CalculatorForm() {
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex h-control w-full items-center justify-center rounded-control bg-primary px-6 text-sm font-medium text-tertiary disabled:bg-primary/50 sm:w-auto"
+              className="inline-flex h-control w-full items-center justify-center rounded-control bg-primary px-6 text-sm font-medium text-on-primary disabled:bg-primary/50 sm:w-auto"
             >
               Get quotes
             </button>

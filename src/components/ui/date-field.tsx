@@ -174,7 +174,7 @@ export function DateField({
                   onClick={() => choose(day)}
                   className={`h-control rounded-control border text-sm ${
                     day === value
-                      ? 'border-primary bg-primary font-medium text-tertiary'
+                      ? 'border-primary bg-primary font-medium text-on-primary'
                       : `hover:bg-muted ${day === today ? 'border-primary' : 'border-transparent'}`
                   }`}
                 >

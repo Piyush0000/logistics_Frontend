@@ -12,8 +12,8 @@ import { activeGroupLabel, isActivePath, isGroupActive, NAV, type NavGroup, type
 const ROW = 'flex h-12 w-full shrink-0 items-center gap-3 rounded-control px-3 text-base';
 const CHILD_ROW = 'flex h-11 w-full items-center gap-3 rounded-control px-3 text-left text-[15px]';
 const ACTIVE = 'bg-surface font-medium text-primary';
-const IDLE = 'font-medium text-tertiary/90 hover:bg-surface/10 hover:text-tertiary';
-const PLANNED = 'cursor-not-allowed text-tertiary/70';
+const IDLE = 'font-medium text-on-primary/90 hover:bg-surface/10 hover:text-on-primary';
+const PLANNED = 'cursor-not-allowed text-on-primary/70';
 
 const unavailable = (label: string) => `${label} is not available yet`;
 
@@ -141,7 +141,7 @@ function Submenu({
       <ul
         id={listId}
         hidden={!shown}
-        className="mt-1 mb-1 ml-6 flex flex-col gap-1 border-l border-tertiary/30 pl-3"
+        className="mt-1 mb-1 ml-6 flex flex-col gap-1 border-l border-on-primary/30 pl-3"
       >
         {children.map((item) => (
           <li key={item.href}>
@@ -203,7 +203,7 @@ export function Sidebar({
       ref={panelRef}
       data-testid="sidebar"
       // Visibility only animates on close, so focus can move into the menu as soon as it opens.
-      className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,320px)] flex-col bg-primary text-tertiary duration-200 lg:visible lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,320px)] flex-col bg-primary text-on-primary duration-200 lg:visible lg:translate-x-0 ${
         open
           ? 'transition-[transform,width] lg:w-80'
           : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full lg:w-20'
@@ -232,7 +232,7 @@ export function Sidebar({
         onClick={onToggle}
         aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
         aria-expanded={open}
-        className="absolute top-5 -right-4 hidden size-8 place-items-center rounded-full border-2 border-tertiary bg-primary lg:grid"
+        className="absolute top-5 -right-4 hidden size-8 place-items-center rounded-full border-2 border-on-primary bg-primary lg:grid"
       >
         {open ? (
           <ChevronLeft aria-hidden="true" className="size-4" />
@@ -248,7 +248,7 @@ export function Sidebar({
         {NAV.map((group) => (
           <div key={group.label} className="contents">
             {group.dividerBefore ? (
-              <hr aria-hidden="true" className="my-1 shrink-0 border-tertiary/20" />
+              <hr aria-hidden="true" className="my-1 shrink-0 border-on-primary/20" />
             ) : null}
             {group.children ? (
               <Submenu
@@ -271,7 +271,7 @@ export function Sidebar({
           open ? '' : 'lg:justify-center lg:px-0'
         }`}
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-tertiary/60 text-sm font-medium">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-on-primary/60 text-sm font-medium">
           {initials}
         </span>
         <span className={`min-w-0 flex-1 ${label}`}>
@@ -279,7 +279,7 @@ export function Sidebar({
           <Link
             href="/settings/profile"
             onClick={onClose}
-            className="flex min-h-11 items-center text-xs text-tertiary/80 underline-offset-2 hover:underline"
+            className="flex min-h-11 items-center text-xs text-on-primary/80 underline-offset-2 hover:underline"
           >
             View Profile
           </Link>

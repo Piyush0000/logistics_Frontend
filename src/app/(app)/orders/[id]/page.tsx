@@ -61,7 +61,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                     <div
                       className={`grid size-7 shrink-0 place-items-center rounded-full border ${
                         isLatest
-                          ? 'border-primary bg-primary text-tertiary'
+                          ? 'border-primary bg-primary text-on-primary'
                           : 'border-secondary bg-tertiary text-on-surface/50'
                       }`}
                     >

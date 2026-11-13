@@ -286,7 +286,7 @@ export function CreateB2bButton({ addresses }: { addresses: PickupAddress[] | nu
           setNotice(null);
           setOpen(true);
         }}
-        className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary hover:bg-primary/90 lg:h-control"
+        className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary/90 lg:h-control"
       >
         Create B2B shipment
       </button>

@@ -5,7 +5,7 @@ import { BrandMark } from '@/components/brand-mark';
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="theme-app flex min-h-dvh flex-col bg-surface font-body">
-      <header className="bg-primary px-4 py-3 text-tertiary sm:px-6">
+      <header className="bg-primary px-4 py-3 text-on-primary sm:px-6">
         <div className="mx-auto w-full max-w-3xl">
           <BrandMark />
         </div>

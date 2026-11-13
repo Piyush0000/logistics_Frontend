@@ -100,7 +100,7 @@ export function OrderFilters() {
 
           <Link
             href="/orders/create"
-            className="flex h-control items-center gap-1.5 rounded-control bg-primary px-3 text-sm font-medium text-tertiary shadow-sm hover:bg-primary/90"
+            className="flex h-control items-center gap-1.5 rounded-control bg-primary px-3 text-sm font-medium text-on-primary shadow-sm hover:bg-primary/90"
           >
             <Plus aria-hidden="true" className="size-4" />
             <span>Create Shipment</span>
@@ -126,7 +126,7 @@ export function OrderFilters() {
               onClick={() => updateParam('status', tab.value)}
               className={`h-10 min-w-20 shrink-0 rounded-full px-4 text-xs font-medium transition-colors sm:text-sm ${
                 isSelected
-                  ? 'bg-primary text-tertiary shadow-xs'
+                  ? 'bg-primary text-on-primary shadow-xs'
                   : 'text-on-surface/70 hover:text-on-surface'
               }`}
             >

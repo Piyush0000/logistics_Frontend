@@ -53,7 +53,7 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
           <p className="font-medium">Still need help?</p>
           <Link
             href="/support/tickets?new=1"
-            className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control"
+            className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary lg:h-control"
           >
             Raise a ticket
           </Link>

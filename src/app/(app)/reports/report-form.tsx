@@ -6,7 +6,7 @@ import { DateField } from '@/components/ui/date-field';
 import { REPORT_CARDS, reportHref, validateReport } from '@/lib/reports';
 
 const DOWNLOAD =
-  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-tertiary sm:w-auto';
+  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-medium text-on-primary sm:w-auto';
 
 export function ReportForm({ initialFrom, initialTo }: { initialFrom: string; initialTo: string }) {
   const [from, setFrom] = useState(initialFrom);

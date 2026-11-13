@@ -22,7 +22,7 @@ export function EmptyState({
         <Link
           href={action.href}
           prefetch={action.prefetch}
-          className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control"
+          className="inline-flex h-11 items-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary lg:h-control"
         >
           {action.label}
         </Link>

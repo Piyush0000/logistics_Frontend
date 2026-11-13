@@ -65,7 +65,7 @@ export function QuoteList({
                     <p className="text-xl font-semibold break-words">{formatPaise(quote.chargePaise)}</p>
                     <Link
                       href={`/orders/create?carrier=${quote.carrier}`}
-                      className="inline-flex h-11 items-center justify-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary lg:h-control"
+                      className="inline-flex h-11 items-center justify-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary lg:h-control"
                     >
                       Ship with this
                     </Link>
@@ -84,7 +84,7 @@ export function QuoteList({
             type="button"
             onClick={onRetry}
             disabled={pending}
-            className="h-control rounded-control bg-primary px-4 text-sm font-medium text-tertiary disabled:bg-primary/50"
+            className="h-control rounded-control bg-primary px-4 text-sm font-medium text-on-primary disabled:bg-primary/50"
           >
             Try again
           </button>

@@ -94,7 +94,7 @@ export function OverviewTabs({ active = 'overview' }: { active?: DashboardTab })
         const selected = tab.id === active;
         const className = `h-11 min-w-24 flex-1 shrink-0 rounded-full px-4 text-sm ${
           selected
-            ? 'bg-primary font-medium text-tertiary'
+            ? 'bg-primary font-medium text-on-primary'
             : tab.enabled
               ? 'text-on-surface hover:bg-primary/10'
               : 'cursor-not-allowed text-on-surface/70'

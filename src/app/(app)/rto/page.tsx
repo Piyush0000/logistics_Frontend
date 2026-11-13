@@ -96,7 +96,7 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
                 href={buildPageHref('/rto', { stage: tab.stage === 'in_progress' ? undefined : tab.stage }, 1)}
                 className={`inline-flex h-11 flex-1 items-center justify-center rounded-full px-5 text-sm font-medium transition-colors sm:flex-none lg:h-10 ${
                   selected
-                    ? 'bg-primary text-tertiary shadow-xs'
+                    ? 'bg-primary text-on-primary shadow-xs'
                     : 'text-on-surface/70 hover:text-on-surface'
                 }`}
               >

@@ -109,7 +109,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             </p>
             <Link
               href="/orders/create"
-              className="mt-4 inline-flex h-control items-center rounded-control bg-primary px-4 text-sm font-medium text-tertiary"
+              className="mt-4 inline-flex h-control items-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary"
             >
               Create Shipment
             </Link>

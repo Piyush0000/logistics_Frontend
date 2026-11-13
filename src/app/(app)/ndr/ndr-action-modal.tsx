@@ -83,7 +83,7 @@ export function NdrActionModal({ item, initialAction, onClose }: NdrActionModalP
                 onClick={() => setAction('REATTEMPT')}
                 className={`flex-1 min-h-[44px] rounded-control border px-3 py-2 text-xs font-semibold ${
                   action === 'REATTEMPT'
-                    ? 'border-primary bg-primary text-tertiary'
+                    ? 'border-primary bg-primary text-on-primary'
                     : 'border-secondary bg-surface text-on-surface/70'
                 }`}
               >
@@ -150,7 +150,7 @@ export function NdrActionModal({ item, initialAction, onClose }: NdrActionModalP
                 disabled={pending}
                 className={`min-h-[44px] rounded-control px-5 text-xs font-semibold ${
                   action === 'REATTEMPT'
-                    ? 'bg-primary text-tertiary hover:bg-primary/90'
+                    ? 'bg-primary text-on-primary hover:bg-primary/90'
                     : 'bg-warning text-on-surface hover:bg-warning/90'
                 } disabled:opacity-50`}
               >

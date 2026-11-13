@@ -6,7 +6,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
     <span
       role={compact ? 'img' : undefined}
       aria-label={compact ? 'Evoc Logistics' : undefined}
-      className="grid size-11 shrink-0 place-items-center rounded-control border border-dashed border-tertiary/60"
+      className="grid size-11 shrink-0 place-items-center rounded-control border border-dashed border-on-primary/60"
     >
       <Truck aria-hidden="true" className="size-6" />
     </span>
@@ -19,7 +19,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
       {logo}
       <span>
         <span className="block font-heading text-lg leading-6 font-extrabold">Evoc Logistics</span>
-        <span className="block text-xs leading-4 text-tertiary/80">Placeholder logo</span>
+        <span className="block text-xs leading-4 text-on-primary/80">Placeholder logo</span>
       </span>
     </div>
   );
