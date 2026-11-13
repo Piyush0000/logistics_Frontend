@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { parseEnum, parseText } from '@/lib/url-params';
 import { HelpBrowser } from './help-browser';
 
-export const metadata: Metadata = { title: 'Help centre | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Help centre | Evoc Ships' };
 
 interface HelpPageProps {
   searchParams: Promise<{ category?: string; q?: string }>;

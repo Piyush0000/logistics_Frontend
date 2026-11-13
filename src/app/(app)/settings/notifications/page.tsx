@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { NotificationEditor } from './notification-editor';
 
-export const metadata: Metadata = { title: 'Buyer notifications | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Buyer notifications | Evoc Ships' };
 
 export default async function NotificationsPage() {
   const session = await getDemoSession();

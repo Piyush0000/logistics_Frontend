@@ -10,7 +10,7 @@ import { ndrService } from '@/lib/data/ndr';
 import { walletService } from '@/lib/data/wallet';
 import { NdrView } from './ndr-view';
 
-export const metadata: Metadata = { title: 'NDR Management | Evoc Logistics' };
+export const metadata: Metadata = { title: 'NDR Management | Evoc Ships' };
 
 export default async function NdrPage() {
   const session = await getDemoSession();

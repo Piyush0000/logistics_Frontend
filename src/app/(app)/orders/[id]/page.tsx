@@ -22,7 +22,7 @@ import { formatDate, formatDateTime } from '@/lib/format/date';
 import { statusLabel } from '@/lib/format/status';
 import { formatPaise } from '@/lib/format/money';
 
-export const metadata: Metadata = { title: 'Shipment Detail | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Shipment Detail | Evoc Ships' };
 
 interface OrderDetailPageProps {
   params: Promise<{ id: string }>;

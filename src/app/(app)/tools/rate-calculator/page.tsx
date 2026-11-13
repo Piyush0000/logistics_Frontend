@@ -6,7 +6,7 @@ import { getDemoSession } from '@/lib/auth/session';
 import { walletService } from '@/lib/data/wallet';
 import { CalculatorForm } from './calculator-form';
 
-export const metadata: Metadata = { title: 'Rate calculator | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Rate calculator | Evoc Ships' };
 
 export default async function RateCalculatorPage() {
   const session = await getDemoSession();

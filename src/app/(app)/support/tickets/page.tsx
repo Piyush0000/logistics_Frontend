@@ -13,7 +13,7 @@ import { NewTicketButton } from './new-ticket-button';
 import { TicketList } from './ticket-list';
 import { TicketsFilter } from './tickets-filter';
 
-export const metadata: Metadata = { title: 'Support tickets | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Support tickets | Evoc Ships' };
 
 const PATH = '/support/tickets';
 

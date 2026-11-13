@@ -13,7 +13,7 @@ import { OrderFilters } from './filters';
 import { OrdersCards } from './orders-cards';
 import { OrdersTable } from './orders-table';
 
-export const metadata: Metadata = { title: 'Orders | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Orders | Evoc Ships' };
 
 const STATUSES = [
   'MANIFESTED',

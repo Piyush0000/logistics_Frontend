@@ -12,7 +12,7 @@ import { formatDateTime } from '@/lib/format/date';
 import { TicketStatusBadge } from '../ticket-status';
 import { ReplyForm } from './reply-form';
 
-export const metadata: Metadata = { title: 'Support ticket | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Support ticket | Evoc Ships' };
 
 interface TicketPageProps {
   params: Promise<{ id: string }>;

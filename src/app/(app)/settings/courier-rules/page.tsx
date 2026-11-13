@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { RulesPanel } from './rules-panel';
 
-export const metadata: Metadata = { title: 'Courier Rules | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Courier Rules | Evoc Ships' };
 
 export default async function CourierRulesPage() {
   const session = await getDemoSession();

@@ -10,7 +10,7 @@ import { RechargeDialog } from './recharge-dialog';
 import { TransactionFilters } from './transaction-filters';
 import { TransactionList } from './transaction-list';
 
-export const metadata: Metadata = { title: 'Wallet Transactions | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Wallet Transactions | Evoc Ships' };
 
 export default async function WalletPage({
   searchParams,

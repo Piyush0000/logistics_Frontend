@@ -15,7 +15,7 @@ import { B2bCards } from './b2b-cards';
 import { B2bTable } from './b2b-table';
 import { CreateB2bButton } from './create-b2b-dialog';
 
-export const metadata: Metadata = { title: 'B2B Shipments | Evoc Logistics' };
+export const metadata: Metadata = { title: 'B2B Shipments | Evoc Ships' };
 
 interface B2bPageProps {
   searchParams: Promise<{ search?: string; page?: string }>;

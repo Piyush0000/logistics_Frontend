@@ -12,7 +12,7 @@ import { buildPageHref, parseEnum, parsePage } from '@/lib/url-params';
 import { InvoiceCards, InvoiceTable } from './invoice-table';
 import { YearFilter } from './year-filter';
 
-export const metadata: Metadata = { title: 'Invoices | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Invoices | Evoc Ships' };
 
 const PATH = '/finances/invoices';
 const YEAR_VALUES = INVOICE_YEARS.map(String);

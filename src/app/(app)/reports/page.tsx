@@ -8,7 +8,7 @@ import { isValidIsoDay } from '@/lib/format/calendar';
 import { defaultReportRange } from '@/lib/reports';
 import { ReportForm } from './report-form';
 
-export const metadata: Metadata = { title: 'Reports | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Reports | Evoc Ships' };
 
 const day = (value: string | string[] | undefined) =>
   typeof value === 'string' && isValidIsoDay(value) ? value : undefined;

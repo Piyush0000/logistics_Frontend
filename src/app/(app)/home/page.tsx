@@ -17,7 +17,7 @@ import { QuickActions } from './quick-actions';
 import { RecentShipments } from './recent-shipments';
 import { StatCard } from './stat-card';
 
-export const metadata: Metadata = { title: 'Home | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Home | Evoc Ships' };
 
 export default async function HomePage() {
   const session = await getDemoSession();

@@ -11,7 +11,7 @@ import { resolveDataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import { CreateShipmentForm } from './create-form';
 
-export const metadata: Metadata = { title: 'Create Shipment | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Create Shipment | Evoc Ships' };
 
 export default async function CreateShipmentPage() {
   const session = await getDemoSession();

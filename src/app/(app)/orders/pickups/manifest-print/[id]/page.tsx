@@ -14,7 +14,7 @@ import {
 import { formatDate } from '@/lib/format/date';
 import { PrintButton } from './print-button';
 
-export const metadata: Metadata = { title: 'Pickup manifest | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Pickup manifest | Evoc Ships' };
 
 interface ManifestPageProps {
   params: Promise<{ id: string }>;

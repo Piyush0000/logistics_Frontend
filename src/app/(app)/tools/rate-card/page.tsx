@@ -12,7 +12,7 @@ import { parseEnum } from '@/lib/url-params';
 import { RateFilter } from './rate-filter';
 import { RateTable } from './rate-table';
 
-export const metadata: Metadata = { title: 'Rate card | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Rate card | Evoc Ships' };
 
 const PATH = '/tools/rate-card';
 

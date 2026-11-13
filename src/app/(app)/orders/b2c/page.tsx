@@ -15,7 +15,7 @@ import { OrderFilters } from '../filters';
 import { OrdersCards } from '../orders-cards';
 import { OrdersTable } from '../orders-table';
 
-export const metadata: Metadata = { title: 'B2C Shipments | Evoc Logistics' };
+export const metadata: Metadata = { title: 'B2C Shipments | Evoc Ships' };
 
 const STATUSES = [
   'MANIFESTED',

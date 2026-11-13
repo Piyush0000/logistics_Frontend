@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PANEL_PRIMARY, PANEL_SECONDARY, StatusPanel } from '@/components/ui/status-panel';
 
-export const metadata: Metadata = { title: 'Page not found | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Page not found | Evoc Ships' };
 
 export default function NotFound() {
   return (

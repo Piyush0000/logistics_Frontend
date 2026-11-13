@@ -14,7 +14,7 @@ import { buildPageHref, parsePage } from '@/lib/url-params';
 import { PickupCards, PickupTable } from './pickup-list';
 import { ReadyToShip } from './ready-to-ship';
 
-export const metadata: Metadata = { title: 'Pickups & Manifests | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Pickups & Manifests | Evoc Ships' };
 
 interface PickupsPageProps {
   searchParams: Promise<{ page?: string }>;

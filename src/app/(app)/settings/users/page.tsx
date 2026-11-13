@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { TeamPanel } from './team-panel';
 
-export const metadata: Metadata = { title: 'Users & Roles | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Users & Roles | Evoc Ships' };
 
 export default async function UsersPage() {
   const session = await getDemoSession();

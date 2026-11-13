@@ -15,7 +15,7 @@ const findArticle = (slug: string) => ARTICLES.find((a) => a.slug === slug);
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const article = findArticle((await params).slug);
-  return { title: `${article?.title ?? 'Help article'} | Evoc Logistics` };
+  return { title: `${article?.title ?? 'Help article'} | Evoc Ships` };
 }
 
 export default async function HelpArticlePage({ params }: ArticlePageProps) {

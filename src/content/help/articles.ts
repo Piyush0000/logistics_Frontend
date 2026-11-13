@@ -250,7 +250,7 @@ export const ARTICLES: HelpArticle[] = [
     slug: 'get-shipment-updates-by-webhook',
     title: 'Get shipment updates by webhook',
     category: 'integrations',
-    summary: 'Have Evoc Logistics call your server when a shipment is booked, changes status or fails.',
+    summary: 'Have Evoc Ships call your server when a shipment is booked, changes status or fails.',
     body: [
       {
         heading: 'Add a webhook',

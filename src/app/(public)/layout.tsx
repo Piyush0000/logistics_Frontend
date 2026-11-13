@@ -7,7 +7,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     <div className="theme-app flex min-h-dvh flex-col bg-surface font-body">
       <header className="bg-primary px-4 py-3 text-on-primary sm:px-6">
         <div className="mx-auto w-full max-w-3xl">
-          <BrandMark />
+          <BrandMark onDark />
         </div>
       </header>
       <main className="mx-auto w-full min-w-0 max-w-3xl flex-1 px-4 py-6 sm:px-6">{children}</main>

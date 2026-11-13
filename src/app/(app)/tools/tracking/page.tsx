@@ -21,7 +21,7 @@ import { ShareLink } from './share-link';
 import { TrackingForm } from './tracking-form';
 import { TrackingTimeline } from './tracking-timeline';
 
-export const metadata: Metadata = { title: 'Order tracking | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Order tracking | Evoc Ships' };
 
 // Far longer than ten AWBs ever need, so a pasted wall of text cannot reach the gateway.
 const QUERY_MAX = 400;

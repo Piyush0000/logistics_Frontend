@@ -4,7 +4,7 @@ import { getDemoSession } from '@/lib/auth/session';
 import { BrandPanel } from '../login/brand-panel';
 import { ForgotForm } from './forgot-form';
 
-export const metadata: Metadata = { title: 'Reset password | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Reset password | Evoc Ships' };
 
 export default async function ForgotPasswordPage() {
   if (await getDemoSession()) redirect('/dashboard');

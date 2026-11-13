@@ -8,7 +8,7 @@ import { walletService } from '@/lib/data/wallet';
 import { weightSettingsService } from '@/lib/data/weight-settings';
 import { PackagePresets } from './package-presets';
 
-export const metadata: Metadata = { title: 'Weight settings | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Weight settings | Evoc Ships' };
 
 export default async function WeightSettingsPage() {
   const session = await getDemoSession();

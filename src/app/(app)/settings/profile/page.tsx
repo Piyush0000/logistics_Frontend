@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { PasswordForm, ProfileForm } from './profile-form';
 
-export const metadata: Metadata = { title: 'Profile | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Profile | Evoc Ships' };
 
 export default async function ProfilePage() {
   const session = await getDemoSession();

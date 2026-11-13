@@ -8,7 +8,7 @@ import { getDemoSession } from '@/lib/auth/session';
 import { walletService } from '@/lib/data/wallet';
 import { SETTINGS_SECTIONS, unavailable, type SettingsSection } from './settings-nav';
 
-export const metadata: Metadata = { title: 'Settings | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Settings | Evoc Ships' };
 
 const CARD = 'flex min-h-11 min-w-0 flex-col gap-1 rounded-card border border-secondary bg-surface p-card';
 

@@ -13,7 +13,7 @@ import { DeliveryHistory } from './delivery-history';
 import { WebhookInfo } from './webhook-info';
 import { WebhooksPanel } from './webhooks-panel';
 
-export const metadata: Metadata = { title: 'Channel Integrations | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Channel Integrations | Evoc Ships' };
 
 const PATH = '/channel-integrations';
 

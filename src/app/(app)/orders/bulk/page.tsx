@@ -8,7 +8,7 @@ import { resolveDataSource } from '@/lib/data/source';
 import { walletService } from '@/lib/data/wallet';
 import { UploadForm } from './upload-form';
 
-export const metadata: Metadata = { title: 'Bulk Upload | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Bulk Upload | Evoc Ships' };
 
 export default async function BulkUploadPage() {
   const session = await getDemoSession();

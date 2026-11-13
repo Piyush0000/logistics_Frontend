@@ -11,7 +11,7 @@ import { formatPaise } from '@/lib/format/money';
 import { InvoiceStatus } from '../invoice-table';
 import { PrintButton } from './print-button';
 
-export const metadata: Metadata = { title: 'Invoice | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Invoice | Evoc Ships' };
 
 interface InvoicePageProps {
   params: Promise<{ id: string }>;

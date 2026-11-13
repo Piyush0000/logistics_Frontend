@@ -11,7 +11,7 @@ import { StageProgressBar } from './stage-progress';
 import { parsePublicAwb, toPublicView } from './view-model';
 
 export const metadata: Metadata = {
-  title: 'Track your shipment | Evoc Logistics',
+  title: 'Track your shipment | Evoc Ships',
   robots: { index: false, follow: false },
 };
 

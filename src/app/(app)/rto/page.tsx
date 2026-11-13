@@ -16,7 +16,7 @@ import { buildPageHref, parseEnum, parsePage } from '@/lib/url-params';
 import { RtoCards } from './rto-cards';
 import { RtoTable } from './rto-table';
 
-export const metadata: Metadata = { title: 'RTO | Evoc Logistics' };
+export const metadata: Metadata = { title: 'RTO | Evoc Ships' };
 
 const TABS: { stage: RtoStage; label: string }[] = [
   { stage: 'in_progress', label: 'In progress' },

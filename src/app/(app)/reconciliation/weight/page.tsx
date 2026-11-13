@@ -15,7 +15,7 @@ import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params
 import { DiscrepancyList } from './discrepancy-table';
 import { WeightFilter } from './weight-filter';
 
-export const metadata: Metadata = { title: 'Weight discrepancies | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Weight discrepancies | Evoc Ships' };
 
 const PATH = '/reconciliation/weight';
 

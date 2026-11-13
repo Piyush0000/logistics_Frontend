@@ -92,7 +92,7 @@ export function BrandPanel() {
     >
       <RouteLine />
       <div className="relative flex justify-center sm:justify-start">
-        <BrandMark />
+        <BrandMark onDark />
       </div>
       <div className="relative mt-4 lg:mt-0">
         <p className="font-heading text-[21px] leading-[26px] font-extrabold lg:text-[34px] lg:leading-[41px]">

@@ -12,7 +12,7 @@ import { DetailCard, KpiCard } from '../../dashboard/sections';
 import { RemittanceFilters } from './remittance-filters';
 import { RemittanceTable } from './remittance-table';
 
-export const metadata: Metadata = { title: 'COD Remittance | Evoc Logistics' };
+export const metadata: Metadata = { title: 'COD Remittance | Evoc Ships' };
 
 const rupees = (paise: number) => formatPaise(paise, { decimals: 0 });
 

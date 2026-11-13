@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { CompanyForm } from './company-form';
 
-export const metadata: Metadata = { title: 'Company & KYC | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Company & KYC | Evoc Ships' };
 
 export default async function CompanyPage() {
   const session = await getDemoSession();

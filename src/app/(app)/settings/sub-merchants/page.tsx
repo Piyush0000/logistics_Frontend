@@ -13,7 +13,7 @@ import { SettingsNav } from '../settings-nav';
 import { SellerRow } from './seller-row';
 import { SubMerchantList } from './sub-merchant-list';
 
-export const metadata: Metadata = { title: 'Sub-merchants | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Sub-merchants | Evoc Ships' };
 
 const PATH = '/settings/sub-merchants';
 

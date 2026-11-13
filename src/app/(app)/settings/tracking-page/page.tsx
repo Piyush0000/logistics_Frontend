@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { BrandingForm } from './branding-form';
 
-export const metadata: Metadata = { title: 'Tracking Page | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Tracking Page | Evoc Ships' };
 
 export default async function TrackingPageSettings() {
   const session = await getDemoSession();

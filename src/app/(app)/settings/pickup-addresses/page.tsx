@@ -9,7 +9,7 @@ import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { AddressList } from './address-list';
 
-export const metadata: Metadata = { title: 'Pickup Addresses | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Pickup Addresses | Evoc Ships' };
 
 export default async function PickupAddressesPage() {
   const session = await getDemoSession();

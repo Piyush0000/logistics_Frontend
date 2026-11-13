@@ -14,7 +14,7 @@ import { RevenueTab } from './tabs/revenue-tab';
 import { SmsTab } from './tabs/sms-tab';
 import { RtoTab } from './tabs/rto-tab';
 
-export const metadata: Metadata = { title: 'Dashboard | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Dashboard | Evoc Ships' };
 
 export default async function DashboardPage({
   searchParams,
