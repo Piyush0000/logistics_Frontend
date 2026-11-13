@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { CARRIERS, type CarrierName } from '@logicore/contracts';
 import { chargeableWeightKg } from '@/lib/volumetric';
 import { fromMock } from '../source';

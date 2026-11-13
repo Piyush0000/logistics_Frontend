@@ -36,7 +36,7 @@ export default async function RateCardPage({ searchParams }: RateCardPageProps) 
           description="What each courier charges to ship a parcel, by zone. The base price covers the first weight band, and every extra 500 g adds the amount shown."
         />
 
-        <RateFilter key={carrier ?? 'all'} carrier={carrier} path={PATH} />
+        <RateFilter key={carrier ?? 'all'} carrier={carrier} carriers={CARRIERS} path={PATH} />
 
         <DataCard testId="rates-card" title="Rates by zone" result={rates}>
           {(data) => {

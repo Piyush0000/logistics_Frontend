@@ -3,7 +3,7 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import { parseSubMerchantInput, type SubMerchantFieldErrors } from '@/lib/data/sub-merchants';
+import { parseSubMerchantInput, type SubMerchantFieldErrors } from '@/lib/data/sub-merchants/input';
 import { onboardSubMerchantAction } from './actions';
 
 const CONTROL = 'h-control w-full min-w-0 rounded-control border bg-surface px-3 text-base lg:text-sm';

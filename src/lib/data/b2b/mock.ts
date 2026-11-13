@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock } from '../source';
 import { parseB2bInput, totalWeightKg } from './input';
 import { B2B_PAGE_SIZE, type B2bService, type B2bShipment } from './types';

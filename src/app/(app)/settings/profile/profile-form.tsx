@@ -3,12 +3,8 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  MAX_NAME_LENGTH,
-  type PasswordFieldErrors,
-  type Profile,
-  type ProfileFieldErrors,
-} from '@/lib/data/profile';
+import { MAX_NAME_LENGTH, type PasswordFieldErrors, type ProfileFieldErrors } from '@/lib/data/profile/input';
+import type { Profile } from '@/lib/data/profile/types';
 import { changePasswordAction, saveProfileAction } from './actions';
 
 const INPUT = 'h-control w-full min-w-0 rounded-control border bg-surface px-3 text-base lg:text-sm';

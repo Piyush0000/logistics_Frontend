@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { ApiError } from '../../gateway/errors';
 import { checkDocuments, maskAccount, parseCompanyInput, DOCUMENT_KINDS } from '../../kyc';
 import { fromMock, type DataResult } from '../source';

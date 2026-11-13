@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock } from '../source';
 import type { MessagesService, MessageStats } from './types';
 

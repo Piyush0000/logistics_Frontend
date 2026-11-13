@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import type { QuoteField, QuoteFieldErrors } from '@/lib/data/rates';
+import type { QuoteField, QuoteFieldErrors } from '@/lib/data/rates/input';
 import { quoteAction, type QuoteActionResult } from './actions';
 import { QuoteList } from './quote-list';
 

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { addDays } from '../../format/calendar';
 import { indianDay } from '../../format/date';
 import type { ApiError } from '../../gateway/errors';

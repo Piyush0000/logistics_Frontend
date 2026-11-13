@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  PREFERENCES,
-  PREFERENCE_DESCRIPTIONS,
-  PREFERENCE_LABELS,
-  type AllocationPreference,
-} from '@/lib/data/courier-rules';
+import { PREFERENCES, PREFERENCE_DESCRIPTIONS, PREFERENCE_LABELS, type AllocationPreference } from '@/lib/data/courier-rules/types';
 
 export function PreferencePicker({
   value,

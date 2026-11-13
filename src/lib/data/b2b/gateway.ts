@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { notAvailable } from '../not-available';
 import type { B2bService } from './types';
 

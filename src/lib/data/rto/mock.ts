@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock } from '../source';
 import type { OrderSummary } from '../orders';
 import { RTO_PAGE_SIZE, RTO_STAGE_STATUS, type RtoService, type RtoStage } from './types';

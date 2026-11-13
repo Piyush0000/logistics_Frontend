@@ -3,15 +3,8 @@
 import { useId, useState, useTransition, type FormEvent, type ReactNode } from 'react';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  checkDocuments,
-  KYC_STATUS_LABEL,
-  type CompanyFieldErrors,
-  type CompanyView,
-  type DocumentFile,
-  type DocumentKind,
-  type KycStatus,
-} from '@/lib/data/company';
+import { checkDocuments, KYC_STATUS_LABEL, type CompanyFieldErrors } from '@/lib/kyc';
+import type { CompanyView, DocumentFile, DocumentKind, KycStatus } from '@/lib/data/company/types';
 import { saveCompanyAction } from './actions';
 import { KycDocuments } from './kyc-documents';
 

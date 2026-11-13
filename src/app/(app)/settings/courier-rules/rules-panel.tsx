@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { moveCourier, type CourierRules } from '@/lib/data/courier-rules';
+import { moveCourier } from '@/lib/data/courier-rules/input';
+import type { CourierRules } from '@/lib/data/courier-rules/types';
 import { moveCourierAction, setCourierEnabledAction, setPreferenceAction, type RulesActionResult } from './actions';
 import { PreferencePicker } from './preference-picker';
 import { PriorityList } from './priority-list';

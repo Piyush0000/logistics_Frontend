@@ -3,14 +3,8 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  ROLE_DESCRIPTIONS,
-  ROLE_LABELS,
-  ROLES,
-  isRole,
-  type InviteFieldErrors,
-  type Role,
-} from '@/lib/data/team';
+import { ROLE_DESCRIPTIONS, ROLE_LABELS, ROLES, isRole, type Role } from '@/lib/data/team/types';
+import type { InviteFieldErrors } from '@/lib/data/team/input';
 import { inviteAction } from './actions';
 
 export const CONTROL = 'h-control w-full min-w-0 rounded-control border bg-surface px-3 text-base lg:text-sm';

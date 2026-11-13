@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { indianDay } from '../../format/date';
 import { fromMock } from '../source';
 import type { CodFilters } from './filters';

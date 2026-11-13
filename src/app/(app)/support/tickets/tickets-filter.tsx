@@ -4,7 +4,7 @@ import Form from 'next/form';
 import Link from 'next/link';
 import { useState } from 'react';
 import { SelectField } from '@/components/ui/select-field';
-import { STATUS_LABELS, TICKET_STATUSES, type TicketStatus } from '@/lib/data/support';
+import { STATUS_LABELS, TICKET_STATUSES, type TicketStatus } from '@/lib/data/support/types';
 
 type StatusValue = TicketStatus | 'all';
 

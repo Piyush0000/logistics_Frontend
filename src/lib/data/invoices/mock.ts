@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock } from '../source';
 import { gstOf, INVOICES_PAGE_SIZE } from './gst';
 import type { Invoice, InvoiceService } from './types';

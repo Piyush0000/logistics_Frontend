@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayNdrService } from './gateway';
 import { mockNdrService } from './mock';

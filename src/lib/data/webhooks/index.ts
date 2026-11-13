@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayWebhookService } from './gateway';
 import { mockWebhookService } from './mock';

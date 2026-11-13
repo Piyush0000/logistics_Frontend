@@ -19,6 +19,9 @@ export default async function CreateShipmentPage() {
     pickupAddressService().list(),
   ]);
 
+  // A fresh key per render; "Book another" refreshes the page, which remounts the form with a new key.
+  const idempotencyKey = `idem-${randomUUID()}`;
+
   return (
     <>
       <div className="mx-auto max-w-5xl grid gap-6">
@@ -44,7 +47,8 @@ export default async function CreateShipmentPage() {
 
         {/* Booking Form */}
         <CreateShipmentForm
-          idempotencyKey={`idem-${randomUUID()}`}
+          key={idempotencyKey}
+          idempotencyKey={idempotencyKey}
           savedAddresses={addresses.ok ? addresses.data : []}
         />
       </div>

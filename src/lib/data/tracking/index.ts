@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayTrackingService } from './gateway';
 import { mockTrackingService } from './mock';

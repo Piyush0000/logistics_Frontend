@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayWeightService } from './gateway';
 import { mockWeightService } from './mock';

@@ -2,7 +2,7 @@
 
 import { RotateCw, Undo2, X } from 'lucide-react';
 import { useActionState, useEffect, useState } from 'react';
-import type { NdrRecord } from '@/lib/data/ndr';
+import type { NdrRecord } from '@/lib/data/ndr/types';
 import { submitNdrAction, type NdrFormState } from './actions';
 
 interface NdrActionModalProps {

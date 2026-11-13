@@ -3,13 +3,8 @@
 import { useId, useState, useTransition, type ChangeEvent, type FormEvent } from 'react';
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  checkLogo,
-  MAX_DISPLAY_NAME,
-  type BrandingFieldErrors,
-  type TrackingAccent,
-  type TrackingPageBranding,
-} from '@/lib/data/tracking-page';
+import { checkLogo, MAX_DISPLAY_NAME, type BrandingFieldErrors } from '@/lib/data/tracking-page/input';
+import type { TrackingAccent, TrackingPageBranding } from '@/lib/data/tracking-page/types';
 import { saveTrackingPageAction } from './actions';
 import { TrackingPreview } from './preview';
 

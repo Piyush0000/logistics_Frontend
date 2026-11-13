@@ -3,11 +3,8 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  MAX_NAME_LENGTH,
-  type PackagePreset,
-  type PresetFieldErrors,
-} from '@/lib/data/weight-settings';
+import { MAX_NAME_LENGTH, type PresetFieldErrors } from '@/lib/data/weight-settings/input';
+import type { PackagePreset } from '@/lib/data/weight-settings/types';
 import { chargeableWeightKg, volumetricWeightKg } from '@/lib/volumetric';
 import { savePresetAction } from './actions';
 

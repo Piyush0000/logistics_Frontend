@@ -1,19 +1,37 @@
 # Updates
 
-A running record of what has been done on the Evoc Logistics frontend. Newest entries come first.
+A running record of what has been done on the Evoc Ships frontend. Newest entries come first.
 
 ## Current status
 
 | | |
 |---|---|
-| **Current stage** | Task 37, full regression and handover, done. All 37 tasks are complete on branch `feature/full-frontend`, which is ready to merge |
-| **Built and merged to main** | Login, Dashboard, Orders (list, detail, create), NDR, Wallet Transactions, COD Remittance, Channel Integrations |
-| **Waiting on** | Nothing |
-| **Next step** | Merge `feature/full-frontend`. Then the follow-up list below |
-| **Also needed** | Final product name and logo; real left-panel copy; terms text; Docker Desktop to test against the real gateway |
+| **Current stage** | Redesign (branch `feature/redesign`), Phase 1 foundation done; Phase 2 (Home, Dashboard, Smart insights, ⌘K) next |
+| **Waiting on** | Nothing until the Phase 2 sign-off screenshots |
+| **Next step** | Phase 2, then the user's sign-off on Home and Dashboard in both looks |
+| **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+## 2026-11-14: Redesign Phase 1, foundation
 
+Spec: [docs/superpowers/specs/2026-11-14-evoc-ships-redesign-design.md](docs/superpowers/specs/2026-11-14-evoc-ships-redesign-design.md). Plan: [docs/superpowers/plans/2026-11-14-evoc-ships-redesign.md](docs/superpowers/plans/2026-11-14-evoc-ships-redesign.md).
 
+### What changed
+
+- **Brand:** Evoc Ships name everywhere (page titles, labels, copy); the logo drawn as SVG from `public/brand/evoc-ships-logo.png`; favicon `src/app/icon.svg`.
+- **Themes:** light "Bento Light" and dark "Midnight Glass" token sets; Light / Dark / System switch; applied before paint, so no flash. Fonts are now Plus Jakarta Sans and Geist Mono (Manrope, Inter and IBM Plex removed).
+- **Shell:** menu, top bar and wallet chip render once in the `(app)` layout and stay mounted; the 35 pages no longer wrap themselves or fetch the wallet for the shell. The wallet chip streams on its own and its refresh reloads only the balance. New light/glass sidebar with section headings, phone bottom tab bar, content-area loading state.
+- **Building blocks:** restyled cards, page header, fields, status panels, empty state and status chips; dialogs become bottom sheets on phones; every card becomes frosted glass in dark mode from tablet width; new stat tile options (tone, change chip, sparkline, two-tone figures), Loader, Skeleton, AnimatedNumber, table styles; new charts (gauge, sparkline, line, segment bar, fill meter) with a colour-blind-checked palette.
+- **Speed:** browser components import from `types`/`input` modules, never a feature's index, and every feature `index`/`gateway`/`mock` module is server-only, so sample data cannot reach the browser; the rate card gets its carrier list from the server (the contracts package and zod leave that page's bundle); "Book another" refreshes the server page instead of reloading the whole document, and still issues a new booking key.
+
+### Test assertions edited without running them
+
+- `e2e/foundation.spec.ts`: the old Mera Courier Wala / Sharkship shape, font and colour checks now check the Evoc Ships values (radius 10px, 44px touch / 36px desktop controls, Plus Jakarta Sans, primary `rgb(24, 62, 235)`); the brand-panel and wallet background checks were removed (both are redesigned).
+- Every "Evoc Logistics" string in `src/` (page titles, labels) became "Evoc Ships"; no assertion in `e2e/` used the old name.
+
+### Not verified
+
+- Unit and browser suites were not run (user's instruction).
+- `/settings/company` still loads the contracts package in the browser, through `src/lib/kyc.ts` (`AddressSchema`); left for a follow-up.
 
 ## 2026-11-11: Task 37, Full regression, real-gateway check and handover
 

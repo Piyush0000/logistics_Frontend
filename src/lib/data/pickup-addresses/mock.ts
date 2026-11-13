@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { AddressSchema } from '@logicore/contracts';
 import type { ApiError } from '../../gateway/errors';
 import { fromMock, type DataResult } from '../source';

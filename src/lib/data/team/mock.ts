@@ -1,7 +1,9 @@
+import 'server-only';
+
 import type { ApiError } from '../../gateway/errors';
 import { fromMock, type DataResult } from '../source';
 import { parseInvite } from './input';
-import { isRole, type TeamMember, type TeamService } from './types';
+import { LAST_ADMIN_MESSAGE, isRole, type TeamMember, type TeamService } from './types';
 
 // Invented people. ops@example.com is the demo sign-in, so the page can mark it as "you".
 const SEED: TeamMember[] = [
@@ -12,7 +14,6 @@ const SEED: TeamMember[] = [
   { id: 'tm_5', email: 'pending@example.com', name: null, role: 'viewer', status: 'invited' },
 ];
 
-export const LAST_ADMIN_MESSAGE = 'At least one admin must remain. Make someone else an admin first.';
 
 function fail<T>(kind: ApiError['kind'], status: number, message: string): DataResult<T> {
   return { ok: false, source: 'mock', error: { kind, status, message } };

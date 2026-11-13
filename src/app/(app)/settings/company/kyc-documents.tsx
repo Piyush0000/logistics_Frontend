@@ -2,7 +2,8 @@
 
 import { useId } from 'react';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import { DOCUMENT_KINDS, MAX_DOCUMENT_BYTES, type DocumentKind } from '@/lib/data/company';
+import { DOCUMENT_KINDS, MAX_DOCUMENT_BYTES } from '@/lib/kyc';
+import type { DocumentKind } from '@/lib/data/company/types';
 
 const FILE_INPUT =
   'min-h-11 w-full min-w-0 rounded-control border border-secondary bg-surface px-3 py-2 text-base focus:border-primary focus:outline-none lg:text-sm file:mr-3 file:rounded-control file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary';

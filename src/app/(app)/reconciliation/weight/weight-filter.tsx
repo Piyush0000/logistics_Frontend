@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { SelectField } from '@/components/ui/select-field';
-import { DISCREPANCY_STATUSES, type DiscrepancyStatus } from '@/lib/data/weight';
+import { DISCREPANCY_STATUSES, type DiscrepancyStatus } from '@/lib/data/weight/types';
 import { STATUS_LABELS } from './discrepancy-status';
 
 type StatusValue = DiscrepancyStatus | 'all';

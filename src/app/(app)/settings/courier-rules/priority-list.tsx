@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { carrierLabel } from '@/components/orders/carrier-badge';
-import type { CourierRules } from '@/lib/data/courier-rules';
+import type { CourierRules } from '@/lib/data/courier-rules/types';
 
 type Carrier = CourierRules['priority'][number];
 

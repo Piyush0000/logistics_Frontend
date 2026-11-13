@@ -2,10 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
-import {
-  isResponseWindowClosed,
-  type WeightDiscrepancy,
-} from '@/lib/data/weight';
+import { isResponseWindowClosed } from '@/lib/data/weight/input';
+import type { WeightDiscrepancy } from '@/lib/data/weight/types';
 import { formatDate } from '@/lib/format/date';
 import { formatPaise } from '@/lib/format/money';
 import { acceptDiscrepancyAction } from './actions';

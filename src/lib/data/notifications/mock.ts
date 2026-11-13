@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock, type DataResult } from '../source';
 import { parseNotificationInput } from './input';
 import type { NotificationService, NotificationSettings } from './types';

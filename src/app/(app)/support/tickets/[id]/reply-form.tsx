@@ -3,7 +3,7 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import { BODY_MAX, checkReply } from '@/lib/data/support';
+import { BODY_MAX, checkReply } from '@/lib/data/support/input';
 import { replyAction } from '../actions';
 
 /** Adds a reply to a ticket. Replying to a resolved ticket reopens it. */

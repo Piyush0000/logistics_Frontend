@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayNotificationService } from './gateway';
 import { mockNotificationService } from './mock';

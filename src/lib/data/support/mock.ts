@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { ApiError } from '../../gateway/errors';
 import { fromMock, type DataResult } from '../source';
 import { checkReply, checkTicket } from './input';

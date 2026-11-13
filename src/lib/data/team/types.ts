@@ -35,3 +35,6 @@ export interface TeamService {
   changeRole(id: string, role: Role): Promise<DataResult<TeamMember>>;
   remove(id: string): Promise<DataResult<null>>;
 }
+
+/** Shown when the last admin would be removed or demoted. */
+export const LAST_ADMIN_MESSAGE = 'At least one admin must remain. Make someone else an admin first.';

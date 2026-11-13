@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { ApiError } from '../../gateway/errors';
 import type { KycStatus } from '../../kyc';
 import { fromMock, type DataResult } from '../source';

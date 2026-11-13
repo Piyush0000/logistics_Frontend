@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { ordersService } from '../orders';
 import { notAvailable } from '../not-available';
 import type { PickupService } from './types';

@@ -3,12 +3,8 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
-import {
-  checkDispute,
-  MAX_NOTE_LENGTH,
-  type EvidenceFile,
-  type WeightDiscrepancy,
-} from '@/lib/data/weight';
+import { checkDispute, MAX_NOTE_LENGTH } from '@/lib/data/weight/input';
+import type { EvidenceFile, WeightDiscrepancy } from '@/lib/data/weight/types';
 import { disputeDiscrepancyAction } from './actions';
 
 const FIELD =

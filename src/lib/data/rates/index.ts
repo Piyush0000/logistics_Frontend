@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayRatesService } from './gateway';
 import { mockRatesService } from './mock';

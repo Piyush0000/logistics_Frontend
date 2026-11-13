@@ -5,15 +5,8 @@ import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { SelectField } from '@/components/ui/select-field';
-import {
-  AWB_MAX,
-  BODY_MAX,
-  CATEGORY_LABELS,
-  checkTicket,
-  SUBJECT_MAX,
-  TICKET_CATEGORIES,
-  type TicketCategory,
-} from '@/lib/data/support';
+import { AWB_MAX, BODY_MAX, checkTicket, SUBJECT_MAX } from '@/lib/data/support/input';
+import { CATEGORY_LABELS, TICKET_CATEGORIES, type TicketCategory } from '@/lib/data/support/types';
 import { createTicketAction } from './actions';
 
 const FIELD =

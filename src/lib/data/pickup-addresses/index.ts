@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayPickupAddressService } from './gateway';
 import { mockPickupAddressService } from './mock';

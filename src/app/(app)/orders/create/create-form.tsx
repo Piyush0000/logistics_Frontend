@@ -2,6 +2,7 @@
 
 import { CheckCircle2, ChevronRight, Package, Truck } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
 import type { PickupAddress } from '@/lib/data/pickup-addresses/types';
 import { createShipmentAction, type CreateShipmentFormState } from '../actions';
@@ -19,6 +20,7 @@ export function CreateShipmentForm({
   /** Saved pickup addresses, offered to fill the origin. Empty when none or not available. */
   savedAddresses?: PickupAddress[];
 }) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(createShipmentAction, INITIAL_STATE);
   const [paymentType, setPaymentType] = useState<'COD' | 'PREPAID'>('PREPAID');
   const [savedId, setSavedId] = useState('');
@@ -76,7 +78,7 @@ export function CreateShipmentForm({
           </Link>
           <button
             type="button"
-            onClick={() => window.location.reload()}
+            onClick={() => router.refresh()}
             className="inline-flex h-control min-h-[44px] items-center rounded-control border border-secondary bg-surface px-4 text-sm font-medium text-on-surface hover:border-primary"
           >
             Book Another

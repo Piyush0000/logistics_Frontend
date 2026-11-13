@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock, type DataResult } from '../source';
 import { mockOrdersService } from '../orders/mock';
 import { AWB_NOT_FOUND, type TrackingDetail, type TrackingSummary } from './types';

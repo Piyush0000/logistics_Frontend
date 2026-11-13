@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { NormalizedStatus } from '@logicore/contracts';
 import { fromMock, type DataResult } from '../source';
 import type {

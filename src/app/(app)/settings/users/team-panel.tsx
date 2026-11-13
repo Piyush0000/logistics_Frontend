@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
-import { ROLE_LABELS, ROLES, isRole, type TeamMember } from '@/lib/data/team';
+import { ROLE_LABELS, ROLES, isRole, type TeamMember } from '@/lib/data/team/types';
 import { changeRoleAction, removeMemberAction } from './actions';
 import { CONTROL, InviteDialog } from './invite-dialog';
 

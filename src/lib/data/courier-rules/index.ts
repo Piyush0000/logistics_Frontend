@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { resolveDataSource } from '../source';
 import { gatewayCourierRulesService } from './gateway';
 import { mockCourierRulesService } from './mock';

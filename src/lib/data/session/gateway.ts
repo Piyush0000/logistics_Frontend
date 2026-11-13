@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { DataResult } from '../source';
 import type { SessionService } from './types';
 

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { mockCompanyService } from '../company/mock';
 import { fromMock } from '../source';
 import type { OnboardingItem, OnboardingService } from './types';

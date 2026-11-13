@@ -10,7 +10,7 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
-import type { NdrDashboardData, NdrRecord } from '@/lib/data/ndr';
+import type { NdrDashboardData, NdrRecord } from '@/lib/data/ndr/types';
 import { formatDate } from '@/lib/format/date';
 import { NdrActionModal } from './ndr-action-modal';
 
