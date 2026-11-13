@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/ui/page-header';
 import { ARTICLES, HELP_CATEGORY_VALUES } from '@/content/help/articles';
 import { HELP_QUERY_MAX } from '@/lib/help-search';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { parseEnum, parseText } from '@/lib/url-params';
 import { HelpBrowser } from './help-browser';
 
@@ -22,10 +20,9 @@ export default async function HelpPage({ searchParams }: HelpPageProps) {
   const params = await searchParams;
   // A topic that does not exist is ignored, so every article shows.
   const category = parseEnum(params.category, HELP_CATEGORY_VALUES);
-  const wallet = await walletService().getBalance();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Help centre"
@@ -38,6 +35,6 @@ export default async function HelpPage({ searchParams }: HelpPageProps) {
           initialQuery={parseText(params.q, HELP_QUERY_MAX)}
         />
       </div>
-    </AppShell>
+    </>
   );
 }

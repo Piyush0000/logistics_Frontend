@@ -52,13 +52,16 @@ export interface NavGroup {
   /** Extra path prefixes that mark this group active, e.g. Settings owns /channel-integrations. */
   alsoActiveFor?: string[];
   dividerBefore?: boolean;
+  /** Small heading shown above this group in the open menu; starts a new section. */
+  section?: string;
 }
 
 export const NAV: NavGroup[] = [
-  { label: 'Home', icon: House, href: '/home', status: 'live' },
+  { label: 'Home', icon: House, href: '/home', status: 'live', section: 'Overview' },
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard', status: 'live' },
   {
     label: 'Shipping Management',
+    section: 'Shipping',
     icon: ShoppingCart,
     dividerBefore: true,
     children: [
@@ -80,6 +83,7 @@ export const NAV: NavGroup[] = [
   },
   {
     label: 'Billings',
+    section: 'Money',
     icon: Banknote,
     dividerBefore: true,
     children: [
@@ -103,6 +107,7 @@ export const NAV: NavGroup[] = [
   },
   {
     label: 'Tools',
+    section: 'Tools & account',
     icon: BriefcaseBusiness,
     dividerBefore: true,
     children: [

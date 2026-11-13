@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import type { DataResult } from '@/lib/data/source';
-import type { WalletBalance } from '@/lib/data/wallet';
+import { BottomTabs } from './bottom-tabs';
 import { Sidebar } from './sidebar';
 import { TopBar } from './top-bar';
 import { useDismiss } from './use-dismiss';
@@ -13,7 +12,8 @@ export function AppShell({
   children,
 }: {
   email: string;
-  wallet: DataResult<WalletBalance>;
+  /** The wallet chip, streamed in its own Suspense boundary by the layout. */
+  wallet: ReactNode;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -54,7 +54,7 @@ export function AppShell({
         <div
           data-testid="sidebar-backdrop"
           aria-hidden="true"
-          className="fixed inset-0 z-30 bg-on-surface/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-[#070b16]/50 backdrop-blur-[2px] lg:hidden"
         />
       ) : null}
       <div className="min-w-0 lg:pl-20">
@@ -64,10 +64,11 @@ export function AppShell({
           menuButtonRef={menuButton}
           onOpenMenu={() => setOpen(true)}
         />
-        <main className="mx-auto grid w-full max-w-[1760px] grid-cols-[minmax(0,1fr)] gap-4 p-4 lg:gap-5 lg:p-8">
+        <main className="mx-auto grid w-full max-w-[1760px] grid-cols-[minmax(0,1fr)] gap-4 p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:gap-5 lg:p-8">
           {children}
         </main>
       </div>
+      <BottomTabs menuOpen={open} onOpenMenu={() => setOpen(true)} />
     </div>
   );
 }

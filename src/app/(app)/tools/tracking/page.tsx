@@ -7,14 +7,12 @@ import { RetryButton } from '@/app/(app)/dashboard/retry-button';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
 import { SampleBadge } from '@/components/sample-badge';
-import { AppShell } from '@/components/shell/app-shell';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { parseAwbQuery } from '@/lib/awb';
 import type { DataResult } from '@/lib/data/source';
 import { trackingService, type TrackingDetail } from '@/lib/data/tracking';
-import { walletService } from '@/lib/data/wallet';
 import { formatDateTime } from '@/lib/format/date';
 import { parseText } from '@/lib/url-params';
 import { ShareLink } from './share-link';
@@ -72,8 +70,7 @@ export default async function TrackingPage({ searchParams }: Props) {
   const total = new Set(query.split(/[\s,]+/).filter(Boolean)).size;
 
   const tracking = trackingService();
-  const [wallet, results] = await Promise.all([
-    walletService().getBalance(),
+  const [results] = await Promise.all([
     // Each AWB is its own call and settles on its own, so one failure never hides the others.
     Promise.all(awbs.map(async (awb) => ({ awb, result: await tracking.getTimeline(awb) }))),
   ]);
@@ -81,7 +78,7 @@ export default async function TrackingPage({ searchParams }: Props) {
   const single = results.length === 1;
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Order tracking"
@@ -177,6 +174,6 @@ export default async function TrackingPage({ searchParams }: Props) {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

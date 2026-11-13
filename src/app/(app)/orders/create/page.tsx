@@ -3,12 +3,10 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { resolveDataSource } from '@/lib/data/source';
-import { walletService } from '@/lib/data/wallet';
 import { CreateShipmentForm } from './create-form';
 
 export const metadata: Metadata = { title: 'Create Shipment | Evoc Ships' };
@@ -17,13 +15,12 @@ export default async function CreateShipmentPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, addresses] = await Promise.all([
-    walletService().getBalance(),
+  const [addresses] = await Promise.all([
     pickupAddressService().list(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="mx-auto max-w-5xl grid gap-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
@@ -51,7 +48,7 @@ export default async function CreateShipmentPage() {
           savedAddresses={addresses.ok ? addresses.data : []}
         />
       </div>
-    </AppShell>
+    </>
   );
 }
 

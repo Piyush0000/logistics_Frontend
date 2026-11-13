@@ -3,11 +3,9 @@ import { ChevronLeft, ChevronRight, PackageOpen } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params';
 import { OrderFilters } from './filters';
 import { OrdersCards } from './orders-cards';
@@ -45,8 +43,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const page = parsePage(params.page);
   const limit = 50;
 
-  const [wallet, ordersResult] = await Promise.all([
-    walletService().getBalance(),
+  const [ordersResult] = await Promise.all([
     ordersService().listOrders({
       status,
       carrier,
@@ -62,7 +59,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     buildPageHref('/orders', { status, carrier, search }, newPage);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         {/* Page Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -158,7 +155,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }
 

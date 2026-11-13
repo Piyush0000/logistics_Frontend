@@ -3,10 +3,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { AppShell } from '@/components/shell/app-shell';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { webhookService } from '@/lib/data/webhooks';
 import { DetailCard } from '../dashboard/sections';
 import { DeliveryHistory } from './delivery-history';
@@ -75,14 +73,13 @@ export default async function ChannelIntegrationsPage({
   const cursor = z.string().uuid().safeParse(first(params.cursor)).data;
 
   const service = webhookService();
-  const [wallet, webhooks, deliveries] = await Promise.all([
-    walletService().getBalance(),
+  const [webhooks, deliveries] = await Promise.all([
     tab === 'webhooks' ? service.list() : null,
     tab === 'webhooks' ? service.listDeliveries(cursor) : null,
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div>
         <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
           Channel Integrations
@@ -110,6 +107,6 @@ export default async function ChannelIntegrationsPage({
       ) : (
         <ApiKeys />
       )}
-    </AppShell>
+    </>
   );
 }

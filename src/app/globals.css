@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* `dark:` follows the app's theme choice (data-theme on <html>), not only the OS setting. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 /* Evoc Ships colours. Values live in --c-* variables so light (Bento Light) and dark (Midnight Glass)
    swap by data-theme on <html>. Default Tailwind colours are removed. */
 @theme {

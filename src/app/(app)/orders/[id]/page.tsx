@@ -10,14 +10,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { DataCard } from '@/components/ui/data-card';
-import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
 import { trackingService } from '@/lib/data/tracking';
-import { walletService } from '@/lib/data/wallet';
 import { formatDate, formatDateTime } from '@/lib/format/date';
 import { statusLabel } from '@/lib/format/status';
 import { formatPaise } from '@/lib/format/money';
@@ -33,8 +31,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   if (!session) redirect('/login');
 
   const { id } = await params;
-  const [wallet, detailResult, timelineResult] = await Promise.all([
-    walletService().getBalance(),
+  const [detailResult, timelineResult] = await Promise.all([
     ordersService().getOrderDetail(id),
     trackingService().getTimeline(id),
   ]);
@@ -101,7 +98,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   );
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
@@ -307,6 +304,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,13 +1,11 @@
 import { CARRIERS } from '@logicore/contracts';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { ZONES, ZONE_LABELS, ratesService } from '@/lib/data/rates';
-import { walletService } from '@/lib/data/wallet';
 import { parseEnum } from '@/lib/url-params';
 import { RateFilter } from './rate-filter';
 import { RateTable } from './rate-table';
@@ -28,10 +26,10 @@ export default async function RateCardPage({ searchParams }: RateCardPageProps) 
   // A carrier that is not one of ours is ignored, so every carrier shows.
   const carrier = parseEnum(params.carrier, CARRIERS);
 
-  const [wallet, rates] = await Promise.all([walletService().getBalance(), ratesService().getRateCard()]);
+  const rates = await ratesService().getRateCard();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Rate card"
@@ -73,6 +71,6 @@ export default async function RateCardPage({ searchParams }: RateCardPageProps) 
           </dl>
         </section>
       </div>
-    </AppShell>
+    </>
   );
 }

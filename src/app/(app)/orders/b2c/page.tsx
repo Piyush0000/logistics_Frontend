@@ -2,14 +2,12 @@ import { CARRIERS } from '@logicore/contracts';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params';
 import { OrderFilters } from '../filters';
 import { OrdersCards } from '../orders-cards';
@@ -44,8 +42,7 @@ export default async function B2cShipmentsPage({ searchParams }: B2cPageProps) {
 
   // Every shipment the backend holds today is a single-parcel retail shipment, so the B2C list
   // is the order list.
-  const [wallet, result] = await Promise.all([
-    walletService().getBalance(),
+  const [result] = await Promise.all([
     ordersService().listOrders({ status, carrier, search: search || undefined, page, limit: LIMIT }),
   ]);
 
@@ -54,7 +51,7 @@ export default async function B2cShipmentsPage({ searchParams }: B2cPageProps) {
     buildPageHref('/orders/b2c', { status, carrier, search }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="B2C Shipments"
@@ -91,6 +88,6 @@ export default async function B2cShipmentsPage({ searchParams }: B2cPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

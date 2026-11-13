@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { subMerchantService } from '@/lib/data/sub-merchants';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parsePage, parseText } from '@/lib/url-params';
 import { SettingsNav } from '../settings-nav';
 import { SellerRow } from './seller-row';
@@ -29,14 +27,13 @@ export default async function SubMerchantsPage({ searchParams }: SubMerchantsPag
   const page = parsePage(params.page);
   const q = parseText(params.q);
 
-  const [wallet, sellers] = await Promise.all([
-    walletService().getBalance(),
+  const [sellers] = await Promise.all([
     subMerchantService().list({ page, search: q }),
   ]);
   const buildHref = (next: number) => buildPageHref(PATH, { q }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader title="Sub-merchants" description="Manage the sellers who ship under your account." />
 
@@ -66,6 +63,6 @@ export default async function SubMerchantsPage({ searchParams }: SubMerchantsPag
           </DataCard>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

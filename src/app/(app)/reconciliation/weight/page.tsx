@@ -1,7 +1,6 @@
 import { Hourglass, Scale, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -9,7 +8,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { StatTile } from '@/components/ui/stat-tile';
 import { getDemoSession } from '@/lib/auth/session';
 import { DISCREPANCY_STATUSES, weightService } from '@/lib/data/weight';
-import { walletService } from '@/lib/data/wallet';
 import { formatPaise } from '@/lib/format/money';
 import { buildPageHref, parseEnum, parsePage, parseText } from '@/lib/url-params';
 import { DiscrepancyList } from './discrepancy-table';
@@ -34,15 +32,14 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
   const q = parseText(params.q);
   const service = weightService();
 
-  const [wallet, summary, discrepancies] = await Promise.all([
-    walletService().getBalance(),
+  const [summary, discrepancies] = await Promise.all([
     service.getSummary(),
     service.listDiscrepancies({ status, q, page }),
   ]);
   const buildHref = (next: number) => buildPageHref(PATH, { status, q }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Weight discrepancies"
@@ -74,6 +71,6 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

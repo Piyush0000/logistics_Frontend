@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -8,7 +7,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { pickupsService } from '@/lib/data/pickups';
-import { walletService } from '@/lib/data/wallet';
 import { indianDay } from '@/lib/format/date';
 import { buildPageHref, parsePage } from '@/lib/url-params';
 import { PickupCards, PickupTable } from './pickup-list';
@@ -28,8 +26,7 @@ export default async function PickupsPage({ searchParams }: PickupsPageProps) {
   const page = parsePage(params.page);
   const service = pickupsService();
 
-  const [wallet, ready, pickups, addresses] = await Promise.all([
-    walletService().getBalance(),
+  const [ready, pickups, addresses] = await Promise.all([
     service.readyToShip(),
     service.listPickups({ page }),
     pickupAddressService().list(),
@@ -40,7 +37,7 @@ export default async function PickupsPage({ searchParams }: PickupsPageProps) {
   const buildHref = (next: number) => buildPageHref('/orders/pickups', {}, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Pickups & Manifests"
@@ -72,6 +69,6 @@ export default async function PickupsPage({ searchParams }: PickupsPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

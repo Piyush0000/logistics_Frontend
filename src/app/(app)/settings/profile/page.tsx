@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { profileService } from '@/lib/data/profile';
-import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { PasswordForm, ProfileForm } from './profile-form';
 
@@ -15,13 +13,12 @@ export default async function ProfilePage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, profile] = await Promise.all([
-    walletService().getBalance(),
+  const [profile] = await Promise.all([
     profileService().getProfile(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader title="Profile" description="Your name, phone number and password." />
 
@@ -38,6 +35,6 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

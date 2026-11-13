@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/ui/page-header';
 import { ARTICLES, categoryLabel } from '@/content/help/articles';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -26,10 +24,9 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
   const article = findArticle((await params).slug);
   if (!article) notFound();
 
-  const wallet = await walletService().getBalance();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid max-w-3xl gap-6">
         <Link href="/support/help" className="inline-flex h-11 items-center text-sm font-medium text-primary">
           Back to Help centre
@@ -59,6 +56,6 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
           </Link>
         </aside>
       </div>
-    </AppShell>
+    </>
   );
 }

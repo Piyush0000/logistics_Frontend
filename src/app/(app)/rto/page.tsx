@@ -2,7 +2,6 @@ import { IndianRupee, PackageCheck, Undo2 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -10,7 +9,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { StatTile } from '@/components/ui/stat-tile';
 import { getDemoSession } from '@/lib/auth/session';
 import { RTO_PAGE_SIZE, RTO_STAGES, rtoService, type RtoStage } from '@/lib/data/rto';
-import { walletService } from '@/lib/data/wallet';
 import { formatPaise } from '@/lib/format/money';
 import { buildPageHref, parseEnum, parsePage } from '@/lib/url-params';
 import { RtoCards } from './rto-cards';
@@ -36,8 +34,7 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
   const page = parsePage(params.page);
 
   const service = rtoService();
-  const [wallet, summary, list] = await Promise.all([
-    walletService().getBalance(),
+  const [summary, list] = await Promise.all([
     service.getSummary(),
     service.listRto({ stage, page }),
   ]);
@@ -48,7 +45,7 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
   const buildHref = (next: number) => buildPageHref('/rto', { stage: stageParam }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader title="RTO" description="Shipments returning to you, and the ones that are back." />
 
@@ -120,6 +117,6 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

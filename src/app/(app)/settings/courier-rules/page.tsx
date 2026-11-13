@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { courierRulesService } from '@/lib/data/courier-rules';
-import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { RulesPanel } from './rules-panel';
 
@@ -15,10 +13,10 @@ export default async function CourierRulesPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, rules] = await Promise.all([walletService().getBalance(), courierRulesService().get()]);
+  const rules = await courierRulesService().get();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Courier Rules"
@@ -33,6 +31,6 @@ export default async function CourierRulesPage() {
           </DataCard>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

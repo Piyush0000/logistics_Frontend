@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { getDemoSession } from '@/lib/auth/session';
 import { walletService } from '@/lib/data/wallet';
 import { parseWalletFilters, walletHref } from '@/lib/data/wallet/filters';
@@ -28,7 +27,7 @@ export default async function WalletPage({
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
           Wallet Transactions
@@ -52,6 +51,6 @@ export default async function WalletPage({
           {(page) => <TransactionList result={page} filters={filters} />}
         </DetailCard>
       ) : null}
-    </AppShell>
+    </>
   );
 }

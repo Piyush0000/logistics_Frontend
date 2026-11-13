@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { getDemoSession } from '@/lib/auth/session';
 import { parseRange } from '@/lib/data/analytics/totals';
-import { walletService } from '@/lib/data/wallet';
 import { formatDateRange } from '@/lib/format/date';
 import { AlertTicker, OverviewTabs, PageHeading, parseTab } from './sections';
 import { DeliveredTab } from './tabs/delivered-tab';
@@ -27,10 +25,9 @@ export default async function DashboardPage({
   const params = await searchParams;
   const tab = parseTab(params.tab);
   const range = parseRange(params.range);
-  const wallet = await walletService().getBalance();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <AlertTicker />
       <PageHeading dateRange={formatDateRange(new Date())} />
       <OverviewTabs active={tab} />
@@ -49,6 +46,6 @@ export default async function DashboardPage({
       ) : (
         <OverviewTab />
       )}
-    </AppShell>
+    </>
   );
 }

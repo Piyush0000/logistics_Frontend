@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, ROLES, teamService } from '@/lib/data/team';
-import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { TeamPanel } from './team-panel';
 
@@ -15,13 +13,12 @@ export default async function UsersPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, members] = await Promise.all([
-    walletService().getBalance(),
+  const [members] = await Promise.all([
     teamService().listMembers(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader title="Users & Roles" description="Invite teammates and choose what each can do." />
 
@@ -52,6 +49,6 @@ export default async function UsersPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { companyService } from '@/lib/data/company';
-import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { CompanyForm } from './company-form';
 
@@ -15,13 +13,12 @@ export default async function CompanyPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, company] = await Promise.all([
-    walletService().getBalance(),
+  const [company] = await Promise.all([
     companyService().getCompany(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Company & KYC"
@@ -36,6 +33,6 @@ export default async function CompanyPage() {
           </DataCard>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

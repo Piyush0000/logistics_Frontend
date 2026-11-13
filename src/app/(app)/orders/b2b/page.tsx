@@ -1,7 +1,6 @@
 import { Search } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -9,7 +8,6 @@ import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { b2bService } from '@/lib/data/b2b';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parsePage, parseText } from '@/lib/url-params';
 import { B2bCards } from './b2b-cards';
 import { B2bTable } from './b2b-table';
@@ -29,8 +27,7 @@ export default async function B2bShipmentsPage({ searchParams }: B2bPageProps) {
   const search = parseText(params.search, 100);
   const page = parsePage(params.page);
 
-  const [wallet, result, pickups] = await Promise.all([
-    walletService().getBalance(),
+  const [result, pickups] = await Promise.all([
     b2bService().listShipments({ page, search }),
     pickupAddressService().list(),
   ]);
@@ -38,7 +35,7 @@ export default async function B2bShipmentsPage({ searchParams }: B2bPageProps) {
   const buildHref = (next: number) => buildPageHref('/orders/b2b', { search }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="B2B Shipments"
@@ -88,6 +85,6 @@ export default async function B2bShipmentsPage({ searchParams }: B2bPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { notificationService } from '@/lib/data/notifications';
-import { walletService } from '@/lib/data/wallet';
 import { SettingsNav } from '../settings-nav';
 import { NotificationEditor } from './notification-editor';
 
@@ -15,10 +13,10 @@ export default async function NotificationsPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, settings] = await Promise.all([walletService().getBalance(), notificationService().get()]);
+  const settings = await notificationService().get();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Buyer notifications"
@@ -35,6 +33,6 @@ export default async function NotificationsPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

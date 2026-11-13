@@ -2,10 +2,8 @@ import { ChevronRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { SETTINGS_SECTIONS, unavailable, type SettingsSection } from './settings-nav';
 
 export const metadata: Metadata = { title: 'Settings | Evoc Ships' };
@@ -52,10 +50,9 @@ export default async function SettingsPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const wallet = await walletService().getBalance();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Settings"
@@ -69,6 +66,6 @@ export default async function SettingsPage() {
           ))}
         </ul>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { CalculatorForm } from './calculator-form';
 
 export const metadata: Metadata = { title: 'Rate calculator | Evoc Ships' };
@@ -12,10 +10,9 @@ export default async function RateCalculatorPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const wallet = await walletService().getBalance();
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Rate calculator"
@@ -23,6 +20,6 @@ export default async function RateCalculatorPage() {
         />
         <CalculatorForm />
       </div>
-    </AppShell>
+    </>
   );
 }

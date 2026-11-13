@@ -2,12 +2,10 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { CATEGORY_LABELS, supportService } from '@/lib/data/support';
-import { walletService } from '@/lib/data/wallet';
 import { formatDateTime } from '@/lib/format/date';
 import { TicketStatusBadge } from '../ticket-status';
 import { ReplyForm } from './reply-form';
@@ -23,13 +21,13 @@ export default async function TicketPage({ params }: TicketPageProps) {
   if (!session) redirect('/login');
 
   const { id } = await params;
-  const [wallet, result] = await Promise.all([walletService().getBalance(), supportService().getTicket(id)]);
+  const result = await supportService().getTicket(id);
   if (!result.ok && result.error.kind === 'not_found') notFound();
 
   const ticket = result.ok ? result.data : null;
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         <Link
           href="/support/tickets"
@@ -93,6 +91,6 @@ export default async function TicketPage({ params }: TicketPageProps) {
           )}
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

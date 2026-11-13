@@ -1,7 +1,6 @@
 import { CircleCheck, PackageX, Truck, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
@@ -32,7 +31,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <PageHeader title="Home" />
       <div>
         <p className="font-heading text-2xl leading-8 break-words">
@@ -82,6 +81,6 @@ export default async function HomePage() {
           {(data) => <RecentShipments orders={data.items} />}
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

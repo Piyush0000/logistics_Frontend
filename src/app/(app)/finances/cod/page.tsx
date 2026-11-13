@@ -1,12 +1,10 @@
 import { CircleCheck, Clock, Download, TrendingUp, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
 import { getDemoSession } from '@/lib/auth/session';
 import { codService } from '@/lib/data/cod';
 import { codHref, COD_EXPORT_PATH, parseCodFilters } from '@/lib/data/cod/filters';
-import { walletService } from '@/lib/data/wallet';
 import { formatPaise } from '@/lib/format/money';
 import { DetailCard, KpiCard } from '../../dashboard/sections';
 import { RemittanceFilters } from './remittance-filters';
@@ -29,8 +27,7 @@ export default async function CodRemittancePage({
 
   const { filters, error } = parseCodFilters(await searchParams);
   const service = codService();
-  const [wallet, summary, remittances] = await Promise.all([
-    walletService().getBalance(),
+  const [summary, remittances] = await Promise.all([
     service.getSummary(),
     error ? null : service.listRemittances(filters),
   ]);
@@ -38,7 +35,7 @@ export default async function CodRemittancePage({
   const canExport = remittances?.ok && remittances.data.total > 0;
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
@@ -117,6 +114,6 @@ export default async function CodRemittancePage({
           {(page) => <RemittanceTable result={page} filters={filters} />}
         </DetailCard>
       ) : null}
-    </AppShell>
+    </>
   );
 }

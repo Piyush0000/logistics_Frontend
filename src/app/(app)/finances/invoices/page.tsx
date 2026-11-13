@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { INVOICE_YEARS, invoiceService } from '@/lib/data/invoices';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parseEnum, parsePage } from '@/lib/url-params';
 import { InvoiceCards, InvoiceTable } from './invoice-table';
 import { YearFilter } from './year-filter';
@@ -31,14 +29,13 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
   const yearText = parseEnum(params.year, YEAR_VALUES);
   const year = yearText ? Number(yearText) : undefined;
 
-  const [wallet, invoices] = await Promise.all([
-    walletService().getBalance(),
+  const [invoices] = await Promise.all([
     invoiceService().listInvoices({ page, year }),
   ]);
   const buildHref = (next: number) => buildPageHref(PATH, { year: yearText }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader title="Invoices" description="Monthly shipping invoices with GST." />
 
@@ -58,6 +55,6 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

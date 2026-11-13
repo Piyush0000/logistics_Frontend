@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { Pagination } from '@/components/ui/pagination';
 import { getDemoSession } from '@/lib/auth/session';
 import { TICKET_STATUSES, supportService } from '@/lib/data/support';
-import { walletService } from '@/lib/data/wallet';
 import { buildPageHref, parseEnum, parsePage } from '@/lib/url-params';
 import { NewTicketButton } from './new-ticket-button';
 import { TicketList } from './ticket-list';
@@ -30,14 +28,13 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
   // A status that is not one of the three is ignored, so every status shows.
   const status = parseEnum(params.status, TICKET_STATUSES);
 
-  const [wallet, tickets] = await Promise.all([
-    walletService().getBalance(),
+  const [tickets] = await Promise.all([
     supportService().listTickets({ status, page }),
   ]);
   const buildHref = (next: number) => buildPageHref(PATH, { status }, next);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Support tickets"
@@ -65,6 +62,6 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
           }
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }

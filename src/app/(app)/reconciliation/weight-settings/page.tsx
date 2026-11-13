@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { weightSettingsService } from '@/lib/data/weight-settings';
 import { PackagePresets } from './package-presets';
 
@@ -14,13 +12,12 @@ export default async function WeightSettingsPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, presets] = await Promise.all([
-    walletService().getBalance(),
+  const [presets] = await Promise.all([
     weightSettingsService().listPresets(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
+    <>
       <div className="grid gap-6">
         <PageHeader
           title="Weight settings"
@@ -31,6 +28,6 @@ export default async function WeightSettingsPage() {
           {(data) => <PackagePresets presets={data} />}
         </DataCard>
       </div>
-    </AppShell>
+    </>
   );
 }
