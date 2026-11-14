@@ -40,7 +40,7 @@ The user approved the Dashboard once it matched Home and asked for every screen 
   - the brand panel is in Midnight Glass in both themes, with the new headline "Multiple logistics partners. One unified dashboard.";
   - a theme switch sits in the corner;
   - the public tracking page has an Evoc Ships header on the themed surface.
-- **Loading screens** shaped like each page are added for `/orders`, `/orders/[id]`, `/orders/create`, `/ndr`, the manifest print page, `/finances/invoices/[id]`, support tickets, ticket detail, help, article and `/track/[awb]`. The other loading screens are reshaped.
+- **Loading screens** shaped like each page are added for `/orders/create`, `/ndr`, the manifest print page and `/finances/invoices/[id]`. The other loading screens are reshaped. Routes that can answer 404 (and their parent folders) deliberately have no loading screen, because a loading screen starts the response with status 200 before the page can say "not found".
 - **New:** [docs/backend-connection-gaps.md](docs/backend-connection-gaps.md), the corrected list for the backend team.
 
 ### Verified
@@ -56,6 +56,16 @@ The user approved the Dashboard once it matched Home and asked for every screen 
   - `normaliseOrdersPage` in `src/lib/gateway/schemas/orders.test.ts`;
   - `src/lib/format/awb.test.ts`;
   - the `CREATE_REQUESTED` summary case.
+
+### Final review (fresh reviewer, most capable model) and fixes
+- **Fixed (critical):** new loading screens made unknown shipments, tickets, help articles and tracking links answer 200 instead of 404. Removed `(app)/loading.tsx`, `orders/loading.tsx`, `orders/[id]`, `support/help`, `help/[slug]`, `support/tickets`, `tickets/[id]` and `track/[awb]` loading files. Checked against the production build with curl: these now answer 404, and `/orders`, `/home` and `/support/help` answer 200.
+- **Fixed (critical):** the `(app)` layout redirected signed-out visitors before a page could answer 404 (`/e2e-error-test` on the test port). Without a session it now renders the page without the shell, and each page still redirects to `/login` itself. Checked: `/e2e-error-test` signed out answers 404, `/orders` signed out answers 307 to `/login`.
+- **Fixed:** printed invoices and manifests no longer include the menu, top bar or tab bar (`print:hidden`, no shell padding in print). Those pages now use a `div` instead of a second `main`.
+- **Fixed:** the wallet chip refreshes when the server sends a new balance (it is keyed by the value, since the shell stays mounted).
+- **Deferred minors:**
+  - dark-mode primary blue with white small text is about 4.3:1;
+  - a theme change in another tab updates that tab's switch but not its colours;
+  - the help search box keeps old text after Back/Forward between searches.
 
 ### Not verified (team to test)
 - **Test suites:** no unit or browser suite was run during the redesign, per the user.

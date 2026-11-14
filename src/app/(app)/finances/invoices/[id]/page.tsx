@@ -83,7 +83,7 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
   if (!result.ok) {
     const missing = result.error.kind === 'not_found';
     return (
-      <main className="mx-auto grid w-full max-w-3xl gap-4">
+      <div className="mx-auto grid w-full max-w-3xl gap-4">
         <div className="motion-rise flex flex-wrap items-center justify-between gap-3 rounded-card border border-error/30 bg-error/10 p-card">
           <p className="text-sm">
             {missing
@@ -95,14 +95,14 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
           {missing ? null : <RetryButton />}
         </div>
         <div>{back}</div>
-      </main>
+      </div>
     );
   }
 
   const invoice = result.data;
 
   return (
-    <main className="mx-auto grid w-full max-w-[210mm] gap-6 print:max-w-none print:gap-4">
+    <div className="mx-auto grid w-full max-w-[210mm] gap-6 print:max-w-none print:gap-4">
       <style>{'@media print { @page { size: A4; margin: 15mm; } }'}</style>
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         {back}
@@ -157,6 +157,6 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
           </tbody>
         </table>
       </article>
-    </main>
+    </div>
   );
 }

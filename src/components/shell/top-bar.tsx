@@ -116,7 +116,7 @@ export function TopBar({
   onOpenMenu: () => void;
 }) {
   return (
-    <header className="relative z-20 border-b border-secondary bg-surface/85 backdrop-blur-md lg:sticky lg:top-0">
+    <header className="relative z-20 border-b print:hidden border-secondary bg-surface/85 backdrop-blur-md lg:sticky lg:top-0">
       <div className="flex flex-wrap items-center gap-2 px-4 py-2 lg:flex-nowrap lg:gap-3 lg:px-8 lg:py-3">
         <button
           ref={menuButtonRef}

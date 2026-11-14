@@ -204,7 +204,7 @@ export function Sidebar({
       ref={panelRef}
       data-testid="sidebar"
       // Visibility only animates on close, so focus can move into the menu as soon as it opens.
-      className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,320px)] flex-col border-r glass text-on-surface duration-200 lg:visible lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex print:hidden w-[min(84vw,320px)] flex-col border-r glass text-on-surface duration-200 lg:visible lg:translate-x-0 ${
         open
           ? 'transition-[transform,width] lg:w-80'
           : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full lg:w-20'

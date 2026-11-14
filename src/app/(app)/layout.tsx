@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { Suspense, type ReactNode } from 'react';
 import { AppShell } from '@/components/shell/app-shell';
 import { ShellIdentityProvider } from '@/components/shell/shell-identity';
@@ -11,7 +10,9 @@ import { getDemoSession } from '@/lib/auth/session';
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const session = await getDemoSession();
-  if (!session) redirect('/login');
+  // No session: no shell. Each page redirects to /login itself, so a page that does not exist can
+  // still answer 404 first (a redirect here would run before the page decides).
+  if (!session) return <div className="theme-app font-body">{children}</div>;
 
   return (
     <ShellIdentityProvider email={session.email}>

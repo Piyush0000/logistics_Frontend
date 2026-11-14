@@ -54,7 +54,7 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
 
   if (!result.ok) {
     return (
-      <main className="mx-auto grid w-full max-w-3xl gap-4 p-4 lg:p-8">
+      <div className="mx-auto grid w-full max-w-3xl gap-4 p-4 lg:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-error/10 p-3">
           <p className="text-sm">
             {result.error.kind === 'unauthorized'
@@ -64,14 +64,14 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
           <RetryButton />
         </div>
         <div>{back}</div>
-      </main>
+      </div>
     );
   }
 
   const pickup = result.data;
 
   return (
-    <main className="mx-auto grid w-full max-w-3xl gap-6 p-4 lg:p-8 print:max-w-none print:p-0">
+    <div className="mx-auto grid w-full max-w-3xl gap-6 p-4 lg:p-8 print:max-w-none print:p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         {back}
         <PrintButton />
@@ -135,6 +135,6 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
           <p className="border-t border-on-surface pt-2 text-xs">Courier executive name and signature</p>
         </div>
       </article>
-    </main>
+    </div>
   );
 }

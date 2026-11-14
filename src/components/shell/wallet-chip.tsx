@@ -4,7 +4,8 @@ import { WalletChipView } from './wallet-chip-view';
 /** Streams in on its own (inside Suspense in the layout), so a slow wallet never holds the page. */
 export async function WalletChip() {
   const balance = await loadWallet();
-  return <WalletChipView initial={balance} />;
+  // Keyed by the value, so a fresh balance after router.refresh() replaces the chip's state (the shell stays mounted).
+  return <WalletChipView key={JSON.stringify(balance)} initial={balance} />;
 }
 
 export function WalletChipSkeleton() {

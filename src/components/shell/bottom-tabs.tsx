@@ -51,7 +51,7 @@ export function BottomTabs({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpen
       aria-hidden={menuOpen || undefined}
       inert={menuOpen}
       data-testid="bottom-tabs"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-secondary bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t print:hidden border-secondary bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
     >
       <div className="mx-auto flex h-16 max-w-xl items-center px-2">
         {tab(home!)}

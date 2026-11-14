@@ -57,14 +57,14 @@ export function AppShell({
           className="fixed inset-0 z-30 bg-[#070b16]/50 backdrop-blur-[2px] lg:hidden"
         />
       ) : null}
-      <div className="min-w-0 lg:pl-20">
+      <div className="min-w-0 lg:pl-20 print:pl-0">
         <TopBar
           email={email}
           wallet={wallet}
           menuButtonRef={menuButton}
           onOpenMenu={() => setOpen(true)}
         />
-        <main className="mx-auto grid w-full max-w-[1760px] grid-cols-[minmax(0,1fr)] gap-4 p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:gap-5 lg:p-8">
+        <main className="mx-auto grid w-full max-w-[1760px] grid-cols-[minmax(0,1fr)] gap-4 p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:gap-5 lg:p-8 print:max-w-none print:p-0">
           {children}
         </main>
       </div>
