@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { gatewaySessionService } from './gateway';
 import { sessionService } from './index';
 import { DEMO_OTP_CODE, mockSessionService } from './mock';
 
@@ -48,5 +49,18 @@ describe('sessionService', () => {
       source: 'gateway',
       error: { kind: 'unavailable', message: 'Sign-in is not available yet.' },
     });
+  });
+
+  it('refuses the demo sign-in in production by default', () => {
+    expect(sessionService({ NODE_ENV: 'production' })).toBe(gatewaySessionService);
+  });
+
+  it('allows the demo sign-in in production only when ALLOW_DEMO_LOGIN is true', () => {
+    expect(sessionService({ NODE_ENV: 'production', ALLOW_DEMO_LOGIN: 'true' })).toBe(
+      mockSessionService,
+    );
+    expect(sessionService({ NODE_ENV: 'production', ALLOW_DEMO_LOGIN: '1' })).toBe(
+      gatewaySessionService,
+    );
   });
 });

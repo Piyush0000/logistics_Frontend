@@ -1,0 +1,67 @@
+name: Deploy
+
+# CD for the merchant dashboard. After CI passes on main (or on a manual run):
+#   1. build the image and push it to GHCR, tagged with the commit SHA and "latest"
+#   2. SSH to the VPS and run the backend repo's infra/prod/deploy.sh, which restarts only the
+#      frontend container and rolls back automatically if it is unhealthy.
+#
+# Repo secrets: SERVER_HOST, SERVER_USERNAME (the "logistics" user, not root), SERVER_SSH_KEY.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  image:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.SHA }}' }
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: owner
+        run: echo "lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ steps.owner.outputs.lc }}/logistics-frontend:${{ env.SHA }}
+            ghcr.io/${{ steps.owner.outputs.lc }}/logistics-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: deploy to ship.evoclabs.com
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        env:
+          SHA: ${{ env.SHA }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: SHA
+          command_timeout: 10m
+          script: bash /home/logistics/app/infra/prod/deploy.sh frontend "$SHA"
