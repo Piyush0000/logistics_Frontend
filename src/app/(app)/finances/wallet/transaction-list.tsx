@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { WalletTransaction, WalletTransactionPage } from '@/lib/data/wallet';
 import {
   hasActiveFilters,
@@ -15,15 +16,15 @@ const DIRECTIONS = {
     label: 'Debit',
     sign: '-',
     icon: ArrowUp,
-    badge: 'border-error text-error bg-error/10',
-    amount: 'border-error/40 bg-error/10',
+    badge: 'bg-error/15 text-error',
+    amount: 'text-on-surface',
   },
   credit: {
     label: 'Credit',
     sign: '+',
     icon: ArrowDown,
-    badge: 'border-success text-on-surface bg-success/10',
-    amount: 'border-success/40 bg-success/10',
+    badge: 'bg-success/15 text-success',
+    amount: 'text-success',
   },
 };
 
@@ -33,9 +34,9 @@ function TransactionRow({ entry }: { entry: WalletTransaction }) {
   return (
     <li
       data-testid="transaction-row"
-      className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 border-b border-secondary py-4 first:pt-0 last:border-b-0 last:pb-0 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-4"
+      className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-control px-1 py-4 transition-colors duration-150 first:pt-1 last:pb-1 hover:bg-muted/60 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-4 sm:px-2"
     >
-      <span className={`grid size-10 place-items-center rounded-full border sm:size-11 ${badge}`}>
+      <span className={`grid size-11 shrink-0 place-items-center rounded-control ${badge}`}>
         <Icon aria-hidden="true" className="size-5" />
         <span className="sr-only">{label}</span>
       </span>
@@ -43,7 +44,9 @@ function TransactionRow({ entry }: { entry: WalletTransaction }) {
       <div className="min-w-0 [overflow-wrap:anywhere]">
         <p className="text-sm leading-5 font-medium sm:text-base sm:leading-6">{entry.title}</p>
         {entry.orderRef ? (
-          <p className="text-sm leading-5 text-on-surface/70">Order: {entry.orderRef}</p>
+          <p className="text-sm leading-5 text-on-surface/70">
+            Order: <span className="font-mono text-xs">{entry.orderRef}</span>
+          </p>
         ) : null}
         {entry.breakdown ? (
           <p className="mt-0.5 text-xs leading-4 text-on-surface/70">
@@ -54,7 +57,9 @@ function TransactionRow({ entry }: { entry: WalletTransaction }) {
       </div>
 
       <div className="col-start-2 flex flex-wrap items-center justify-between gap-2 sm:col-start-3 sm:flex-col sm:items-end sm:justify-start">
-        <span className={`rounded-full border px-2.5 py-0.5 text-sm font-medium ${amount}`}>
+        <span
+          className={`font-mono text-base leading-6 font-medium tracking-tight whitespace-nowrap tabular-nums sm:text-right ${amount}`}
+        >
           {sign}
           {formatPaise(entry.amountPaise)}
         </span>
@@ -67,15 +72,15 @@ function TransactionRow({ entry }: { entry: WalletTransaction }) {
 }
 
 const PAGE_BUTTON =
-  'inline-flex h-control items-center rounded-control border border-secondary px-4 text-sm font-medium';
+  'inline-flex h-control items-center rounded-control border border-secondary bg-surface px-4 text-sm font-medium transition-colors duration-150';
 
 function PageLink({ label, href }: { label: string; href: string | null }) {
   return href ? (
-    <Link href={href} className={PAGE_BUTTON}>
+    <Link href={href} className={`${PAGE_BUTTON} hover:border-primary/40 hover:bg-muted`}>
       {label}
     </Link>
   ) : (
-    <span aria-disabled="true" className={`${PAGE_BUTTON} text-on-surface/70`}>
+    <span aria-disabled="true" className={`${PAGE_BUTTON} text-on-surface/60`}>
       {label}
     </span>
   );
@@ -92,20 +97,18 @@ export function TransactionList({
 
   if (entries.length === 0) {
     return hasActiveFilters(filters) ? (
-      <p className="text-sm">
-        No transactions match these filters.{' '}
-        <Link href={WALLET_PATH} className="font-medium text-primary underline">
-          Show all transactions
-        </Link>
-      </p>
+      <EmptyState
+        message="No transactions match these filters."
+        action={{ label: 'Show all transactions', href: WALLET_PATH }}
+      />
     ) : (
-      <p className="text-sm">No transactions yet.</p>
+      <EmptyState message="No transactions yet." />
     );
   }
 
   return (
     <>
-      <ul>
+      <ul className="grid divide-y divide-secondary/60">
         {entries.map((entry) => (
           <TransactionRow key={entry.id} entry={entry} />
         ))}

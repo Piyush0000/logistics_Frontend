@@ -1,6 +1,7 @@
 import { Hourglass, Scale, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { SegmentBar } from '@/components/charts/segment-bar';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -48,10 +49,36 @@ export default async function WeightPage({ searchParams }: WeightPageProps) {
 
         <DataCard testId="weight-summary" title="Summary" result={summary}>
           {(data) => (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <StatTile label="Open" value={data.open.toLocaleString('en-IN')} icon={Scale} />
-              <StatTile label="Disputed" value={data.disputed.toLocaleString('en-IN')} icon={Hourglass} />
-              <StatTile label="Extra charges pending" value={formatPaise(data.extraChargePaise)} icon={Wallet} />
+            <div className="grid gap-5">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <StatTile
+                  label="Open"
+                  value={data.open.toLocaleString('en-IN')}
+                  icon={Scale}
+                  tone={data.open > 0 ? 'warning' : 'success'}
+                />
+                <StatTile
+                  label="Disputed"
+                  value={data.disputed.toLocaleString('en-IN')}
+                  icon={Hourglass}
+                  tone="accent"
+                />
+                <StatTile
+                  label="Extra charges pending"
+                  value={formatPaise(data.extraChargePaise)}
+                  icon={Wallet}
+                  tone={data.extraChargePaise > 0 ? 'warning' : 'primary'}
+                />
+              </div>
+              {data.open + data.disputed > 0 ? (
+                <SegmentBar
+                  title="Charges waiting on an answer"
+                  segments={[
+                    { label: 'Awaiting you', value: data.open, tone: 'warning' },
+                    { label: 'With the courier', value: data.disputed, tone: 'primary' },
+                  ]}
+                />
+              ) : null}
             </div>
           )}
         </DataCard>

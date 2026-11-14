@@ -4,6 +4,7 @@ import Form from 'next/form';
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { DateField } from '@/components/ui/date-field';
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { SelectField } from '@/components/ui/select-field';
 import { COD_PATH, COD_STATUSES, type CodFilters } from '@/lib/data/cod/filters';
 import { DATE_ORDER_ERROR } from '@/lib/data/wallet/filters';
@@ -37,7 +38,7 @@ export function RemittanceFilters({
   return (
     <section
       aria-label="Filter remittances"
-      className="rounded-card border border-secondary bg-surface p-card"
+      className="motion-rise rounded-card border border-secondary bg-surface p-card"
     >
       <Form
         action={COD_PATH}
@@ -59,13 +60,13 @@ export function RemittanceFilters({
         <div className="flex gap-3 self-end md:justify-end">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary md:flex-none"
+            className={`${PRIMARY_BUTTON} flex-1 md:flex-none`}
           >
             Apply
           </button>
           <Link
             href={COD_PATH}
-            className="inline-flex h-control flex-1 items-center justify-center rounded-control border border-secondary px-4 text-sm font-medium md:flex-none"
+            className={`${SECONDARY_BUTTON} flex-1 hover:border-primary/40 hover:bg-muted md:flex-none`}
           >
             Clear
           </Link>
@@ -76,7 +77,7 @@ export function RemittanceFilters({
         <p
           role="alert"
           data-testid="filter-error"
-          className="mt-4 rounded-control bg-error/10 p-3 text-sm"
+          className="mt-4 rounded-control border border-error/30 bg-error/10 p-3 text-sm"
         >
           {error}
         </p>

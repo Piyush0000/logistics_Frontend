@@ -3,6 +3,7 @@
 import Form from 'next/form';
 import Link from 'next/link';
 import { useState } from 'react';
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { SelectField } from '@/components/ui/select-field';
 
 /** A year picker that submits to the same page, so the year lives in the URL. */
@@ -24,7 +25,7 @@ export function YearFilter({
   return (
     <section
       aria-label="Filter invoices"
-      className="rounded-card border border-secondary bg-surface p-card"
+      className="motion-rise rounded-card border border-secondary bg-surface p-card"
     >
       <Form
         action={path}
@@ -34,13 +35,13 @@ export function YearFilter({
         <div className="flex gap-3">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary sm:flex-none"
+            className={`${PRIMARY_BUTTON} flex-1 sm:flex-none`}
           >
             Apply
           </button>
           <Link
             href={path}
-            className="inline-flex h-control flex-1 items-center justify-center rounded-control border border-secondary px-4 text-sm font-medium sm:flex-none"
+            className={`${SECONDARY_BUTTON} flex-1 hover:border-primary/40 hover:bg-muted sm:flex-none`}
           >
             Clear
           </Link>

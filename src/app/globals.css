@@ -85,6 +85,24 @@
     radial-gradient(50rem 26rem at 0% 110%, rgb(17 44 171 / 0.3), transparent);
 }
 
+/* Paper is white: printing from dark mode uses the light colours. */
+@media print {
+  [data-theme='dark'] {
+    color-scheme: light;
+    --c-primary: #183eeb;
+    --c-secondary: #e3e7ef;
+    --c-tertiary: #eef0f5;
+    --c-surface: #ffffff;
+    --c-on-surface: #17243a;
+    --c-muted: #eef1fd;
+    --c-accent: #112cab;
+    --c-success: #16a34a;
+    --c-warning: #d97706;
+    --c-error: #dc2626;
+    --page-glow: none;
+  }
+}
+
 /* One token set for every screen (the old login/app split is gone). Phone sizes are raised for touch. */
 .theme-auth,
 .theme-app {

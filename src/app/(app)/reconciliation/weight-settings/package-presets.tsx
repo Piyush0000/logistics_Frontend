@@ -1,9 +1,10 @@
 'use client';
 
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type CSSProperties } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { tableStyles } from '@/components/ui/table-styles';
 import { MAX_PRESETS } from '@/lib/data/weight-settings/input';
 import type { PackagePreset } from '@/lib/data/weight-settings/types';
 import { chargeableWeightKg } from '@/lib/volumetric';
@@ -14,15 +15,15 @@ const number = (value: number) => value.toLocaleString('en-IN', { maximumFractio
 const size = (p: PackagePreset) => `${number(p.lengthCm)} × ${number(p.widthCm)} × ${number(p.heightCm)} cm`;
 
 const TABLE_BUTTON =
-  'inline-flex h-8 items-center gap-1.5 rounded-control border px-2.5 text-xs font-medium whitespace-nowrap';
+  'inline-flex h-8 items-center gap-1.5 rounded-control border px-2.5 text-xs font-medium whitespace-nowrap transition-colors duration-150';
 const CARD_BUTTON =
-  'inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-control border px-4 text-sm font-medium';
-const EDIT = 'border-secondary bg-surface hover:border-primary hover:text-primary';
-const DELETE = 'border-secondary bg-surface hover:border-error';
+  'inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-control border px-4 text-sm font-medium transition-colors duration-150';
+const EDIT = 'border-secondary bg-surface hover:border-primary/40 hover:bg-muted hover:text-primary';
+const DELETE = 'border-secondary bg-surface hover:border-error/50 hover:bg-error/10 hover:text-error';
 
 function DefaultBadge() {
   return (
-    <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2.5 py-0.5 text-xs leading-4 font-medium text-primary">
+    <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2.5 py-0.5 text-xs leading-4 font-semibold text-primary">
       Default
     </span>
   );
@@ -32,7 +33,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="text-xs text-on-surface/60">{label}</dt>
-      <dd className="[overflow-wrap:anywhere]">{value}</dd>
+      <dd className="font-mono font-medium tabular-nums [overflow-wrap:anywhere]">{value}</dd>
     </div>
   );
 }
@@ -150,7 +151,7 @@ export function PackagePresets({ presets }: { presets: PackagePreset[] }) {
       </div>
 
       {notice ? (
-        <p role="status" className="rounded-control bg-success/15 p-3 text-sm">
+        <p role="status" className="rounded-control border border-success/30 bg-success/10 p-3 text-sm">
           {notice}
         </p>
       ) : null}
@@ -159,41 +160,48 @@ export function PackagePresets({ presets }: { presets: PackagePreset[] }) {
         <EmptyState message="You have no package presets yet. Add one to see what a courier would charge for it." />
       ) : (
         <>
-          <div className="hidden overflow-x-auto rounded-card border border-secondary bg-surface lg:block">
-            <table aria-label="Package presets" className="w-full border-collapse text-left text-sm">
+          <div className={`${tableStyles.wrap} hidden lg:block`}>
+            <table aria-label="Package presets" className={tableStyles.table}>
               <thead>
-                <tr className="border-b border-secondary bg-tertiary/50 text-xs font-semibold text-on-surface/70">
-                  <th scope="col" className="py-3.5 pr-4 pl-6">Name</th>
-                  <th scope="col" className="px-4 py-3.5">Size</th>
-                  <th scope="col" className="px-4 py-3.5 text-right">Weight</th>
-                  <th scope="col" className="px-4 py-3.5 text-right">Chargeable weight</th>
-                  <th scope="col" className="px-4 py-3.5">Default</th>
-                  <th scope="col" className="py-3.5 pr-6 pl-4 text-right">Action</th>
+                <tr>
+                  <th scope="col" className={tableStyles.th}>Name</th>
+                  <th scope="col" className={tableStyles.th}>Size</th>
+                  <th scope="col" className={`${tableStyles.th} text-right`}>Weight</th>
+                  <th scope="col" className={`${tableStyles.th} text-right`}>Chargeable weight</th>
+                  <th scope="col" className={tableStyles.th}>Default</th>
+                  <th scope="col" className={`${tableStyles.th} text-right`}>Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-secondary">
+              <tbody>
                 {presets.map((preset) => (
-                  <tr key={preset.id} data-testid="preset-row" className="hover:bg-tertiary/40">
-                    <td className="max-w-72 py-4 pr-4 pl-6 font-medium [overflow-wrap:anywhere]">{preset.name}</td>
-                    <td className="px-4 py-4 whitespace-nowrap tabular-nums">{size(preset)}</td>
-                    <td className="px-4 py-4 text-right whitespace-nowrap tabular-nums">{formatKg(preset.weightKg)}</td>
-                    <td className="px-4 py-4 text-right font-medium whitespace-nowrap tabular-nums">
+                  <tr
+                    key={preset.id}
+                    data-testid="preset-row"
+                    className={`${tableStyles.rowHover} [&:last-child>td]:border-b-0`}
+                  >
+                    <td className={`${tableStyles.td} max-w-72 font-semibold [overflow-wrap:anywhere]`}>
+                      {preset.name}
+                    </td>
+                    <td className={`${tableStyles.td} font-mono whitespace-nowrap tabular-nums`}>{size(preset)}</td>
+                    <td className={`${tableStyles.tdNumeric} whitespace-nowrap`}>{formatKg(preset.weightKg)}</td>
+                    <td className={`${tableStyles.tdNumeric} font-semibold whitespace-nowrap`}>
                       {formatKg(chargeableWeightKg(preset.weightKg, preset))}
                     </td>
-                    <td className="px-4 py-4">{preset.isDefault ? <DefaultBadge /> : null}</td>
-                    <td className="py-4 pr-6 pl-4">{actions(preset, 'table')}</td>
+                    <td className={tableStyles.td}>{preset.isDefault ? <DefaultBadge /> : null}</td>
+                    <td className={tableStyles.td}>{actions(preset, 'table')}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="grid gap-3 lg:hidden">
-            {presets.map((preset) => (
+          <div className="motion-stagger grid gap-3 lg:hidden">
+            {presets.map((preset, index) => (
               <article
                 key={preset.id}
                 data-testid="preset-item"
-                className="grid gap-3 rounded-card border border-secondary bg-surface p-4"
+                style={{ '--i': index } as CSSProperties}
+                className="grid min-w-0 gap-3 rounded-card border border-secondary bg-surface p-4"
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="min-w-0 text-sm font-bold [overflow-wrap:anywhere]">{preset.name}</p>

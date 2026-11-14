@@ -19,9 +19,9 @@ interface InvoicePageProps {
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 rounded-control bg-tertiary px-3 py-2.5 print:bg-transparent print:p-0">
       <dt className="text-xs text-on-surface/60">{label}</dt>
-      <dd className="text-sm font-medium [overflow-wrap:anywhere]">{children}</dd>
+      <dd className="mt-0.5 text-sm font-semibold [overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
 }
@@ -38,12 +38,22 @@ function Line({
   strong?: boolean;
 }) {
   return (
-    <tr className={strong ? 'border-t-2 border-on-surface font-semibold' : 'border-b border-secondary'}>
-      <th scope="row" className="py-2.5 pr-3 text-left font-[inherit]">
+    <tr
+      className={
+        strong
+          ? 'border-t-2 border-on-surface text-base font-bold'
+          : 'border-b border-secondary/70'
+      }
+    >
+      <th scope="row" className="py-3 pr-3 text-left font-[inherit]">
         {label}
         {note ? <span className="block text-xs font-normal text-on-surface/60">{note}</span> : null}
       </th>
-      <td className="py-2.5 text-right tabular-nums [overflow-wrap:anywhere]">{formatPaise(paise)}</td>
+      <td
+        className={`py-3 text-right font-mono tabular-nums [overflow-wrap:anywhere] ${strong ? 'text-primary print:text-on-surface' : 'font-medium'}`}
+      >
+        {formatPaise(paise)}
+      </td>
     </tr>
   );
 }
@@ -63,7 +73,7 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
     <Link
       href="/finances/invoices"
       // Written out here: a string exported from a client module is not a string in server code.
-      className="inline-flex h-control items-center justify-center gap-2 rounded-control border border-secondary px-4 text-sm font-medium hover:bg-muted max-lg:h-11 print:hidden"
+      className="inline-flex h-control items-center justify-center gap-2 rounded-control border border-secondary bg-surface px-4 text-sm font-medium transition-colors duration-150 hover:border-primary/40 hover:bg-muted max-lg:h-11 print:hidden"
     >
       <ArrowLeft aria-hidden="true" className="size-4" />
       Back to invoices
@@ -73,8 +83,8 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
   if (!result.ok) {
     const missing = result.error.kind === 'not_found';
     return (
-      <main className="mx-auto grid w-full max-w-3xl gap-4 p-4 lg:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-error/10 p-3">
+      <main className="mx-auto grid w-full max-w-3xl gap-4">
+        <div className="motion-rise flex flex-wrap items-center justify-between gap-3 rounded-card border border-error/30 bg-error/10 p-card">
           <p className="text-sm">
             {missing
               ? 'Invoice not found.'
@@ -92,29 +102,32 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
   const invoice = result.data;
 
   return (
-    <main className="mx-auto grid w-full max-w-[210mm] gap-6 p-4 lg:p-8 print:max-w-none print:p-0">
+    <main className="mx-auto grid w-full max-w-[210mm] gap-6 print:max-w-none print:gap-4">
       <style>{'@media print { @page { size: A4; margin: 15mm; } }'}</style>
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         {back}
         <PrintButton />
       </div>
 
-      <article className="grid gap-6 rounded-card border border-secondary bg-surface p-card print:rounded-none print:border-0 print:p-0">
+      {/* On paper the card's border, tint and glass drop away, leaving a plain light sheet. */}
+      <article className="motion-rise grid gap-6 rounded-card border border-secondary bg-surface p-card lg:p-8 print:rounded-none print:border-0 print:bg-transparent! print:bg-none! print:p-0 print:backdrop-blur-none! print:animate-none">
         {result.source === 'mock' ? (
           <p
             data-testid="sample-invoice"
-            className="rounded-control border border-primary bg-muted px-3 py-2 text-sm font-semibold"
+            className="rounded-control border border-primary/40 bg-muted px-3 py-2 text-sm font-semibold text-primary print:border-on-surface print:bg-transparent print:text-on-surface"
           >
             Sample invoice. Not a tax document.
           </p>
         ) : null}
 
-        <header className="grid gap-1">
-          <h1 className="font-heading text-[28px] leading-9 font-bold break-words">Invoice</h1>
-          <p className="text-sm text-on-surface/70 [overflow-wrap:anywhere]">{invoice.number}</p>
+        <header className="grid gap-1 border-b border-secondary pb-5">
+          <h1 className="font-heading text-[26px] leading-9 font-extrabold tracking-[-0.02em] break-words lg:text-[34px] lg:leading-[42px]">
+            Invoice
+          </h1>
+          <p className="font-mono text-sm text-on-surface/70 [overflow-wrap:anywhere]">{invoice.number}</p>
         </header>
 
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Fact label="Issued">{formatDate(invoice.issuedAt)}</Fact>
           <Fact label="Status">
             <InvoiceStatus status={invoice.status} />
@@ -130,7 +143,7 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">Charges</caption>
           <thead>
-            <tr className="border-b border-on-surface text-xs font-semibold">
+            <tr className="border-b border-on-surface/30 text-xs font-semibold tracking-wide text-on-surface/60 uppercase">
               <th scope="col" className="py-2 pr-3 text-left">Charge</th>
               <th scope="col" className="py-2 text-right">Amount</th>
             </tr>

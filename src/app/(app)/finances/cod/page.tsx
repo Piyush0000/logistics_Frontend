@@ -2,11 +2,13 @@ import { CircleCheck, Clock, Download, TrendingUp, Wallet } from 'lucide-react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { SampleBadge } from '@/components/sample-badge';
+import { DataCard } from '@/components/ui/data-card';
+import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { codService } from '@/lib/data/cod';
 import { codHref, COD_EXPORT_PATH, parseCodFilters } from '@/lib/data/cod/filters';
 import { formatPaise } from '@/lib/format/money';
-import { DetailCard, KpiCard } from '../../dashboard/sections';
+import { KpiCard } from '../../dashboard/sections';
 import { RemittanceFilters } from './remittance-filters';
 import { RemittanceTable } from './remittance-table';
 
@@ -15,7 +17,7 @@ export const metadata: Metadata = { title: 'COD Remittance | Evoc Ships' };
 const rupees = (paise: number) => formatPaise(paise, { decimals: 0 });
 
 const EXPORT_BUTTON =
-  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control px-4 text-sm font-medium text-on-primary sm:w-auto';
+  'inline-flex h-control w-full items-center justify-center gap-2 rounded-control px-4 text-sm font-semibold text-on-primary transition-colors duration-150 sm:w-auto';
 
 export default async function CodRemittancePage({
   searchParams,
@@ -36,20 +38,15 @@ export default async function CodRemittancePage({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
-            COD Remittance
-          </h1>
-          <p className="mt-1 text-sm text-on-surface/70 lg:text-base">
-            Track your Cash on Delivery settlements
-          </p>
-        </div>
-        {canExport ? (
+      <PageHeader
+        title="COD Remittance"
+        description="Track your Cash on Delivery settlements"
+        actions={
+          canExport ? (
           <a
             href={codHref(filters, { path: COD_EXPORT_PATH })}
             download
-            className={`${EXPORT_BUTTON} bg-primary`}
+            className={`${EXPORT_BUTTON} bg-primary hover:bg-accent`}
           >
             <Download aria-hidden="true" className="size-4" />
             Export CSV
@@ -59,17 +56,22 @@ export default async function CodRemittancePage({
             <Download aria-hidden="true" className="size-4" />
             Export CSV
           </span>
-        )}
-      </div>
+          )
+        }
+      />
 
       {summary.ok ? (
-        <section data-testid="cod-summary" aria-label="Summary" className="grid gap-2">
-          {summary.source === 'mock' ? (
-            <div className="flex justify-end">
-              <SampleBadge />
-            </div>
-          ) : null}
-          <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:gap-5 xl:grid-cols-4">
+        <section data-testid="cod-summary" aria-labelledby="cod-summary-title" className="grid gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2
+              id="cod-summary-title"
+              className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl"
+            >
+              Summary
+            </h2>
+            {summary.source === 'mock' ? <SampleBadge /> : null}
+          </div>
+          <div className="motion-stagger grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:gap-4 xl:grid-cols-4">
             <KpiCard
               title="Remitted Till Date"
               value={rupees(summary.data.remittedTillDatePaise)}
@@ -101,18 +103,18 @@ export default async function CodRemittancePage({
           </div>
         </section>
       ) : (
-        <DetailCard testId="cod-summary" title="Summary" result={summary}>
+        <DataCard testId="cod-summary" title="Summary" result={summary}>
           {() => null}
-        </DetailCard>
+        </DataCard>
       )}
 
       {/* The key resets the form's own state when Clear or the back button changes the URL. */}
       <RemittanceFilters key={codHref(filters)} filters={filters} error={error} />
 
       {remittances ? (
-        <DetailCard testId="cod-remittances" title="Remittances" result={remittances}>
+        <DataCard testId="cod-remittances" title="Remittances" result={remittances}>
           {(page) => <RemittanceTable result={page} filters={filters} />}
-        </DetailCard>
+        </DataCard>
       ) : null}
     </>
   );

@@ -8,7 +8,8 @@ import type { PackagePreset } from '@/lib/data/weight-settings/types';
 import { chargeableWeightKg, volumetricWeightKg } from '@/lib/volumetric';
 import { savePresetAction } from './actions';
 
-const INPUT = 'h-control w-full rounded-control border bg-surface px-3 text-base lg:text-sm';
+const INPUT =
+  'h-control w-full rounded-control border bg-surface px-3 text-base transition-[border-color,box-shadow] duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none lg:text-sm';
 
 export const formatKg = (value: number) =>
   `${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })} kg`;
@@ -128,10 +129,10 @@ export function PresetFormDialog({
         </div>
         <Field label="Weight (kg)" value={weight} error={errors.weightKg} onChange={setWeight} />
 
-        <div data-testid="chargeable-preview" className="rounded-control bg-muted p-3 text-sm">
+        <div data-testid="chargeable-preview" className="rounded-control border border-primary/20 bg-muted p-3 text-sm">
           {ready ? (
             <>
-              <p className="font-semibold">
+              <p className="font-semibold text-primary">
                 {`Chargeable weight ${formatKg(chargeableWeightKg(actualKg, dimensions))}`}
               </p>
               <p className="text-on-surface/70">

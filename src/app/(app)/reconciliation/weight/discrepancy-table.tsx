@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import type { CSSProperties } from 'react';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
+import { tableStyles } from '@/components/ui/table-styles';
 import { isResponseWindowClosed } from '@/lib/data/weight/input';
 import type { WeightDiscrepancy } from '@/lib/data/weight/types';
 import { formatDate } from '@/lib/format/date';
@@ -13,11 +15,11 @@ import { DisputeDialog } from './dispute-dialog';
 const kg = (value: number) => `${value.toLocaleString('en-IN', { maximumFractionDigits: 3 })} kg`;
 
 const TABLE_BUTTON =
-  'inline-flex h-8 items-center rounded-control border px-2.5 text-xs font-medium whitespace-nowrap disabled:opacity-50';
+  'inline-flex h-8 items-center rounded-control border px-2.5 text-xs font-medium whitespace-nowrap transition-colors duration-150 disabled:opacity-50';
 const CARD_BUTTON =
-  'inline-flex min-h-11 flex-1 items-center justify-center rounded-control border px-4 text-sm font-medium disabled:opacity-50';
-const ACCEPT = 'border-secondary bg-surface hover:border-primary hover:text-primary';
-const DISPUTE = 'border-primary bg-primary text-on-primary';
+  'inline-flex min-h-11 flex-1 items-center justify-center rounded-control border px-4 text-sm font-semibold transition-colors duration-150 disabled:opacity-50';
+const ACCEPT = 'border-secondary bg-surface hover:border-primary/40 hover:bg-muted hover:text-primary';
+const DISPUTE = 'border-primary bg-primary text-on-primary hover:border-accent hover:bg-accent';
 
 interface RowProps {
   item: WeightDiscrepancy;
@@ -67,7 +69,9 @@ function Fact({ label, value, strong = false }: { label: string; value: string; 
   return (
     <div className="min-w-0">
       <dt className="text-xs text-on-surface/60">{label}</dt>
-      <dd className={`[overflow-wrap:anywhere] ${strong ? 'font-semibold' : ''}`}>{value}</dd>
+      <dd className={`[overflow-wrap:anywhere] ${strong ? 'font-mono font-semibold tabular-nums' : 'font-medium'}`}>
+        {value}
+      </dd>
     </div>
   );
 }
@@ -110,47 +114,53 @@ export function DiscrepancyList({ items, now }: { items: WeightDiscrepancy[]; no
   return (
     <div className="grid gap-4">
       {notice ? (
-        <p role="status" className="rounded-control bg-success/15 p-3 text-sm">
+        <p role="status" className="rounded-control border border-success/30 bg-success/10 p-3 text-sm">
           {notice}
         </p>
       ) : null}
       {error ? (
-        <p role="alert" className="rounded-control bg-error/10 p-3 text-sm">
+        <p role="alert" className="rounded-control border border-error/30 bg-error/10 p-3 text-sm">
           {error}
         </p>
       ) : null}
 
-      <div className="hidden overflow-x-auto rounded-card border border-secondary bg-surface lg:block">
-        <table aria-label="Weight discrepancies" className="w-full border-collapse text-left text-sm">
+      <div className={`${tableStyles.wrap} hidden lg:block`}>
+        <table aria-label="Weight discrepancies" className={tableStyles.table}>
           <thead>
-            <tr className="border-b border-secondary bg-tertiary/50 text-xs font-semibold text-on-surface/70">
-              <th scope="col" className="py-3.5 pr-4 pl-6">AWB</th>
-              <th scope="col" className="px-4 py-3.5">Courier</th>
-              <th scope="col" className="px-4 py-3.5 text-right">Declared</th>
-              <th scope="col" className="px-4 py-3.5 text-right">Charged</th>
-              <th scope="col" className="px-4 py-3.5 text-right">Extra charge</th>
-              <th scope="col" className="px-4 py-3.5">Status</th>
-              <th scope="col" className="px-4 py-3.5">Respond by</th>
-              <th scope="col" className="py-3.5 pr-6 pl-4 text-right">Action</th>
+            <tr>
+              <th scope="col" className={tableStyles.th}>AWB</th>
+              <th scope="col" className={tableStyles.th}>Courier</th>
+              <th scope="col" className={`${tableStyles.th} text-right`}>Declared</th>
+              <th scope="col" className={`${tableStyles.th} text-right`}>Charged</th>
+              <th scope="col" className={`${tableStyles.th} text-right`}>Extra charge</th>
+              <th scope="col" className={tableStyles.th}>Status</th>
+              <th scope="col" className={tableStyles.th}>Respond by</th>
+              <th scope="col" className={`${tableStyles.th} text-right`}>Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-secondary">
+          <tbody>
             {items.map((item) => (
-              <tr key={item.id} data-testid="weight-row" className="hover:bg-tertiary/40">
-                <td className="max-w-56 py-4 pr-4 pl-6 font-medium [overflow-wrap:anywhere]">{item.awb}</td>
-                <td className="px-4 py-4">
+              <tr
+                key={item.id}
+                data-testid="weight-row"
+                className={`${tableStyles.rowHover} [&:last-child>td]:border-b-0`}
+              >
+                <td className={`${tableStyles.td} max-w-56 font-mono text-[13px] font-semibold [overflow-wrap:anywhere]`}>
+                  {item.awb}
+                </td>
+                <td className={tableStyles.td}>
                   <CarrierBadge carrier={item.carrier} />
                 </td>
-                <td className="px-4 py-4 text-right whitespace-nowrap tabular-nums">{kg(item.declaredKg)}</td>
-                <td className="px-4 py-4 text-right whitespace-nowrap tabular-nums">{kg(item.chargedKg)}</td>
-                <td className="px-4 py-4 text-right font-medium whitespace-nowrap tabular-nums">
+                <td className={`${tableStyles.tdNumeric} whitespace-nowrap`}>{kg(item.declaredKg)}</td>
+                <td className={`${tableStyles.tdNumeric} whitespace-nowrap`}>{kg(item.chargedKg)}</td>
+                <td className={`${tableStyles.tdNumeric} font-semibold whitespace-nowrap`}>
                   {formatPaise(item.extraChargePaise)}
                 </td>
-                <td className="px-4 py-4">
+                <td className={tableStyles.td}>
                   <DiscrepancyStatusBadge status={item.status} />
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">{formatDate(item.respondBy)}</td>
-                <td className="py-4 pr-6 pl-4 text-right">
+                <td className={`${tableStyles.td} whitespace-nowrap`}>{formatDate(item.respondBy)}</td>
+                <td className={`${tableStyles.td} text-right`}>
                   <Actions {...rowProps(item)} layout="table" />
                 </td>
               </tr>
@@ -159,16 +169,17 @@ export function DiscrepancyList({ items, now }: { items: WeightDiscrepancy[]; no
         </table>
       </div>
 
-      <div className="grid gap-3 lg:hidden">
-        {items.map((item) => (
+      <div className="motion-stagger grid gap-3 lg:hidden">
+        {items.map((item, index) => (
           <article
             key={item.id}
             data-testid="weight-item"
-            className="grid gap-3 rounded-card border border-secondary bg-surface p-4"
+            style={{ '--i': index } as CSSProperties}
+            className="grid min-w-0 gap-3 rounded-card border border-secondary bg-surface p-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="grid min-w-0 gap-1.5">
-                <p className="text-sm font-bold [overflow-wrap:anywhere]">{item.awb}</p>
+                <p className="font-mono text-sm font-bold [overflow-wrap:anywhere] text-primary">{item.awb}</p>
                 <div>
                   <CarrierBadge carrier={item.carrier} />
                 </div>
