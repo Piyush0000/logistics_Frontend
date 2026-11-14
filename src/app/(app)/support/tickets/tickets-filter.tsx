@@ -3,6 +3,7 @@
 import Form from 'next/form';
 import Link from 'next/link';
 import { useState } from 'react';
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { SelectField } from '@/components/ui/select-field';
 import { STATUS_LABELS, TICKET_STATUSES, type TicketStatus } from '@/lib/data/support/types';
 
@@ -20,7 +21,7 @@ export function TicketsFilter({ status, path }: { status: TicketStatus | undefin
   return (
     <section
       aria-label="Filter support tickets"
-      className="rounded-card border border-secondary bg-surface p-card"
+      className="motion-rise min-w-0 rounded-card border border-secondary bg-surface p-card"
     >
       <Form
         action={path}
@@ -28,15 +29,12 @@ export function TicketsFilter({ status, path }: { status: TicketStatus | undefin
       >
         <SelectField label="Status" name="status" value={value} options={OPTIONS} onChange={setValue} />
         <div className="flex gap-3">
-          <button
-            type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary sm:flex-none"
-          >
+          <button type="submit" className={`${PRIMARY_BUTTON} flex-1 sm:flex-none`}>
             Apply
           </button>
           <Link
             href={path}
-            className="inline-flex h-control flex-1 items-center justify-center rounded-control border border-secondary px-4 text-sm font-medium sm:flex-none"
+            className={`${SECONDARY_BUTTON} flex-1 sm:flex-none`}
           >
             Clear
           </Link>

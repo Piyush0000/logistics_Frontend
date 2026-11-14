@@ -39,7 +39,7 @@ export function ReplyForm({ id, resolved }: { id: string; resolved: boolean }) {
   return (
     <form noValidate onSubmit={handleSubmit} className="grid gap-3">
       {resolved ? (
-        <p className="rounded-control bg-muted p-3 text-sm">This ticket is resolved. Reply to reopen it.</p>
+        <p className="rounded-control border border-primary/20 bg-muted p-3 text-sm">This ticket is resolved. Reply to reopen it.</p>
       ) : null}
       <div>
         <label htmlFor={fieldId} className={FIELD_LABEL}>
@@ -50,7 +50,7 @@ export function ReplyForm({ id, resolved }: { id: string; resolved: boolean }) {
           rows={4}
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          className="w-full rounded-control border border-secondary bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="w-full rounded-control border border-secondary bg-surface px-3 py-2.5 text-sm transition-[border-color,box-shadow] duration-150 hover:border-on-surface/30 focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <p className="mt-1 text-xs text-on-surface/60">
           Up to {BODY_MAX.toLocaleString('en-IN')} characters.

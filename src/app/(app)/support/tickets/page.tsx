@@ -35,7 +35,7 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
 
   return (
     <>
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:gap-5">
         <PageHeader
           title="Support tickets"
           description="Ask us about a shipment, pickup, payment or anything else. Replies appear in the ticket."
@@ -54,7 +54,7 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
             data.items.length === 0 ? (
               <EmptyState message="No tickets match this filter. Clear the filter, or raise a new ticket." />
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-4 lg:gap-5">
                 <TicketList items={data.items} />
                 <Pagination page={data.page} pageCount={data.pageCount} buildHref={buildHref} />
               </div>

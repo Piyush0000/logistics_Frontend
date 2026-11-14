@@ -10,7 +10,7 @@ import { CATEGORY_LABELS, TICKET_CATEGORIES, type TicketCategory } from '@/lib/d
 import { createTicketAction } from './actions';
 
 const FIELD =
-  'w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none';
+  'w-full rounded-control border border-secondary bg-surface px-3 text-sm transition-[border-color,box-shadow] duration-150 hover:border-on-surface/30 focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20';
 
 const CATEGORY_OPTIONS = TICKET_CATEGORIES.map((value) => ({ value, label: CATEGORY_LABELS[value] }));
 
