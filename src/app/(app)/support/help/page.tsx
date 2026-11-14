@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
-import { ARTICLES, HELP_CATEGORY_VALUES } from '@/content/help/articles';
+import { ARTICLES, HELP_CATEGORIES, HELP_CATEGORY_VALUES, categoryLabel } from '@/content/help/articles';
 import { HELP_QUERY_MAX, searchArticles } from '@/lib/help-search';
 import { getDemoSession } from '@/lib/auth/session';
 import { parseEnum, parseText } from '@/lib/url-params';
@@ -25,7 +25,13 @@ export default async function HelpPage({ searchParams }: HelpPageProps) {
   // Filter here, so the browser gets only what the list shows and never the article bodies.
   const inTopic = category ? ARTICLES.filter((a) => a.category === category) : ARTICLES;
   const results: HelpArticleSummary[] = searchArticles(query, inTopic).map(
-    ({ slug, title, summary, category: topic }) => ({ slug, title, summary, category: topic }),
+    ({ slug, title, summary, category: topic }) => ({
+      slug,
+      title,
+      summary,
+      category: topic,
+      categoryLabel: categoryLabel(topic),
+    }),
   );
 
   return (
@@ -34,7 +40,13 @@ export default async function HelpPage({ searchParams }: HelpPageProps) {
         title="Help centre"
         description="Short guides to the screens in this app, written for merchants. Search, or pick a topic."
       />
-      <HelpBrowser key={category ?? 'all'} results={results} category={category} initialQuery={query} />
+      <HelpBrowser
+        key={category ?? 'all'}
+        results={results}
+        topics={HELP_CATEGORIES}
+        category={category}
+        initialQuery={query}
+      />
     </div>
   );
 }

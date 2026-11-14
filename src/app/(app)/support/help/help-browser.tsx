@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { EmptyState } from '@/components/ui/empty-state';
-import { HELP_CATEGORIES, categoryLabel, type HelpArticle, type HelpCategory } from '@/content/help/articles';
+// Types only: importing values from the articles file would ship every article body to the browser.
+import type { HelpArticle, HelpCategory } from '@/content/help/articles';
 import { HELP_QUERY_MAX as QUERY_MAX } from '@/lib/help-search';
 
 export const TICKET_HREF = '/support/tickets?new=1';
@@ -15,7 +16,15 @@ const PATH = '/support/help';
 const SEARCH_DELAY_MS = 200;
 
 /** What the list needs of an article. The body stays on the server until the article opens. */
-export type HelpArticleSummary = Pick<HelpArticle, 'slug' | 'title' | 'summary' | 'category'>;
+export type HelpArticleSummary = Pick<HelpArticle, 'slug' | 'title' | 'summary' | 'category'> & {
+  categoryLabel: string;
+};
+
+/** A topic link: the category and its label, passed in by the server page. */
+export interface HelpTopic {
+  value: HelpCategory;
+  label: string;
+}
 
 const CHIP =
   'inline-flex h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors duration-150 lg:h-control';
@@ -45,10 +54,12 @@ function topicHref(category: HelpCategory | undefined, query: string): string {
  */
 export function HelpBrowser({
   results,
+  topics,
   category,
   initialQuery,
 }: {
   results: HelpArticleSummary[];
+  topics: HelpTopic[];
   category: HelpCategory | undefined;
   initialQuery: string;
 }) {
@@ -112,7 +123,7 @@ export function HelpBrowser({
           >
             All topics
           </Link>
-          {HELP_CATEGORIES.map((item) => (
+          {topics.map((item) => (
             <Link
               key={item.value}
               href={topicHref(item.value, query)}
@@ -155,7 +166,7 @@ export function HelpBrowser({
                       <Icon aria-hidden="true" className="size-5" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-xs font-medium text-primary">{categoryLabel(article.category)}</span>
+                      <span className="block text-xs font-medium text-primary">{article.categoryLabel}</span>
                       <span className="block font-heading text-lg leading-6 font-bold tracking-tight break-words">
                         {article.title}
                       </span>
