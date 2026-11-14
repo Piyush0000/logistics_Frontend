@@ -88,7 +88,7 @@ export function BrandPanel() {
   return (
     <aside
       data-testid="brand-panel"
-      className="relative flex flex-col justify-center overflow-hidden bg-primary px-5 py-6 text-center text-on-primary [@media(min-height:700px)]:max-sm:min-h-[30dvh] sm:block sm:px-10 sm:py-7 sm:text-start lg:flex lg:justify-between lg:p-12"
+      className="midnight relative flex flex-col justify-center overflow-hidden px-5 py-6 text-center [@media(min-height:700px)]:max-sm:min-h-[30dvh] sm:block sm:px-10 sm:py-7 sm:text-start lg:flex lg:justify-between lg:p-12"
     >
       <RouteLine />
       <div className="relative flex justify-center sm:justify-start">
@@ -96,18 +96,21 @@ export function BrandPanel() {
       </div>
       <div className="relative mt-4 lg:mt-0">
         <p className="font-heading text-[21px] leading-[26px] font-extrabold lg:text-[34px] lg:leading-[41px]">
-          Every shipment, one control panel.
+          Multiple logistics partners.{' '}
+          <span className="text-[var(--midnight-accent)]">One unified dashboard.</span>
         </p>
         <p
-          className={`mt-2 hidden text-sm leading-[22px] text-on-primary/90 lg:mt-4 lg:block lg:max-w-sm lg:text-base lg:leading-[26px] ${TALL_PHONE_ONLY}`}
+          className={`mt-2 hidden text-sm leading-[22px] text-on-primary/75 lg:mt-4 lg:block lg:max-w-sm lg:text-base lg:leading-[26px] ${TALL_PHONE_ONLY}`}
         >
           Book, track and reconcile deliveries across your carriers.
         </p>
         <RouteStrip />
-        <ul className="mt-6 hidden gap-3 text-base lg:grid">
+        <ul className="mt-6 hidden gap-2 rounded-card border border-on-primary/12 bg-on-primary/[0.06] p-4 text-base backdrop-blur-md lg:grid">
           {POINTS.map((point) => (
             <li key={point} className="flex items-center gap-3">
-              <CircleCheck aria-hidden="true" className="size-5 shrink-0" />
+              <span className="grid size-8 shrink-0 place-items-center rounded-control bg-primary/30 text-[var(--midnight-accent)]">
+                <CircleCheck aria-hidden="true" className="size-4" />
+              </span>
               {point}
             </li>
           ))}

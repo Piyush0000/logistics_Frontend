@@ -29,7 +29,7 @@ export default async function PublicTrackingPage({ params }: Props) {
   if (!result.ok) {
     if (result.error.kind === 'not_found') notFound();
     return (
-      <section className="grid gap-3 rounded-card border border-secondary bg-surface p-card">
+      <section className="motion-rise grid gap-3 rounded-card border border-secondary bg-surface p-card">
         <h1 className="font-heading text-xl leading-7">We could not load this shipment</h1>
         <p className="text-sm">
           {result.error.kind === 'unauthorized' ? 'Tracking is unavailable right now.' : result.error.message}
@@ -44,11 +44,11 @@ export default async function PublicTrackingPage({ params }: Props) {
   const view = toPublicView(result.data);
 
   return (
-    <section className="grid min-w-0 gap-6 rounded-card border border-secondary bg-surface p-card">
+    <section className="motion-rise grid min-w-0 gap-6 rounded-card border border-secondary bg-surface p-card">
       <div className="grid gap-2">
         <p className="text-xs text-on-surface/60">AWB</p>
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <h1 className="min-w-0 break-all font-heading text-xl leading-7">{view.awb}</h1>
+          <h1 className="min-w-0 break-all font-mono text-xl leading-7 font-semibold tracking-tight lg:text-2xl">{view.awb}</h1>
           {result.source === 'mock' ? <SampleBadge /> : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export default async function PublicTrackingPage({ params }: Props) {
       <StageProgressBar progress={view.progress} />
 
       <div>
-        <h2 className="font-heading text-base leading-6">Tracking history</h2>
+        <h2 className="font-heading text-lg leading-7 font-bold tracking-tight">Tracking history</h2>
         {view.timeline.length === 0 ? (
           <p className="mt-2 text-sm text-on-surface/70">No tracking events yet.</p>
         ) : (
@@ -69,7 +69,7 @@ export default async function PublicTrackingPage({ params }: Props) {
               <li key={`${event.occurredAt}-${index}`} data-testid="timeline-event" className="flex gap-3">
                 <div className="flex flex-col items-center">
                   <span
-                    className={`mt-1 size-3 shrink-0 rounded-full ${index === 0 ? 'bg-primary' : 'bg-secondary'}`}
+                    className={`mt-1 size-3 shrink-0 rounded-full ${index === 0 ? 'bg-primary ring-4 ring-primary/20' : 'bg-secondary'}`}
                   />
                   {index < view.timeline.length - 1 ? <span className="w-0.5 grow bg-secondary" /> : null}
                 </div>

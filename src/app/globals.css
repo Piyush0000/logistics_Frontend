@@ -111,6 +111,16 @@
   }
 }
 
+/* Midnight Glass: the sign-in brand panel, deep navy with the logo's blues glowing, in both themes. */
+@utility midnight {
+  background-color: #070b16;
+  background-image:
+    radial-gradient(36rem 22rem at 95% -10%, rgb(24 62 235 / 0.55), transparent),
+    radial-gradient(30rem 20rem at -10% 110%, rgb(17 44 171 / 0.55), transparent);
+  color: #e6ebf7;
+  --midnight-accent: #8ea2ff;
+}
+
 /* Cards: solid everywhere; frosted glass in dark mode from tablet width up. */
 @utility glass {
   background-color: var(--c-surface);
