@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
 import type { OrderSummary } from '@/lib/data/orders';
@@ -8,17 +9,18 @@ import { NO_COURIER_STATUS } from './rto-table';
 
 export function RtoCards({ orders }: { orders: OrderSummary[] }) {
   return (
-    <div className="grid gap-3 lg:hidden">
-      {orders.map((order) => (
+    <div className="motion-stagger grid gap-3 lg:hidden">
+      {orders.map((order, index) => (
         <Link
           key={order.shipment_id}
           href={`/orders/${order.awb}`}
           data-testid="rto-item"
-          className="flex min-h-[44px] flex-col gap-2.5 rounded-card border border-secondary bg-surface p-4 transition-all hover:border-primary active:bg-tertiary"
+          style={{ '--i': index } as CSSProperties}
+          className="lift flex min-h-11 min-w-0 flex-col gap-3 rounded-card border border-secondary bg-surface p-4 transition-colors duration-150 hover:border-primary/40 active:bg-muted"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-mono text-sm font-bold [overflow-wrap:anywhere] text-primary">
+              <span className="font-mono text-sm font-semibold [overflow-wrap:anywhere] text-primary">
                 {order.awb}
               </span>
               <div className="text-xs text-on-surface/60 [overflow-wrap:anywhere]">
@@ -28,11 +30,11 @@ export function RtoCards({ orders }: { orders: OrderSummary[] }) {
             <StatusBadge status={order.status} />
           </div>
 
-          <p className="text-xs text-on-surface/70 [overflow-wrap:anywhere]">
+          <p className="rounded-control bg-tertiary px-3 py-2 text-xs text-on-surface/70 [overflow-wrap:anywhere]">
             Courier status: {order.raw_status || NO_COURIER_STATUS}
           </p>
 
-          <div className="flex items-center justify-between gap-2 border-t border-secondary/50 pt-2 text-xs text-on-surface/70">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-secondary/70 pt-3 text-xs text-on-surface/70">
             <CarrierBadge carrier={order.carrier} />
             <div className="flex items-center gap-1">
               <span>{formatDateTime(order.last_status_at)}</span>

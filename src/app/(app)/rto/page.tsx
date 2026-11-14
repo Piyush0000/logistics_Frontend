@@ -2,6 +2,7 @@ import { IndianRupee, PackageCheck, Undo2 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { SegmentBar } from '@/components/charts/segment-bar';
 import { DataCard } from '@/components/ui/data-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -46,23 +47,25 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
 
   return (
     <>
-      <div className="grid gap-6">
-        <PageHeader title="RTO" description="Shipments returning to you, and the ones that are back." />
+      <PageHeader title="RTO" description="Shipments returning to you, and the ones that are back." />
 
-        <DataCard testId="rto-summary" title="RTO summary" result={summary}>
-          {(data) => (
+      <DataCard testId="rto-summary" title="RTO summary" result={summary}>
+        {(data) => (
+          <div className="grid gap-5">
             <div className="grid gap-4 sm:grid-cols-3">
               <StatTile
                 testId="tile-rto-in-progress"
                 label="RTO in progress"
                 value={data.inProgress}
                 icon={Undo2}
+                tone="warning"
               />
               <StatTile
                 testId="tile-rto-delivered"
                 label="RTO delivered"
                 value={data.delivered}
                 icon={PackageCheck}
+                tone="error"
               />
               <StatTile
                 testId="tile-rto-charges"
@@ -73,50 +76,60 @@ export default async function RtoPage({ searchParams }: RtoPageProps) {
                     : formatPaise(data.rtoChargesPaise)
                 }
                 icon={IndianRupee}
+                tone="accent"
               />
             </div>
-          )}
-        </DataCard>
+            {data.inProgress + data.delivered > 0 ? (
+              <SegmentBar
+                title="RTO shipments by stage"
+                segments={[
+                  { label: 'Returning', value: data.inProgress, tone: 'warning' },
+                  { label: 'Back with you', value: data.delivered, tone: 'error' },
+                ]}
+              />
+            ) : null}
+          </div>
+        )}
+      </DataCard>
 
-        <div
-          role="tablist"
-          aria-label="RTO stage"
-          className="flex w-full gap-1 rounded-full bg-muted p-1 sm:w-fit"
-        >
-          {TABS.map((tab) => {
-            const selected = tab.stage === stage;
-            return (
-              <Link
-                key={tab.stage}
-                role="tab"
-                aria-selected={selected}
-                href={buildPageHref('/rto', { stage: tab.stage === 'in_progress' ? undefined : tab.stage }, 1)}
-                className={`inline-flex h-11 flex-1 items-center justify-center rounded-full px-5 text-sm font-medium transition-colors sm:flex-none lg:h-10 ${
-                  selected
-                    ? 'bg-primary text-on-primary shadow-xs'
-                    : 'text-on-surface/70 hover:text-on-surface'
-                }`}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
-        </div>
-
-        <DataCard testId="rto-card" title="Shipments" result={list}>
-          {(data) =>
-            data.items.length === 0 ? (
-              <EmptyState message="No shipments are returning." />
-            ) : (
-              <div className="grid gap-4">
-                <RtoTable orders={data.items} />
-                <RtoCards orders={data.items} />
-                <Pagination page={page} pageCount={pageCount} buildHref={buildHref} />
-              </div>
-            )
-          }
-        </DataCard>
+      <div
+        role="tablist"
+        aria-label="RTO stage"
+        className="flex w-full gap-1 rounded-card border border-secondary bg-surface p-1.5 sm:w-fit"
+      >
+        {TABS.map((tab) => {
+          const selected = tab.stage === stage;
+          return (
+            <Link
+              key={tab.stage}
+              role="tab"
+              aria-selected={selected}
+              href={buildPageHref('/rto', { stage: tab.stage === 'in_progress' ? undefined : tab.stage }, 1)}
+              className={`inline-flex h-11 min-w-24 flex-1 items-center justify-center rounded-control px-5 text-sm transition-colors duration-150 sm:flex-none lg:h-10 ${
+                selected
+                  ? 'bg-muted font-semibold text-primary'
+                  : 'text-on-surface/75 hover:bg-muted hover:text-primary'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
       </div>
+
+      <DataCard testId="rto-card" title="Shipments" result={list}>
+        {(data) =>
+          data.items.length === 0 ? (
+            <EmptyState message="No shipments are returning." />
+          ) : (
+            <div className="grid gap-4">
+              <RtoTable orders={data.items} />
+              <RtoCards orders={data.items} />
+              <Pagination page={page} pageCount={pageCount} buildHref={buildHref} />
+            </div>
+          )
+        }
+      </DataCard>
     </>
   );
 }

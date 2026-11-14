@@ -3,6 +3,7 @@
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { DateField } from '@/components/ui/date-field';
+import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { SelectField } from '@/components/ui/select-field';
 import type { PickupAddress } from '@/lib/data/pickup-addresses/types';
 import { checkPickupDate, checkWindow } from '@/lib/data/pickups/input';
@@ -10,7 +11,7 @@ import { shipmentCount } from '@/lib/data/pickups/format';
 import { schedulePickupAction } from './actions';
 
 const TIME_INPUT =
-  'h-control w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none';
+  'h-11 w-full rounded-control border border-secondary bg-surface px-3 text-sm transition-[border-color,box-shadow] duration-150 outline-none hover:border-on-surface/30 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 lg:h-control';
 
 function TimeField({
   label,
@@ -24,7 +25,7 @@ function TimeField({
   const id = useId();
   return (
     <div className="min-w-0">
-      <label htmlFor={id} className="mb-1 block text-sm leading-5 font-medium">
+      <label htmlFor={id} className={FIELD_LABEL}>
         {label}
       </label>
       <input
@@ -101,7 +102,7 @@ export function ScheduleDialog({
   return (
     <Dialog title="Schedule pickup" onClose={onClose}>
       <form noValidate onSubmit={handleSubmit} className="grid gap-5">
-        <p className="text-sm text-on-surface/70">
+        <p className="inline-flex w-fit rounded-md bg-tertiary px-2 py-1 text-sm text-on-surface/70">
           {shipmentCount(awbs.length)}, {carrierLabel}
         </p>
 
@@ -137,11 +138,11 @@ export function ScheduleDialog({
           </p>
         ) : null}
 
-        <div className="flex justify-end gap-3">
-          <button type="button" onClick={onClose} className={SECONDARY_BUTTON}>
+        <div className="flex flex-wrap justify-end gap-3">
+          <button type="button" onClick={onClose} className={`${SECONDARY_BUTTON} max-lg:h-11`}>
             Cancel
           </button>
-          <button type="submit" disabled={pending || options.length === 0} className={PRIMARY_BUTTON}>
+          <button type="submit" disabled={pending || options.length === 0} className={`${PRIMARY_BUTTON} max-lg:h-11`}>
             Confirm pickup
           </button>
         </div>

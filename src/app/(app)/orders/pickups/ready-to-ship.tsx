@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { CarrierBadge, carrierLabel } from '@/components/orders/carrier-badge';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { tableStyles } from '@/components/ui/table-styles';
 import type { OrderSummary } from '@/lib/data/orders/types';
 import type { PickupAddress } from '@/lib/data/pickup-addresses/types';
 import { hasMixedCarriers } from '@/lib/data/pickups/input';
@@ -66,13 +67,13 @@ export function ReadyToShip({
   return (
     <div className="grid gap-4">
       {notice ? (
-        <p role="status" className="rounded-control bg-success/15 px-3 py-2 text-sm">
+        <p role="status" className="motion-rise rounded-control bg-success/15 px-3 py-2 text-sm">
           {notice}
         </p>
       ) : null}
 
       {canSchedule ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-tertiary px-3 py-2">
           <label className="flex min-h-11 items-center gap-3 text-sm font-medium lg:min-h-0">
             <input
               type="checkbox"
@@ -86,7 +87,7 @@ export function ReadyToShip({
             <span aria-hidden="true">Select all</span>
           </label>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-on-surface/70">{selected.length} selected</p>
+            <p className="font-mono text-sm text-on-surface/70 tabular-nums">{selected.length} selected</p>
             <button
               type="button"
               disabled={selected.length === 0}
@@ -105,25 +106,29 @@ export function ReadyToShip({
         </p>
       ) : null}
 
-      <div className="hidden overflow-x-auto rounded-card border border-secondary bg-surface lg:block">
-        <table className="w-full border-collapse text-left text-sm">
+      <div className={`${tableStyles.wrap} hidden lg:block`}>
+        <table className={tableStyles.table}>
           <thead>
-            <tr className="border-b border-secondary bg-tertiary/50 text-xs font-semibold text-on-surface/70">
+            <tr>
               {canSchedule ? (
-                <th className="w-12 py-3.5 pr-2 pl-6">
+                <th className={`${tableStyles.th} w-12 pr-2`}>
                   <span className="sr-only">Select</span>
                 </th>
               ) : null}
-              <th className={`py-3.5 pr-4 ${canSchedule ? 'pl-2' : 'pl-6'}`}>AWB / Reference</th>
-              <th className="px-4 py-3.5">Courier</th>
-              <th className="py-3.5 pr-6 pl-4">Created</th>
+              <th className={`${tableStyles.th} ${canSchedule ? 'pl-2' : ''}`}>AWB / Reference</th>
+              <th className={tableStyles.th}>Courier</th>
+              <th className={tableStyles.th}>Created</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-secondary">
+          <tbody>
             {orders.map((order) => (
-              <tr key={order.shipment_id} data-testid="ready-row" className="hover:bg-tertiary/40">
+              <tr
+                key={order.shipment_id}
+                data-testid="ready-row"
+                className={`${tableStyles.rowHover} has-[:checked]:bg-muted/60`}
+              >
                 {canSchedule ? (
-                  <td className="py-4 pr-2 pl-6">
+                  <td className={`${tableStyles.td} pr-2`}>
                     <input
                       type="checkbox"
                       aria-label={`Select ${order.awb}`}
@@ -133,7 +138,7 @@ export function ReadyToShip({
                     />
                   </td>
                 ) : null}
-                <td className={`py-4 pr-4 ${canSchedule ? 'pl-2' : 'pl-6'}`}>
+                <td className={`${tableStyles.td} ${canSchedule ? 'pl-2' : ''}`}>
                   <span className="font-mono text-sm font-semibold [overflow-wrap:anywhere] text-primary">
                     {order.awb}
                   </span>
@@ -141,10 +146,10 @@ export function ReadyToShip({
                     Ref: {order.reference_id || 'N/A'}
                   </div>
                 </td>
-                <td className="px-4 py-4">
+                <td className={tableStyles.td}>
                   <CarrierBadge carrier={order.carrier} />
                 </td>
-                <td className="py-4 pr-6 pl-4 text-xs text-on-surface/70">
+                <td className={`${tableStyles.td} text-xs whitespace-nowrap text-on-surface/70`}>
                   {formatDate(order.created_at)}
                 </td>
               </tr>
@@ -153,12 +158,12 @@ export function ReadyToShip({
         </table>
       </div>
 
-      <div className="grid gap-3 lg:hidden">
-        {orders.map((order) => {
+      <div className="motion-stagger grid gap-3 lg:hidden">
+        {orders.map((order, index) => {
           const content = (
             <>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="font-mono text-sm font-bold [overflow-wrap:anywhere] text-primary">
+                <span className="font-mono text-sm font-semibold [overflow-wrap:anywhere] text-primary">
                   {order.awb}
                 </span>
                 <span className="text-xs text-on-surface/60 [overflow-wrap:anywhere]">
@@ -172,9 +177,15 @@ export function ReadyToShip({
             </>
           );
           const frame =
-            'flex min-h-11 items-start gap-3 rounded-card border border-secondary bg-surface p-4';
+            'flex min-h-11 min-w-0 items-start gap-3 rounded-card border border-secondary bg-surface p-4 transition-colors duration-150';
+          const stagger = { '--i': index } as CSSProperties;
           return canSchedule ? (
-            <label key={order.shipment_id} data-testid="ready-item" className={`${frame} has-[:checked]:border-primary`}>
+            <label
+              key={order.shipment_id}
+              data-testid="ready-item"
+              style={stagger}
+              className={`${frame} cursor-pointer has-[:checked]:border-primary/60 has-[:checked]:bg-muted`}
+            >
               <input
                 type="checkbox"
                 aria-label={`Select ${order.awb}`}
@@ -185,7 +196,7 @@ export function ReadyToShip({
               {content}
             </label>
           ) : (
-            <div key={order.shipment_id} data-testid="ready-item" className={frame}>
+            <div key={order.shipment_id} data-testid="ready-item" style={stagger} className={frame}>
               {content}
             </div>
           );

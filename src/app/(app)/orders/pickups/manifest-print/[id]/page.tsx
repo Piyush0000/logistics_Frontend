@@ -77,7 +77,12 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
         <PrintButton />
       </div>
 
-      <article className="grid gap-6 rounded-card border border-secondary bg-surface p-card print:rounded-none print:border-0 print:p-0">
+      {/* The sheet is always light, so a dark-mode printout is not pale text on white paper. It avoids
+          `rounded-card`, which turns cards to glass in dark mode, and it has no entrance motion. */}
+      <article
+        data-theme="light"
+        className="grid gap-6 rounded-(--radius-card) border border-secondary bg-surface p-card text-on-surface print:rounded-none print:border-0 print:p-0"
+      >
         {result.source === 'mock' ? (
           <p
             data-testid="sample-manifest"
@@ -90,7 +95,7 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
         ) : null}
 
         <header className="grid gap-1">
-          <h1 className="font-heading text-[28px] leading-9 font-bold break-words">Pickup manifest</h1>
+          <h1 className="font-heading text-[28px] leading-9 font-extrabold tracking-[-0.02em] break-words">Pickup manifest</h1>
           <p className="text-sm text-on-surface/70 [overflow-wrap:anywhere]">Pickup {pickup.id}</p>
         </header>
 
@@ -105,7 +110,7 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
 
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-on-surface text-xs font-semibold">
+            <tr className="border-b border-on-surface text-xs font-semibold tracking-wide text-on-surface/70 uppercase">
               <th className="w-12 py-2 pr-2">No.</th>
               <th className="py-2">AWB</th>
             </tr>
@@ -113,7 +118,7 @@ export default async function ManifestPrintPage({ params }: ManifestPageProps) {
           <tbody className="divide-y divide-secondary">
             {pickup.awbs.map((awb, index) => (
               <tr key={awb} className="break-inside-avoid">
-                <td className="py-2 pr-2 text-on-surface/70">{index + 1}</td>
+                <td className="py-2 pr-2 font-mono text-on-surface/70 tabular-nums">{index + 1}</td>
                 <td
                   data-testid="manifest-awb"
                   className="py-2 font-mono font-semibold [overflow-wrap:anywhere]"

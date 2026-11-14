@@ -38,37 +38,35 @@ export default async function PickupsPage({ searchParams }: PickupsPageProps) {
 
   return (
     <>
-      <div className="grid gap-6">
-        <PageHeader
-          title="Pickups & Manifests"
-          description="Choose shipments that are ready, schedule a courier pickup and print the manifest."
-        />
+      <PageHeader
+        title="Pickups & Manifests"
+        description="Choose shipments that are ready, schedule a courier pickup and print the manifest."
+      />
 
-        <DataCard testId="ready-card" title="Ready to ship" result={ready}>
-          {(orders) => (
-            <ReadyToShip
-              orders={orders}
-              canSchedule={canSchedule}
-              addresses={addresses.ok ? addresses.data : null}
-              today={indianDay(new Date())}
-            />
-          )}
-        </DataCard>
+      <DataCard testId="ready-card" title="Ready to ship" result={ready}>
+        {(orders) => (
+          <ReadyToShip
+            orders={orders}
+            canSchedule={canSchedule}
+            addresses={addresses.ok ? addresses.data : null}
+            today={indianDay(new Date())}
+          />
+        )}
+      </DataCard>
 
-        <DataCard testId="pickups-card" title="Scheduled pickups" result={pickups}>
-          {(data) =>
-            data.items.length === 0 ? (
-              <EmptyState message="No pickups yet. Select shipments above and schedule one." />
-            ) : (
-              <div className="grid gap-4">
-                <PickupTable pickups={data.items} />
-                <PickupCards pickups={data.items} />
-                <Pagination page={data.page} pageCount={data.pageCount} buildHref={buildHref} />
-              </div>
-            )
-          }
-        </DataCard>
-      </div>
+      <DataCard testId="pickups-card" title="Scheduled pickups" result={pickups}>
+        {(data) =>
+          data.items.length === 0 ? (
+            <EmptyState message="No pickups yet. Select shipments above and schedule one." />
+          ) : (
+            <div className="grid gap-4">
+              <PickupTable pickups={data.items} />
+              <PickupCards pickups={data.items} />
+              <Pagination page={data.page} pageCount={data.pageCount} buildHref={buildHref} />
+            </div>
+          )
+        }
+      </DataCard>
     </>
   );
 }
