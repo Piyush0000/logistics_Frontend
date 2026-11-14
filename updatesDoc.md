@@ -11,6 +11,20 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 | **Next step** | After sign-off: Phase 3 module passes (Shipments, NDR/RTO/Pickups, Finances, Reports/Tools, Settings, Support, sign-in and public pages) |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+## 2026-11-14: Dashboard brought in line with Home (user request)
+
+### What changed
+- KPI cards now use Home's stat-card layout: icon chip, label, two-tone figure, note chip. COD summary cards pick this up too.
+- Header follows Home: title with a line under it; the "Operations overview" eyebrow is gone.
+- The notice is a plain white (glass in dark) card with a warning dot instead of a beige band.
+- Tabs sit in a card-shaped bar; the selected tab uses the same soft blue as the sidebar instead of a solid blue pill.
+- A "Today" heading with its sample badge sits above the KPI row.
+- Shipments Details and NDR Details sit side by side on wide screens, as Home's health row does. Shipments gains the shipments-by-stage bar; NDR gains a gauge for NDRs saved after a failed attempt. Detail tiles use Home's coloured icon chips.
+- Files: `src/app/(app)/dashboard/sections.tsx`, `src/app/(app)/dashboard/tabs/overview-tab.tsx`.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint` and `pnpm build` pass; screenshots checked at desktop, phone and 320px in both themes. Test suites not run (team runs them). Kept: one sample badge in the KPI section, KPI grid 2 per row on phones and 4 on desktop, values level across a row, every test id and label.
+
 ## 2026-11-14: Redesign Phase 2, Home, Dashboard, insights and ⌘K
 
 ### What changed

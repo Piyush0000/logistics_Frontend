@@ -2,7 +2,7 @@ import { CalendarDays, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SampleBadge } from "@/components/sample-badge";
-import { splitTwoTone } from "@/components/ui/stat-tile";
+import { splitTwoTone, StatTile, type StatTone } from "@/components/ui/stat-tile";
 import type { DataResult } from "@/lib/data/source";
 import { parseEnum } from "@/lib/url-params";
 import { RetryButton } from "./retry-button";
@@ -19,7 +19,7 @@ export function AlertTicker() {
     <div
       data-testid="ticker"
       role="status"
-      className="motion-rise flex items-center gap-2.5 rounded-control border border-warning/30 bg-warning/10 px-3 py-2 text-sm"
+      className="motion-rise flex items-center gap-2.5 rounded-card border border-secondary bg-surface px-4 py-3 text-sm"
     >
       <span
         aria-hidden="true"
@@ -36,16 +36,12 @@ export function PageHeading({ dateRange }: { dateRange: string }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-on-surface/50 uppercase">
-          <span
-            aria-hidden="true"
-            className="size-1.5 rounded-full bg-success motion-safe:animate-[evoc-pulse_1.8s_infinite]"
-          />
-          Operations overview
-        </p>
         <h1 className="font-heading text-[26px] leading-9 font-extrabold tracking-[-0.02em] lg:text-[34px] lg:leading-[42px]">
           Dashboard
         </h1>
+        <p className="mt-1 text-sm text-on-surface/70">
+          Here is how your operations are running.
+        </p>
       </div>
       <div className="flex flex-col gap-1 sm:items-end">
         <button
@@ -108,13 +104,13 @@ export function OverviewTabs({
       role="tablist"
       aria-label="Dashboard views"
       // On phones the tabs scroll; the faded right edge hints there is more.
-      className="flex gap-1 overflow-x-auto rounded-full border border-secondary bg-surface p-1 [scrollbar-width:none] max-sm:pr-6 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]"
+      className="flex gap-1 overflow-x-auto rounded-card border border-secondary bg-surface p-1.5 [scrollbar-width:none] max-sm:pr-6 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]"
     >
       {TABS.map((tab) => {
         const selected = tab.id === active;
-        const className = `h-11 min-w-24 flex-1 shrink-0 rounded-full px-4 text-sm transition-colors duration-150 lg:h-10 ${
+        const className = `h-11 min-w-24 flex-1 shrink-0 rounded-control px-4 text-sm transition-colors duration-150 lg:h-10 ${
           selected
-            ? "bg-primary font-semibold text-on-primary shadow-[0_4px_14px_rgb(24_62_235/0.3)]"
+            ? "bg-muted font-semibold text-primary"
             : tab.enabled
               ? "text-on-surface/75 hover:bg-muted hover:text-primary"
               : "cursor-not-allowed text-on-surface/50"
@@ -147,13 +143,14 @@ export function OverviewTabs({
   );
 }
 
-const TONES = {
-  primary: { dot: "bg-primary", icon: "bg-muted text-primary" },
-  success: { dot: "bg-success", icon: "bg-success/15 text-success" },
-  warning: { dot: "bg-warning", icon: "bg-warning/15 text-warning" },
-  accent: { dot: "bg-series-2", icon: "bg-series-2/15 text-series-2" },
+const TONES: Record<"primary" | "success" | "warning" | "accent", string> = {
+  primary: "bg-muted text-primary",
+  success: "bg-success/15 text-success",
+  warning: "bg-warning/15 text-warning",
+  accent: "bg-accent/15 text-accent dark:text-primary",
 };
 
+/** A headline figure in the same card as Home's: icon chip, label, two-tone value, then a note chip. */
 export function KpiCard({
   title,
   value,
@@ -169,32 +166,27 @@ export function KpiCard({
 }) {
   const [lead, rest] = splitTwoTone(value);
   return (
-    <div className="lift min-w-0 rounded-card border border-secondary bg-surface p-card">
-      <div className="flex items-start justify-between gap-2">
-        {/* Keeps values level when one title wraps to two lines and its neighbour doesn't. */}
-        <p className="flex min-h-10 min-w-0 items-start gap-2 text-sm leading-5 font-semibold md:min-h-0">
+    <div className="lift min-w-0 rounded-card border border-secondary bg-surface p-3 lg:p-card">
+      {/* Icon above the text on narrow phones, as on Home, so long amounts stay on one line. */}
+      <div className="flex min-w-0 flex-col items-start gap-3 min-[420px]:flex-row sm:items-center">
+        <span className={`grid size-11 shrink-0 place-items-center rounded-control ${TONES[tone]}`}>
+          <Icon aria-hidden="true" className="size-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          {/* Two lines reserved on narrow screens keep values level when one label wraps. */}
+          <span className="block min-h-10 text-sm leading-5 text-on-surface/70 sm:min-h-0">
+            {title}
+          </span>
           <span
-            aria-hidden="true"
-            className={`mt-1.5 size-2 shrink-0 rounded-full ${TONES[tone].dot}`}
-          />
-          {title}
-        </p>
-        <span
-          className={`grid size-9 shrink-0 place-items-center rounded-control md:size-10 ${TONES[tone].icon}`}
-        >
-          <Icon aria-hidden="true" className="size-4 md:size-5" />
+            className={`block text-base leading-7 tracking-tight tabular-nums min-[420px]:text-lg sm:text-xl ${
+              /[a-z]/i.test(value) ? "font-heading font-bold" : "font-mono font-medium"
+            }`}
+          >
+            {lead}
+            {rest ? <span className="text-on-surface/45">{rest}</span> : null}
+          </span>
         </span>
       </div>
-      <p
-        className={`mt-2 text-xl leading-7 tracking-tight tabular-nums md:text-2xl md:leading-8 ${
-          /[a-z]/i.test(value)
-            ? "font-heading font-bold"
-            : "font-mono font-medium"
-        }`}
-      >
-        {lead}
-        {rest ? <span className="text-on-surface/45">{rest}</span> : null}
-      </p>
       <p className="mt-2 inline-flex rounded-md bg-tertiary px-1.5 py-0.5 text-xs leading-4 text-on-surface/70">
         {note}
       </p>
@@ -218,7 +210,7 @@ export function DetailCard<T>({
       data-testid={testId}
       className="motion-rise min-w-0 rounded-card border border-secondary bg-surface p-card"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <h2 className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">
           {title}
         </h2>
@@ -240,34 +232,22 @@ export function DetailCard<T>({
   );
 }
 
+/** One count in a details card: Home's stat tile, optionally a link. */
 export function Tile({
   label,
   value,
-  icon: Icon,
+  icon,
+  tone = "primary",
   href,
 }: {
   label: string;
   value: number;
   icon: LucideIcon;
+  tone?: StatTone;
   href?: string;
 }) {
   const content = (
-    <div
-      data-testid={`tile-${label}`}
-      className="flex min-w-0 items-center gap-3"
-    >
-      <span className="grid size-11 shrink-0 place-items-center rounded-control bg-muted text-primary">
-        <Icon aria-hidden="true" className="size-5" />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-sm leading-5 text-on-surface/70">
-          {label}
-        </span>
-        <span className="block font-mono text-xl leading-7 font-medium tracking-tight">
-          {value}
-        </span>
-      </span>
-    </div>
+    <StatTile testId={`tile-${label}`} label={label} value={value} icon={icon} tone={tone} />
   );
   if (!href) return content;
   return (
