@@ -67,7 +67,7 @@ export function NotificationEditor({ initial }: { initial: NotificationSettings 
   return (
     <div className="grid gap-6">
       <section aria-labelledby="matrix-heading" className="grid gap-2">
-        <h3 id="matrix-heading" className="font-heading text-lg leading-6">
+        <h3 id="matrix-heading" className="font-heading text-lg leading-7 font-bold tracking-tight">
           Channels
         </h3>
         <p className="text-sm text-on-surface/70">
@@ -77,7 +77,7 @@ export function NotificationEditor({ initial }: { initial: NotificationSettings 
       </section>
 
       <section aria-labelledby="messages-heading" className="grid gap-3">
-        <h3 id="messages-heading" className="font-heading text-lg leading-6">
+        <h3 id="messages-heading" className="font-heading text-lg leading-7 font-bold tracking-tight">
           Messages
         </h3>
         <p className="text-sm text-on-surface/70">

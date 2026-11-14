@@ -1,5 +1,6 @@
 'use client';
 
+import { UserRound } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -56,16 +57,20 @@ export function TeamPanel({ members, myEmail }: { members: TeamMember[]; myEmail
       {members.length === 0 ? (
         <EmptyState message="No one is on your team yet. Invite a teammate to share access." />
       ) : (
-        <ul className="divide-y divide-secondary">
+        <ul className="motion-stagger grid gap-3">
           {members.map((member) => {
             const isSelf = member.email.toLowerCase() === myEmail.toLowerCase();
             return (
               <li
                 key={member.id}
                 data-testid="member"
-                className="grid min-w-0 gap-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                className="grid min-w-0 gap-3 rounded-control border border-secondary p-3 transition-colors duration-150 hover:bg-muted/40 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:p-4"
               >
-                <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="hidden size-10 shrink-0 place-items-center rounded-control bg-muted text-primary min-[360px]:grid">
+                    <UserRound aria-hidden="true" className="size-5" />
+                  </span>
+                  <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-2">
                     <span className="min-w-0 text-sm font-medium break-all">{member.email}</span>
                     {isSelf ? (
@@ -73,13 +78,18 @@ export function TeamPanel({ members, myEmail }: { members: TeamMember[]; myEmail
                         You
                       </span>
                     ) : null}
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        member.status === 'invited' ? 'bg-warning/15' : 'bg-success/15'
+                      }`}
+                    >
                       {member.status === 'invited' ? 'Invited' : 'Active'}
                     </span>
                   </p>
                   {member.name ? (
                     <p className="text-sm text-on-surface/70 [overflow-wrap:anywhere]">{member.name}</p>
                   ) : null}
+                  </div>
                 </div>
 
                 {isSelf ? (

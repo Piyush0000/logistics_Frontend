@@ -119,7 +119,7 @@ export function WebhookInfo() {
     <section
       data-testid="webhook-info"
       aria-label="Webhook Information"
-      className="order-last rounded-card border border-secondary bg-surface p-card lg:order-first"
+      className="motion-rise order-last min-w-0 rounded-card border border-secondary bg-surface p-card lg:order-first"
     >
       <button
         type="button"
@@ -127,7 +127,7 @@ export function WebhookInfo() {
         onClick={() => setOpen((current) => !current)}
         className="flex min-h-11 w-full items-center justify-between gap-2 text-left lg:hidden"
       >
-        <span className="flex items-center gap-2 font-heading text-xl leading-7">
+        <span className="flex items-center gap-2 font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">
           <Info aria-hidden="true" className="size-5 text-primary" />
           Webhook Information
         </span>
@@ -136,7 +136,7 @@ export function WebhookInfo() {
           className={`size-5 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
-      <h2 className="hidden items-center gap-2 font-heading text-xl leading-7 lg:flex">
+      <h2 className="hidden items-center gap-2 font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl lg:flex">
         <Info aria-hidden="true" className="size-5 text-primary" />
         Webhook Information
       </h2>

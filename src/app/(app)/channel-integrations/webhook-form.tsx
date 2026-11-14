@@ -2,9 +2,11 @@
 
 import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
+import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { WEBHOOK_EVENTS } from '@/lib/data/webhooks/events';
 import type { Webhook, WebhookFieldErrors } from '@/lib/data/webhooks/types';
 import { createWebhookAction, updateWebhookAction } from './actions';
+import { SwitchTrack } from '../settings/switch';
 
 function EventSwitch({
   value,
@@ -29,12 +31,7 @@ function EventSwitch({
         onChange={(event) => onChange(event.target.checked)}
         className="peer absolute inset-0 cursor-pointer opacity-0"
       />
-      <span
-        aria-hidden="true"
-        className="flex h-5 w-9 shrink-0 items-center rounded-full bg-on-surface/50 p-0.5 peer-checked:justify-end peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
-      >
-        <span className="size-4 rounded-full bg-surface" />
-      </span>
+      <SwitchTrack />
       <span className="min-w-0">
         <span className="block font-mono text-sm leading-5 [overflow-wrap:anywhere]">{value}</span>
         <span className="block text-xs leading-4 text-on-surface/70">{description}</span>
@@ -89,7 +86,7 @@ export function WebhookForm({
     <Dialog title={webhook ? 'Edit Webhook' : 'Create Webhook'} onClose={onClose}>
       <form noValidate onSubmit={handleSubmit} className="grid gap-4">
         <div>
-          <label htmlFor={`${id}-url`} className="mb-1 block text-sm font-medium">
+          <label htmlFor={`${id}-url`} className={FIELD_LABEL}>
             Webhook URL
           </label>
           <input
@@ -101,7 +98,7 @@ export function WebhookForm({
             aria-invalid={fieldErrors.url ? true : undefined}
             aria-describedby={fieldErrors.url ? `${id}-url-error` : undefined}
             onChange={(event) => setUrl(event.target.value)}
-            className={`h-control w-full rounded-control border bg-surface px-3 text-sm ${
+            className={`h-11 w-full rounded-control border bg-surface px-3 text-base transition-[border-color,box-shadow] duration-150 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 lg:h-control lg:text-sm ${
               fieldErrors.url ? 'border-error' : 'border-secondary'
             }`}
           />

@@ -86,7 +86,10 @@ export function SettingsNav({ current }: { current: string }) {
         Back to Settings
       </Link>
 
-      <nav aria-label="Settings sections" className="hidden lg:block">
+      <nav
+        aria-label="Settings sections"
+        className="motion-rise hidden rounded-card border border-secondary bg-surface p-2 lg:sticky lg:top-24 lg:block"
+      >
         <ul className="flex flex-col gap-1">
           {SETTINGS_SECTIONS.map((section) => (
             <li key={section.href}>
@@ -95,7 +98,9 @@ export function SettingsNav({ current }: { current: string }) {
                   href={section.href}
                   aria-current={section.href === current ? 'page' : undefined}
                   className={`${ROW} ${
-                    section.href === current ? 'bg-muted font-medium text-primary' : 'hover:bg-muted'
+                    section.href === current
+                      ? 'bg-muted font-semibold text-primary'
+                      : 'text-on-surface/80 transition-colors duration-150 hover:bg-muted hover:text-primary'
                   }`}
                 >
                   <span className="min-w-0 break-words">{section.label}</span>

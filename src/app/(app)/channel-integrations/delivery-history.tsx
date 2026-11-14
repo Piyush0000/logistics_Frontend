@@ -23,11 +23,11 @@ function DeliveryRow({ delivery }: { delivery: WebhookDelivery }) {
   return (
     <li
       data-testid="delivery-row"
-      className="grid gap-2 border-b border-secondary py-4 first:pt-0 last:border-b-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
+      className="grid min-w-0 gap-2 rounded-control border border-secondary p-3 transition-colors duration-150 hover:bg-muted/40 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4 lg:p-4"
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <code className="text-sm [overflow-wrap:anywhere]">{delivery.topic}</code>
+          <code className="font-mono text-sm font-medium [overflow-wrap:anywhere]">{delivery.topic}</code>
           <span className={`rounded-full border px-2.5 py-0.5 text-xs ${tone}`}>{label}</span>
         </div>
         <p className="mt-1 text-sm leading-5 text-on-surface/70 [overflow-wrap:anywhere]">
@@ -62,12 +62,16 @@ export function DeliveryHistory({
   basePath: string;
 }) {
   if (page.items.length === 0 && isFirstPage) {
-    return <p className="text-sm">No deliveries yet. They will appear here once events are sent.</p>;
+    return (
+      <p className="rounded-control border border-dashed border-secondary p-4 text-sm text-on-surface/70">
+        No deliveries yet. They will appear here once events are sent.
+      </p>
+    );
   }
 
   return (
     <>
-      <ul>
+      <ul className="motion-stagger grid gap-3">
         {page.items.map((delivery) => (
           <DeliveryRow key={delivery.id} delivery={delivery} />
         ))}
@@ -78,12 +82,15 @@ export function DeliveryHistory({
           className="mt-4 flex flex-wrap justify-end gap-3 border-t border-secondary pt-4"
         >
           {isFirstPage ? null : (
-            <Link href={basePath} className={SECONDARY_BUTTON}>
+            <Link href={basePath} className={`${SECONDARY_BUTTON} h-11 hover:border-primary/40 hover:bg-muted lg:h-control`}>
               Newest deliveries
             </Link>
           )}
           {page.nextCursor ? (
-            <Link href={`${basePath}?cursor=${page.nextCursor}`} className={SECONDARY_BUTTON}>
+            <Link
+              href={`${basePath}?cursor=${page.nextCursor}`}
+              className={`${SECONDARY_BUTTON} h-11 hover:border-primary/40 hover:bg-muted lg:h-control`}
+            >
               Older deliveries
             </Link>
           ) : null}

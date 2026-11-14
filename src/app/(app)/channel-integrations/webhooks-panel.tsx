@@ -37,7 +37,7 @@ function WebhookRow({
   return (
     <li
       data-testid="webhook-row"
-      className="flex items-start gap-3 border-b border-secondary py-4 first:pt-0 last:border-b-0 last:pb-0"
+      className="flex min-w-0 items-start gap-3 rounded-control border border-secondary p-3 transition-colors duration-150 hover:bg-muted/40 lg:p-4"
     >
       <div className="min-w-0 flex-1">
         <p className="text-sm leading-5 font-medium [overflow-wrap:anywhere]">{webhook.url}</p>
@@ -156,7 +156,7 @@ export function WebhooksPanel({ webhooks }: { webhooks: Webhook[] }) {
         <button
           type="button"
           onClick={() => setDialog({ kind: 'create' })}
-          className={`${PRIMARY_BUTTON} w-full sm:w-auto`}
+          className={`${PRIMARY_BUTTON} h-11 w-full sm:w-auto lg:h-control`}
         >
           <Plus aria-hidden="true" className="size-4" />
           Create Webhook
@@ -164,7 +164,7 @@ export function WebhooksPanel({ webhooks }: { webhooks: Webhook[] }) {
       </div>
 
       {webhooks.length ? (
-        <ul>
+        <ul className="motion-stagger grid gap-3">
           {webhooks.map((webhook) => (
             <WebhookRow
               key={webhook.id}
@@ -175,8 +175,10 @@ export function WebhooksPanel({ webhooks }: { webhooks: Webhook[] }) {
           ))}
         </ul>
       ) : (
-        <div className="grid justify-items-center gap-2 py-10 text-center">
-          <WebhookIcon aria-hidden="true" className="size-8 text-primary" />
+        <div className="grid justify-items-center gap-2 rounded-control border border-dashed border-secondary py-10 text-center">
+          <span className="grid size-12 place-items-center rounded-card bg-muted text-primary">
+            <WebhookIcon aria-hidden="true" className="size-6" />
+          </span>
           <p className="text-sm">No webhooks yet. Create one to start receiving events.</p>
         </div>
       )}

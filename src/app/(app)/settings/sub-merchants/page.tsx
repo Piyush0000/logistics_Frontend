@@ -50,7 +50,7 @@ export default async function SubMerchantsPage({ searchParams }: SubMerchantsPag
                     <p className="text-sm text-on-surface/70">
                       {data.total} {data.total === 1 ? 'seller' : 'sellers'}
                     </p>
-                    <ul className="divide-y divide-secondary">
+                    <ul className="motion-stagger grid gap-3">
                       {data.items.map((seller) => (
                         <SellerRow key={seller.id} seller={seller} />
                       ))}

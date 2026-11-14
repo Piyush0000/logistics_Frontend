@@ -32,15 +32,15 @@ export default async function UsersPage() {
 
             <section
               data-testid="roles-card"
-              className="min-w-0 rounded-card border border-secondary bg-surface p-card"
+              className="motion-rise min-w-0 rounded-card border border-secondary bg-surface p-card"
             >
-              <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">
+              <h2 className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">
                 What each role can do
               </h2>
               <dl className="mt-4 grid gap-3 sm:grid-cols-2">
                 {ROLES.map((role) => (
-                  <div key={role} className="min-w-0 rounded-control bg-muted p-3">
-                    <dt className="text-sm font-medium">{ROLE_LABELS[role]}</dt>
+                  <div key={role} className="min-w-0 rounded-control border border-secondary/70 bg-tertiary/50 p-3">
+                    <dt className="text-sm font-semibold text-primary">{ROLE_LABELS[role]}</dt>
                     <dd className="mt-1 text-sm text-on-surface/70">{ROLE_DESCRIPTIONS[role]}</dd>
                   </div>
                 ))}

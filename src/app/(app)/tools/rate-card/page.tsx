@@ -52,20 +52,25 @@ export default async function RateCardPage({ searchParams }: RateCardPageProps) 
         <section
           data-testid="zone-legend"
           aria-labelledby="zone-legend-title"
-          className="rounded-card border border-secondary bg-surface p-card"
+          className="motion-rise rounded-card border border-secondary bg-surface p-card"
         >
-          <h2 id="zone-legend-title" className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">
+          <h2 id="zone-legend-title" className="font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">
             What the zones mean
           </h2>
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {ZONES.map((zone) => (
-              <div key={zone} data-testid="zone-entry" className="min-w-0">
+              <div key={zone} data-testid="zone-entry" className="flex min-w-0 items-start gap-3 rounded-control border border-secondary/70 bg-tertiary/50 p-3">
+                <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-control bg-muted font-mono text-base font-semibold text-primary">
+                  {zone}
+                </span>
+                <div className="min-w-0">
                 <dt className="text-sm">
                   <span className="font-semibold">Zone {zone}</span>
                   <span className="sr-only">: </span>
                   <span className="block font-medium text-on-surface/80">{ZONE_LABELS[zone].name}</span>
                 </dt>
                 <dd className="text-sm text-on-surface/70">{ZONE_LABELS[zone].description}</dd>
+                </div>
               </div>
             ))}
           </dl>

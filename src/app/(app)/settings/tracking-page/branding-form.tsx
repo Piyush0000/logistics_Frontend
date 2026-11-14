@@ -198,7 +198,7 @@ export function BrandingForm({ branding }: { branding: TrackingPageBranding }) {
               type="checkbox"
               checked={showCourier}
               onChange={(event) => setShowCourier(event.target.checked)}
-              className="size-5 accent-primary"
+              className="size-5 shrink-0 accent-primary"
             />
             Show the courier name
           </label>
@@ -256,7 +256,7 @@ export function BrandingForm({ branding }: { branding: TrackingPageBranding }) {
         </form>
 
         <div className="min-w-0">
-          <h3 className="mb-2 font-heading text-lg leading-7">Preview</h3>
+          <h3 className="mb-2 font-heading text-lg leading-7 font-bold tracking-tight">Preview</h3>
           <TrackingPreview
             displayName={displayName}
             supportEmail={supportEmail}

@@ -1,12 +1,14 @@
 'use client';
 
 import { useId, useState, useTransition, type FormEvent } from 'react';
+import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
 import type { QuoteField, QuoteFieldErrors } from '@/lib/data/rates/input';
 import { quoteAction, type QuoteActionResult } from './actions';
 import { QuoteList } from './quote-list';
 
-const INPUT = 'h-control w-full rounded-control border bg-surface px-3 text-base lg:text-sm';
+const INPUT =
+  'h-11 w-full rounded-control border bg-surface px-3 text-base transition-[border-color,box-shadow] duration-150 hover:border-on-surface/30 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 lg:h-control lg:text-sm';
 
 /** A typed number, or null when the box is empty or not a number. */
 function toNumber(text: string): number | null {
@@ -103,18 +105,19 @@ export function CalculatorForm() {
     ask();
   }
 
-  const radio = 'flex min-h-11 flex-1 items-center gap-3 rounded-control border border-secondary px-3 text-sm font-medium';
+  const radio =
+    'flex min-h-11 flex-1 cursor-pointer items-center gap-3 rounded-control border border-secondary px-3 text-sm font-medium transition-colors duration-150 hover:bg-muted has-[:checked]:border-primary has-[:checked]:bg-muted';
 
   return (
-    <div className="grid gap-6">
-      <section aria-label="Parcel details" className="rounded-card border border-secondary bg-surface p-card">
+    <div className="grid items-start gap-4 lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section aria-label="Parcel details" className="motion-rise min-w-0 rounded-card border border-secondary bg-surface p-card">
         <form noValidate onSubmit={handleSubmit} className="grid gap-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Pickup pincode" value={values.originPincode} error={errors.originPincode} onChange={set('originPincode')} inputMode="numeric" />
             <Field label="Delivery pincode" value={values.destinationPincode} error={errors.destinationPincode} onChange={set('destinationPincode')} inputMode="numeric" />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
             <Field label="Weight (kg)" value={values.weightKg} error={errors.weightKg} onChange={set('weightKg')} />
             <Field label="Length (cm)" value={values.lengthCm} error={errors.lengthCm} onChange={set('lengthCm')} />
             <Field label="Width (cm)" value={values.widthCm} error={errors.widthCm} onChange={set('widthCm')} />
@@ -165,7 +168,7 @@ export function CalculatorForm() {
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex h-control w-full items-center justify-center rounded-control bg-primary px-6 text-sm font-medium text-on-primary disabled:bg-primary/50 sm:w-auto"
+              className={`${PRIMARY_BUTTON} h-11 w-full px-6 sm:w-auto lg:h-control`}
             >
               Get quotes
             </button>

@@ -112,15 +112,15 @@ export function AddressList({ addresses }: { addresses: PickupAddress[] }) {
       {addresses.length === 0 ? (
         <EmptyState message="You have no saved pickup addresses. Add one so couriers know where to collect." />
       ) : (
-        <ul className="grid gap-3">
+        <ul className="motion-stagger grid gap-3 xl:grid-cols-2">
           {addresses.map((entry) => (
             <li
               key={entry.id}
               data-testid="address-item"
-              className="grid min-w-0 gap-3 rounded-card border border-secondary p-4"
+              className="grid min-w-0 content-start gap-3 rounded-control border border-secondary p-3 transition-colors duration-150 hover:bg-muted/40 lg:p-4"
             >
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h3 className="min-w-0 font-heading text-lg leading-6 break-words">{entry.label}</h3>
+                <h3 className="min-w-0 font-heading text-base leading-6 font-bold tracking-tight break-words lg:text-lg">{entry.label}</h3>
                 {entry.isDefault ? (
                   <span className="shrink-0 rounded-control bg-muted px-2 py-0.5 text-xs font-medium text-primary">
                     Default

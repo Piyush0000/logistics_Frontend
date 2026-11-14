@@ -5,6 +5,7 @@ import Form from 'next/form';
 import Link from 'next/link';
 import { useState } from 'react';
 import { carrierLabel } from '@/components/orders/carrier-badge';
+import { PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { SelectField } from '@/components/ui/select-field';
 
 type CarrierValue = CarrierName | 'all';
@@ -29,7 +30,7 @@ export function RateFilter({
   ];
 
   return (
-    <section aria-label="Filter the rate card" className="rounded-card border border-secondary bg-surface p-card">
+    <section aria-label="Filter the rate card" className="motion-rise rounded-card border border-secondary bg-surface p-card">
       <Form
         action={path}
         className="grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-[minmax(0,16rem)_auto] sm:items-end"
@@ -38,13 +39,13 @@ export function RateFilter({
         <div className="flex gap-3">
           <button
             type="submit"
-            className="h-control flex-1 rounded-control bg-primary px-6 text-sm font-medium text-on-primary sm:flex-none"
+            className={`${PRIMARY_BUTTON} h-11 flex-1 px-6 sm:flex-none lg:h-control`}
           >
             Apply
           </button>
           <Link
             href={path}
-            className="inline-flex h-control flex-1 items-center justify-center rounded-control border border-secondary px-4 text-sm font-medium sm:flex-none"
+            className={`${SECONDARY_BUTTON} h-11 flex-1 hover:border-primary/40 hover:bg-muted sm:flex-none lg:h-control`}
           >
             Clear
           </Link>

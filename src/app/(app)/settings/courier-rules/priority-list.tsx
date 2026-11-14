@@ -3,6 +3,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { carrierLabel } from '@/components/orders/carrier-badge';
 import type { CourierRules } from '@/lib/data/courier-rules/types';
+import { SwitchTrack } from '../switch';
 
 type Carrier = CourierRules['priority'][number];
 
@@ -28,7 +29,7 @@ export function PriorityList({
 
   return (
     <div className="min-w-0">
-      <h3 className="text-sm font-medium">Courier order</h3>
+      <h3 className="text-sm font-semibold">Courier order</h3>
       <p className="mt-1 text-sm text-on-surface/70">
         {rules.preference === 'custom'
           ? 'Couriers are tried from the top. Switched-off couriers are skipped.'
@@ -68,12 +69,7 @@ export function PriorityList({
                     onChange={(event) => onToggle(carrier, event.target.checked)}
                     className="peer absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
                   />
-                  <span
-                    aria-hidden="true"
-                    className="flex h-5 w-9 shrink-0 items-center rounded-full bg-on-surface/50 p-0.5 peer-checked:justify-end peer-checked:bg-primary peer-disabled:opacity-50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
-                  >
-                    <span className="size-4 rounded-full bg-surface" />
-                  </span>
+                  <SwitchTrack />
                   <span className="w-7">{enabled ? 'On' : 'Off'}</span>
                 </label>
                 <button

@@ -60,7 +60,7 @@ export function KycDocuments({
 }) {
   return (
     <fieldset className="grid min-w-0 gap-4">
-      <legend className="font-heading text-lg leading-7">KYC documents</legend>
+      <legend className="font-heading text-lg leading-7 font-bold tracking-tight">KYC documents</legend>
       <p className="text-sm text-on-surface/70">
         Files are not uploaded yet. Only each file&apos;s name, type and size are recorded.
       </p>

@@ -69,7 +69,7 @@ function Field({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <fieldset className="grid min-w-0 gap-4">
-      <legend className="font-heading text-lg leading-7">{title}</legend>
+      <legend className="font-heading text-lg leading-7 font-bold tracking-tight">{title}</legend>
       <div className="grid gap-4 md:grid-cols-2">{children}</div>
     </fieldset>
   );

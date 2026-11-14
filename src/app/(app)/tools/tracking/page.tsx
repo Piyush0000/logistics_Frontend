@@ -1,8 +1,9 @@
+import { Clock, MapPin, Radio, Truck, type LucideIcon } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { RetryButton } from '@/app/(app)/dashboard/retry-button';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
@@ -41,22 +42,32 @@ function ResultError({ result }: { result: Extract<DataResult<TrackingDetail>, {
 }
 
 function Facts({ detail }: { detail: TrackingDetail }) {
-  const facts: [string, ReactNode][] = [
-    ['Courier', <CarrierBadge key="courier" carrier={detail.carrier} />],
-    ['Latest location', detail.location ?? 'Not reported yet'],
-    ['Courier status', detail.rawStatus ?? 'Not reported'],
-    ['Last update', detail.lastEventAt ? formatDateTime(detail.lastEventAt) : 'No updates yet'],
+  const facts: [string, ReactNode, LucideIcon][] = [
+    ['Courier', <CarrierBadge key="courier" carrier={detail.carrier} />, Truck],
+    ['Latest location', detail.location ?? 'Not reported yet', MapPin],
+    ['Courier status', detail.rawStatus ?? 'Not reported', Radio],
+    ['Last update', detail.lastEventAt ? formatDateTime(detail.lastEventAt) : 'No updates yet', Clock],
   ];
   return (
-    <dl className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {facts.map(([label, value]) => (
-        <div key={label} className="min-w-0">
-          <dt className="text-xs text-on-surface/60">{label}</dt>
-          <dd className="mt-0.5 break-words text-sm font-medium">{value}</dd>
+    <dl className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 2xl:grid-cols-4">
+      {facts.map(([label, value, Icon]) => (
+        <div key={label} className="flex min-w-0 items-center gap-3 rounded-control border border-secondary/70 bg-tertiary/50 p-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-control bg-muted text-primary">
+            <Icon aria-hidden="true" className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <dt className="text-xs text-on-surface/60">{label}</dt>
+            <dd className="mt-0.5 break-words text-sm font-medium">{value}</dd>
+          </div>
         </div>
       ))}
     </dl>
   );
+}
+
+/** The heading over a timeline, styled like Home's card headings one level down. */
+function TimelineTitle() {
+  return <p className="text-sm font-semibold text-on-surface/70">Timeline</p>;
 }
 
 export default async function TrackingPage({ searchParams }: Props) {
@@ -89,16 +100,17 @@ export default async function TrackingPage({ searchParams }: Props) {
         {awbs.length === 0 ? (
           <EmptyState message="Enter an AWB above to see its status and timeline." />
         ) : (
-          <div className="grid gap-4">
+          <div className="motion-stagger grid gap-3 lg:gap-4">
             {truncated ? (
               <p className="text-sm text-on-surface/70">
                 Showing the first {awbs.length} of {total} AWBs.
               </p>
             ) : null}
-            {results.map(({ awb, result }) => {
+            {results.map(({ awb, result }, index) => {
+              const order = { '--i': index } as CSSProperties;
               const heading = (
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
-                  <h2 className="min-w-0 break-all font-heading text-xl leading-7">{awb}</h2>
+                  <h2 className="min-w-0 break-all font-heading text-lg leading-7 font-bold tracking-tight lg:text-xl">{awb}</h2>
                   {result.source === 'mock' ? <SampleBadge /> : null}
                   {result.ok ? <StatusBadge status={result.data.status} size="md" /> : null}
                 </div>
@@ -109,6 +121,7 @@ export default async function TrackingPage({ searchParams }: Props) {
                   <section
                     key={awb}
                     data-testid="tracking-card"
+                    style={order}
                     className="min-w-0 rounded-card border border-secondary bg-surface p-card"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -119,7 +132,10 @@ export default async function TrackingPage({ searchParams }: Props) {
                       {result.ok ? (
                         <>
                           <Facts detail={result.data} />
-                          <TrackingTimeline events={result.data.timeline} />
+                          <div className="grid gap-3">
+                            <TimelineTitle />
+                            <TrackingTimeline events={result.data.timeline} />
+                          </div>
                         </>
                       ) : (
                         <ResultError result={result} />
@@ -134,6 +150,7 @@ export default async function TrackingPage({ searchParams }: Props) {
                   <div
                     key={awb}
                     data-testid="tracking-item"
+                    style={order}
                     className="grid min-w-0 gap-3 rounded-card border border-secondary bg-surface p-card"
                   >
                     {heading}
@@ -146,7 +163,8 @@ export default async function TrackingPage({ searchParams }: Props) {
                 <details
                   key={awb}
                   data-testid="tracking-item"
-                  className="group min-w-0 rounded-card border border-secondary bg-surface p-card"
+                  style={order}
+                  className="group min-w-0 rounded-card border border-secondary bg-surface p-card transition-colors open:border-primary/40 hover:border-primary/40"
                 >
                   <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                     {heading}
@@ -157,12 +175,15 @@ export default async function TrackingPage({ searchParams }: Props) {
                   </summary>
                   <div className="mt-4 grid gap-5">
                     <Facts detail={result.data} />
-                    <TrackingTimeline events={result.data.timeline} />
+                    <div className="grid gap-3">
+                      <TimelineTitle />
+                      <TrackingTimeline events={result.data.timeline} />
+                    </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <ShareLink awb={awb} />
                       <Link
                         href={`/tools/tracking?awb=${encodeURIComponent(awb)}`}
-                        className="inline-flex h-control items-center text-sm font-medium text-primary"
+                        className="inline-flex h-11 items-center text-sm font-medium text-primary hover:text-accent lg:h-control"
                       >
                         Open on its own
                       </Link>

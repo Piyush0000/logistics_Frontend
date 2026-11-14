@@ -132,7 +132,7 @@ export function AddressForm({
               type="checkbox"
               checked={isDefault}
               onChange={(event) => setIsDefault(event.target.checked)}
-              className="size-5"
+              className="size-5 accent-primary"
             />
             Make this my default address
           </label>
