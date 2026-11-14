@@ -2,7 +2,7 @@ import 'server-only';
 
 import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
-import { CreateShipmentResponseSchema, ShipmentListResponseSchema } from '../../gateway/schemas/orders';
+import { CreateShipmentResponseSchema, OrdersPageSchema } from '../../gateway/schemas/orders';
 import { fromGateway, type DataResult } from '../source';
 import { mockOrdersService } from './mock';
 import type {
@@ -29,7 +29,7 @@ export async function fetchOrdersList(
   const path = `/api/v1/shipments${qs ? `?${qs}` : ''}`;
 
   const result = await gatewayFetch(path, {
-    schema: ShipmentListResponseSchema,
+    schema: OrdersPageSchema,
     token,
   });
 

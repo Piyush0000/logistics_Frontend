@@ -37,21 +37,21 @@ function payment(row: BulkRow): string {
 export function RowPreview({ rows }: { rows: BulkRow[] }) {
   return (
     <>
-      <div className="hidden lg:block">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full table-fixed text-left text-sm">
-          <thead className="border-b border-secondary text-xs text-on-surface/60">
+          <thead className="border-b border-secondary text-xs font-semibold tracking-wide text-on-surface/60 uppercase">
             <tr>
-              <th scope="col" className="w-16 py-2 pr-3 font-medium">Line</th>
-              <th scope="col" className="w-24 py-2 pr-3 font-medium">Status</th>
-              <th scope="col" className="w-1/4 py-2 pr-3 font-medium">Consignee</th>
-              <th scope="col" className="w-1/5 py-2 pr-3 font-medium">Destination</th>
-              <th scope="col" className="w-32 py-2 pr-3 font-medium">Payment</th>
-              <th scope="col" className="py-2 font-medium">Problems</th>
+              <th scope="col" className="w-16 py-3 pr-3 font-medium">Line</th>
+              <th scope="col" className="w-24 py-3 pr-3 font-medium">Status</th>
+              <th scope="col" className="w-1/4 py-3 pr-3 font-medium">Consignee</th>
+              <th scope="col" className="w-1/5 py-3 pr-3 font-medium">Destination</th>
+              <th scope="col" className="w-32 py-3 pr-3 font-medium">Payment</th>
+              <th scope="col" className="py-3 font-medium">Problems</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.line} data-testid="bulk-row" className="border-b border-secondary/50 align-top">
+              <tr key={row.line} data-testid="bulk-row" className="border-b border-secondary/50 align-top transition-colors duration-150 hover:bg-muted/50">
                 <td className="py-3 pr-3 font-mono">{row.line}</td>
                 <td className="py-3 pr-3">
                   <span className={row.input ? GOOD : BAD}>{row.input ? 'Valid' : 'Invalid'}</span>
@@ -66,7 +66,7 @@ export function RowPreview({ rows }: { rows: BulkRow[] }) {
         </table>
       </div>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="motion-stagger grid gap-3 lg:hidden">
         {rows.map((row) => (
           <article
             key={row.line}
@@ -101,18 +101,18 @@ export interface LineOutcome {
 export function RowResults({ outcomes }: { outcomes: LineOutcome[] }) {
   return (
     <>
-      <div className="hidden lg:block">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full table-fixed text-left text-sm">
-          <thead className="border-b border-secondary text-xs text-on-surface/60">
+          <thead className="border-b border-secondary text-xs font-semibold tracking-wide text-on-surface/60 uppercase">
             <tr>
-              <th scope="col" className="w-16 py-2 pr-3 font-medium">Line</th>
-              <th scope="col" className="w-28 py-2 pr-3 font-medium">Result</th>
-              <th scope="col" className="py-2 font-medium">Details</th>
+              <th scope="col" className="w-16 py-3 pr-3 font-medium">Line</th>
+              <th scope="col" className="w-28 py-3 pr-3 font-medium">Result</th>
+              <th scope="col" className="py-3 font-medium">Details</th>
             </tr>
           </thead>
           <tbody>
             {outcomes.map((outcome) => (
-              <tr key={outcome.line} data-testid="bulk-result" className="border-b border-secondary/50 align-top">
+              <tr key={outcome.line} data-testid="bulk-result" className="border-b border-secondary/50 align-top transition-colors duration-150 hover:bg-muted/50">
                 <td className="py-3 pr-3 font-mono">{outcome.line}</td>
                 <td className="py-3 pr-3">
                   <span className={outcome.ok ? GOOD : BAD}>{outcome.ok ? 'Booked' : 'Not booked'}</span>
@@ -124,7 +124,7 @@ export function RowResults({ outcomes }: { outcomes: LineOutcome[] }) {
         </table>
       </div>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="motion-stagger grid gap-3 lg:hidden">
         {outcomes.map((outcome) => (
           <article
             key={outcome.line}

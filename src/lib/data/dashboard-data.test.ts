@@ -18,6 +18,7 @@ function json(res: ServerResponse, status: number, body: unknown) {
 }
 
 const STATS = {
+  CREATE_REQUESTED: 0,
   PICKUP_SCHEDULED: 1,
   MANIFESTED: 2,
   IN_TRANSIT: 3,
@@ -57,6 +58,10 @@ describe('toShipmentSummary', () => {
       delivered: 5,
       rto: 13,
     });
+  });
+
+  it('counts shipments still being created as to be processed', () => {
+    expect(toShipmentSummary({ ...STATS, CREATE_REQUESTED: 4 }).toBeProcessed).toBe(5);
   });
 });
 

@@ -15,7 +15,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 
 export function B2bCards({ shipments }: { shipments: B2bShipment[] }) {
   return (
-    <div className="grid gap-3 lg:hidden">
+    <div className="motion-stagger grid gap-3 lg:hidden">
       {shipments.map((shipment) => (
         <article
           key={shipment.id}

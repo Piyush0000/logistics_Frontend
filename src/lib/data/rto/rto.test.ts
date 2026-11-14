@@ -17,6 +17,7 @@ function json(res: ServerResponse, status: number, body: unknown) {
 }
 
 const STATS = {
+  CREATE_REQUESTED: 0,
   PICKUP_SCHEDULED: 1,
   MANIFESTED: 2,
   IN_TRANSIT: 3,

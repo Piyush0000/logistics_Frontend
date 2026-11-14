@@ -95,7 +95,7 @@ export function UploadForm() {
 
   return (
     <div className="grid gap-6">
-      <section className="grid gap-4 rounded-card border border-secondary bg-surface p-card">
+      <section className="motion-rise grid gap-4 rounded-card border border-secondary bg-surface p-card">
         <div>
           <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">Upload a file</h2>
           <p className="mt-1 text-sm text-on-surface/70">
@@ -149,7 +149,7 @@ export function UploadForm() {
       </section>
 
       {rows ? (
-        <section data-testid="bulk-preview" className="grid gap-4 rounded-card border border-secondary bg-surface p-card">
+        <section data-testid="bulk-preview" className="motion-rise grid gap-4 rounded-card border border-secondary bg-surface p-card">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">Preview</h2>
@@ -184,7 +184,7 @@ export function UploadForm() {
       ) : null}
 
       {phase.kind === 'done' ? (
-        <section data-testid="bulk-results" className="grid gap-4 rounded-card border border-secondary bg-surface p-card">
+        <section data-testid="bulk-results" className="motion-rise grid gap-4 rounded-card border border-secondary bg-surface p-card">
           <div>
             <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">Results</h2>
             <p role="status" className="mt-1 text-sm text-on-surface/70">

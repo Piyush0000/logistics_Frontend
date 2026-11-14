@@ -11,7 +11,8 @@ export interface ShipmentSummary {
 
 export function toShipmentSummary(stats: ShipmentStats): ShipmentSummary {
   return {
-    toBeProcessed: stats.PICKUP_SCHEDULED,
+    // Booked but not yet accepted by order-engine still needs processing.
+    toBeProcessed: stats.CREATE_REQUESTED + stats.PICKUP_SCHEDULED,
     readyToShip: stats.MANIFESTED,
     inTransit: stats.IN_TRANSIT,
     outForDelivery: stats.OUT_FOR_DELIVERY,

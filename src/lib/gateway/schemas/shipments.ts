@@ -4,6 +4,7 @@ const count = z.number().int().nonnegative().default(0);
 
 /** GET /api/v1/shipments/stats. A status with no shipments may be left out. */
 export const ShipmentStatsSchema = z.object({
+  CREATE_REQUESTED: count,
   PICKUP_SCHEDULED: count,
   MANIFESTED: count,
   IN_TRANSIT: count,

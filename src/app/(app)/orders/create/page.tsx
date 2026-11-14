@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { SampleBadge } from '@/components/sample-badge';
+import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { resolveDataSource } from '@/lib/data/source';
@@ -31,19 +32,17 @@ export default async function CreateShipmentPage() {
             href="/orders"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
-            <ArrowLeft className="size-4" />
+            <ArrowLeft aria-hidden="true" className="size-4" />
             <span>Back to Orders</span>
           </Link>
           {resolveDataSource('orders') === 'mock' ? <SampleBadge /> : null}
         </div>
 
         {/* Title */}
-        <div>
-          <h1 className="font-heading text-2xl font-bold lg:text-3xl">Create New Shipment</h1>
-          <p className="mt-1 text-sm text-on-surface/70">
-            Book single shipment order with address validation and carrier allocation.
-          </p>
-        </div>
+        <PageHeader
+          title="Create New Shipment"
+          description="Book single shipment order with address validation and carrier allocation."
+        />
 
         {/* Booking Form */}
         <CreateShipmentForm

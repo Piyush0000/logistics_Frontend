@@ -51,7 +51,7 @@ export function OrderFilters() {
   return (
     <div className="grid gap-4">
       {/* Top action row */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-secondary bg-surface p-3">
         {/* Search input */}
         <div className="relative min-w-[240px] flex-1 sm:max-w-md">
           <Search
@@ -68,13 +68,13 @@ export function OrderFilters() {
               }
             }}
             onBlur={(e) => updateParam('search', e.target.value)}
-            className="h-control w-full rounded-control border border-secondary bg-surface pr-3 pl-9 text-sm text-on-surface placeholder:text-on-surface/40 focus:border-primary focus:outline-none"
+            className="h-control w-full rounded-control border border-secondary bg-tertiary/60 pr-3 pl-9 text-sm text-on-surface placeholder:text-on-surface/40 focus:border-primary focus:outline-none"
           />
         </div>
 
         {/* Carrier filter & Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-control border border-secondary bg-surface px-2">
+          <div className="flex items-center gap-1.5 rounded-control border border-secondary bg-tertiary/60 px-2">
             <Filter aria-hidden="true" className="size-4 text-on-surface/50" />
             <select
               value={currentCarrier}
@@ -92,7 +92,7 @@ export function OrderFilters() {
 
           <Link
             href="/ndr"
-            className="flex h-control items-center gap-1.5 rounded-control border border-secondary bg-surface px-3 text-sm font-medium text-on-surface hover:border-primary hover:text-primary"
+            className="flex h-control items-center gap-1.5 rounded-control border border-secondary bg-surface px-3 text-sm font-medium text-on-surface transition-colors duration-150 hover:border-primary hover:text-primary"
           >
             <Undo2 aria-hidden="true" className="size-4" />
             <span>NDR</span>
@@ -100,7 +100,7 @@ export function OrderFilters() {
 
           <Link
             href="/orders/create"
-            className="flex h-control items-center gap-1.5 rounded-control bg-primary px-3 text-sm font-medium text-on-primary shadow-sm hover:bg-primary/90"
+            className="flex h-control items-center gap-1.5 rounded-control bg-primary px-3 text-sm font-semibold text-on-primary shadow-[0_4px_14px_rgb(24_62_235/0.25)] transition-colors duration-150 hover:bg-primary/90"
           >
             <Plus aria-hidden="true" className="size-4" />
             <span>Create Shipment</span>
@@ -112,7 +112,7 @@ export function OrderFilters() {
       <div
         role="tablist"
         aria-label="Shipment status tabs"
-        className="flex overflow-x-auto rounded-full bg-muted p-1 [scrollbar-width:none]"
+        className="flex gap-1 overflow-x-auto rounded-card border border-secondary bg-surface p-1.5 [scrollbar-width:none] max-sm:pr-6 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]"
       >
         {STATUS_TABS.map((tab) => {
           const isSelected = currentStatus === tab.value;
@@ -124,10 +124,10 @@ export function OrderFilters() {
               aria-selected={isSelected}
               disabled={pending}
               onClick={() => updateParam('status', tab.value)}
-              className={`h-10 min-w-20 shrink-0 rounded-full px-4 text-xs font-medium transition-colors sm:text-sm ${
+              className={`h-11 min-w-20 shrink-0 rounded-control px-4 text-xs transition-colors duration-150 sm:text-sm lg:h-10 ${
                 isSelected
-                  ? 'bg-primary text-on-primary shadow-xs'
-                  : 'text-on-surface/70 hover:text-on-surface'
+                  ? 'bg-muted font-semibold text-primary'
+                  : 'font-medium text-on-surface/70 hover:bg-muted/60 hover:text-primary'
               }`}
             >
               {tab.label}
