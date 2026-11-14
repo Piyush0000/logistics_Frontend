@@ -13,7 +13,7 @@ interface OrdersTableProps {
 
 export function OrdersTable({ orders }: OrdersTableProps) {
   return (
-    <div className={`${t.wrap} motion-rise hidden lg:block`}>
+    <div className={`${t.wrap} hidden lg:block`}>
       <table className={t.table}>
         <thead>
           <tr>

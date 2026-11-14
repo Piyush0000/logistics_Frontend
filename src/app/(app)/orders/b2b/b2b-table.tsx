@@ -9,7 +9,7 @@ const HEAD = t.th;
 
 export function B2bTable({ shipments }: { shipments: B2bShipment[] }) {
   return (
-    <div className={`${t.wrap} motion-rise hidden lg:block`}>
+    <div className={`${t.wrap} hidden lg:block`}>
       <table className="w-full border-collapse text-left text-sm">
         <thead>
           <tr>

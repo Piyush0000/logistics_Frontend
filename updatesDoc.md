@@ -6,10 +6,68 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Redesign (branch `feature/redesign`), Phases 1 and 2 done (foundation; Home, Dashboard, Smart insights, ⌘K) |
-| **Waiting on** | The user's sign-off on Home and Dashboard (desktop and phone, light and dark) |
-| **Next step** | After sign-off: Phase 3 module passes (Shipments, NDR/RTO/Pickups, Finances, Reports/Tools, Settings, Support, sign-in and public pages) |
+| **Current stage** | Redesign (branch `feature/redesign`) complete: every screen in the Home design, light and dark, desktop and phone |
+| **Waiting on** | The team's testing |
+| **Next step** | Team runs the unit and browser suites (`pnpm test`, then `pnpm build` and `pnpm test:e2e`); merge `feature/redesign` when green |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
+
+## 2026-11-14: Redesign Phases 3 and 4, every module in the Home design
+
+The user approved the Dashboard once it matched Home and asked for every screen to follow it.
+
+### What changed
+- **Shipments:**
+  - list, detail, create, bulk, B2B and B2C restyled;
+  - phone cards gain Track and Copy AWB buttons, plus the same actions on a swipe left;
+  - gateway search says how many matched on the page and keeps Next/Previous by gateway page, even when a page has no matches;
+  - `normaliseOrdersPage` accepts the gateway demo shape and order-engine's `{ shipments, pagination }` (a null AWB shows "Not assigned" and links by shipment id);
+  - `CREATE_REQUESTED` counts toward To Be Processed.
+- **NDR / RTO / Pickups:**
+  - toned figures, an NDR outcomes gauge and stage bar, an RTO stage bar;
+  - dashboard-style tabs and shared tables;
+  - the manifest print stays light and plain.
+- **Finances / Reconciliation:**
+  - toned figures and shared tables with mono amounts;
+  - the wallet shows money in and out for the transactions on the page;
+  - weight discrepancies get a waiting-charges bar;
+  - printing from dark mode now uses the light colours.
+- **Reports / Tools / Integrations / Settings:**
+  - Home-style cards; the settings index reads like Home's quick actions;
+  - switches show a clear off state;
+  - the rate calculator summarises cheapest, serviceable and fastest quotes.
+- **Support:** the help centre filters on the server, so only titles and summaries reach the browser (checked: no article body is in `.next/static`). Tickets and articles are restyled.
+- **Sign-in and public pages:**
+  - the brand panel is in Midnight Glass in both themes, with the new headline "Multiple logistics partners. One unified dashboard.";
+  - a theme switch sits in the corner;
+  - the public tracking page has an Evoc Ships header on the themed surface.
+- **Loading screens** shaped like each page are added for `/orders`, `/orders/[id]`, `/orders/create`, `/ndr`, the manifest print page, `/finances/invoices/[id]`, support tickets, ticket detail, help, article and `/track/[awb]`. The other loading screens are reshaped.
+- **New:** [docs/backend-connection-gaps.md](docs/backend-connection-gaps.md), the corrected list for the backend team.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint` and `pnpm build` all pass.
+- Screenshots were taken of every route at desktop, phone and 320px, in light and dark (300 files in `test-results/screenshots/`), and spot-checked.
+- The Shipments table's arrival fade was removed after screenshots caught it part-way.
+- `Evoc_ships` is still at `aace603`. Its `turbo.json` has a change made outside this work (it adds `"concurrency": "15"`); it was reported to the user and left untouched.
+
+### Test assertions edited without running them
+- No existing e2e assertion was changed: no test id, heading, label, field name or asserted text changed. New visible text was checked against `e2e/` for collisions.
+- Unit fixtures gained `CREATE_REQUESTED: 0`: `src/lib/data/dashboard-data.test.ts` and `src/lib/data/rto/rto.test.ts`.
+- New unit tests, written but not run:
+  - `normaliseOrdersPage` in `src/lib/gateway/schemas/orders.test.ts`;
+  - `src/lib/format/awb.test.ts`;
+  - the `CREATE_REQUESTED` summary case.
+
+### Not verified (team to test)
+- **Test suites:** no unit or browser suite was run during the redesign, per the user.
+- **Gateway search:** results do not narrow until the URL updates (a short pause), and `?q=` now appears in the address bar as you type.
+- **Swipe actions:** need a check on a real touch device.
+
+### Follow-ups
+- `cacheComponents` / partial prerendering and the React Compiler.
+- Merchant branding on the public tracking page.
+- Move `SwitchTrack` and a shared text-input class into `src/components/ui`.
+- A chat assistant once the backend has an AI service.
+- `/settings/company` still bundles the contracts package through `kyc.ts`.
 
 ## 2026-11-14: Dashboard brought in line with Home (user request)
 
