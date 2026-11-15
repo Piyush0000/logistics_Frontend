@@ -29,6 +29,14 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 
 **Do not deploy the demo sign-in publicly.** It accepts any email. Replace it when the backend adds login routes, in `src/lib/data/session/gateway.ts`.
 
+## Admin panel
+
+The founder-only admin panel is at `/admin`. It manages merchants, onboarding and KYC, all shipments, money, pricing, support and system health. Locally, sign in with the demo account shown on `/admin/login`; production needs `ADMIN_EMAIL`, `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`.
+
+- [docs/admin/README.md](docs/admin/README.md): setup, security and code layout
+- [docs/admin/team-split.md](docs/admin/team-split.md): who builds which section
+- [docs/admin/backend-needs.md](docs/admin/backend-needs.md): the routes the backend still has to add
+
 ## Commands
 
 | Command | What it does |

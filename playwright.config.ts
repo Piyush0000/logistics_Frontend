@@ -4,6 +4,13 @@ import { e2ePort, e2eUrl } from './e2e/helpers';
 // Test servers run production builds, which refuse the demo sign-in unless this is set
 // (src/lib/data/session/index.ts). Only these local test servers turn it on.
 const demoLogin = { ALLOW_DEMO_LOGIN: 'true' };
+// The admin account for e2e (matches e2e/admin-helpers.ts). Production builds refuse admin sign-in
+// without these, so only the main test server gets them.
+const testAdmin = {
+  ADMIN_EMAIL: 'admin@evocships.test',
+  ADMIN_PASSWORD: 'evoc-admin-e2e-password',
+  ADMIN_SESSION_SECRET: 'e2e-only-admin-session-secret-0123456789',
+};
 
 const gatewayData = {
   DATA_SOURCE_SHIPMENTS: 'gateway',
@@ -43,7 +50,7 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       // Only this server serves the error-page test route; every other server answers it with 404.
-      env: { ...demoLogin, E2E_ERROR_ROUTE: 'on' },
+      env: { ...demoLogin, ...testAdmin, E2E_ERROR_ROUTE: 'on' },
     },
     {
       command: 'node e2e/stub-gateway.mjs',

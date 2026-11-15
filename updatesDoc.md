@@ -6,11 +6,59 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Redesign (branch `feature/redesign`) complete: every screen in the Home design, light and dark, desktop and phone |
-| **Waiting on** | The team's testing |
-| **Next step** | Team runs the unit and browser suites (`pnpm test`, then `pnpm build` and `pnpm test:e2e`); merge `feature/redesign` when green |
+| **Current stage** | Admin panel foundation on branch `feature/admin` (from `main`, after the redesign merged in PR #4) |
+| **Waiting on** | The moderator merging `feature/admin` into `main`, then handing the sections to the two teammates ([docs/admin/team-split.md](docs/admin/team-split.md)) |
+| **Next step** | Teammates branch `admin/<section>` from `main` and open PRs into `main`; the moderator reviews and merges |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+## 2026-11-15: Admin panel foundation
+
+Branch `feature/admin`, from `main`. A founder-only admin panel at `/admin`, inside this frontend, built from the merchant app's design system. This is the foundation only: every section has a working page on sample data and a typed data service, so the two developers start from a running page rather than a blank file.
+
+### What was built
+- **Sign-in:**
+  - one admin account from `ADMIN_EMAIL`, `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`;
+  - a signed session cookie (HMAC-SHA256, httpOnly, `SameSite=Strict`, scoped to `/admin`, 8 hours), separate from merchant sessions;
+  - outside production a demo account fills in; in production, missing settings refuse every sign-in.
+- **Rendering and guards:**
+  - every admin page renders per request, so admin settings provided at runtime take effect;
+  - each page guards itself with `requireAdminSession()`;
+  - the layout never redirects, so unknown pages answer 404;
+  - the admin pages are marked `noindex`.
+- **Shell:**
+  - a fixed menu on desktop, a slide-in menu on phones, a top bar with the theme switch and sign out;
+  - `src/components/admin/admin-nav.ts` lists the eight sections and their owners.
+- **Data:**
+  - `src/lib/admin/data/<module>/` (types, mock, gateway, index) for overview, merchants, onboarding, shipments, money, pricing, support and system, switched by `DATA_SOURCE_ADMIN_<MODULE>`;
+  - the shared sample merchants in `seed.ts` keep names and figures the same across sections;
+  - gateway mode shows each module as unavailable until the backend adds admin routes.
+- **Pages:**
+  - **Overview is the reference page:** figures, a 14-day chart, the shipment pipeline and a "Needs you" list.
+  - The other seven sections each show their main list and a "Still to build here" card with the remaining work.
+- **Docs:**
+  - [docs/admin/README.md](docs/admin/README.md): setup, security, code layout, how to build a section;
+  - [docs/admin/team-split.md](docs/admin/team-split.md): the two teammates' sections, shared files, cross-team contracts, working agreement, suggested order;
+  - [docs/admin/backend-needs.md](docs/admin/backend-needs.md): the admin routes the backend needs.
+
+- **Browser tests:** `e2e/admin.spec.ts` and `e2e/admin-helpers.ts` cover sign-in, the page guard, the menu and every section loading. The main e2e server gets a test admin account (`testAdmin` in `playwright.config.ts`).
+- **Teammate briefs:** [docs/admin/prompts/teammate-1-operations.md](docs/admin/prompts/teammate-1-operations.md) and [docs/admin/prompts/teammate-2-money-platform.md](docs/admin/prompts/teammate-2-money-platform.md) give each teammate the full task, rules, what "done" means, tests and the PR checklist.
+
+### Verified
+- On branch `feature/admin`, rebuilt from the latest `main`, the same steps CI runs all pass:
+  - `pnpm install --frozen-lockfile`;
+  - `pnpm lint` and `pnpm typecheck`;
+  - `pnpm test`: 91 files, 823 tests;
+  - `pnpm build`.
+- `pnpm exec playwright test e2e/admin.spec.ts --project=desktop --project=phone` gave 34 passed and 2 skipped (one desktop-only check, one phone-only check).
+- A browser check on the production build, run with admin settings, covered:
+  - **Signed out:** `/admin` redirects to the sign-in page, a merchant session does not open the admin panel, and a wrong password shows the error.
+  - **Unknown pages:** answer 404, signed in or out.
+  - **Sign out:** works.
+  - **All eight pages:** answer 200 with no sideways scroll at desktop (light and dark) and on a phone.
+- **Fixed during the check:**
+  - a build without admin settings had prerendered the admin pages;
+  - the demo password hint is now never shown in production;
+  - merchant names are not linked until the detail page exists.
 
 ## 2026-11-15: main merged into the redesign branch, ready to merge to main
 
