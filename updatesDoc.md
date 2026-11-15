@@ -11,6 +11,19 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 | **Next step** | Team runs the unit and browser suites (`pnpm test`, then `pnpm build` and `pnpm test:e2e`); merge `feature/redesign` when green |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+
+## 2026-11-15: main merged into the redesign branch, ready to merge to main
+
+- Merged `main` into `feature/redesign` with no conflicts. It brings CI (`.github/workflows/ci.yml`), the Docker image, deploy, and the production demo-login block (`ALLOW_DEMO_LOGIN`).
+- The browser-test servers and `scripts/screenshots.mjs` run production builds, so they now set `ALLOW_DEMO_LOGIN=true`. Without it every sign-in in the e2e suite would fail. Only these local test servers set it; real deployments stay protected.
+- **Checked:** the same steps CI runs all pass:
+  - `pnpm install --frozen-lockfile`;
+  - `pnpm lint` and `pnpm typecheck`;
+  - `pnpm test`: 90 files, 814 tests passed;
+  - `pnpm build`.
+
+  A browser run of `e2e/foundation.spec.ts` and `e2e/home.spec.ts` on desktop gave 15 passed and 2 skipped (phone-only checks). The full e2e suite was not run.
+
 ## 2026-11-15: Sidebar opens on hover (user request)
 
 ### What changed

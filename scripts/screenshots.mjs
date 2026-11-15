@@ -84,7 +84,8 @@ async function startServer() {
   let log = '';
   server = spawn(process.execPath, [NEXT_BIN, 'start', '-p', String(PORT)], {
     cwd: ROOT,
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
+    // Production builds refuse the demo sign-in unless this is set; the script signs in with it.
+    env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1', ALLOW_DEMO_LOGIN: 'true' },
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: process.platform !== 'win32',
   });

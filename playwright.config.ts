@@ -1,6 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 import { e2ePort, e2eUrl } from './e2e/helpers';
 
+// Test servers run production builds, which refuse the demo sign-in unless this is set
+// (src/lib/data/session/index.ts). Only these local test servers turn it on.
+const demoLogin = { ALLOW_DEMO_LOGIN: 'true' };
+
 const gatewayData = {
   DATA_SOURCE_SHIPMENTS: 'gateway',
   DATA_SOURCE_ORDERS: 'gateway',
@@ -39,7 +43,7 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       // Only this server serves the error-page test route; every other server answers it with 404.
-      env: { E2E_ERROR_ROUTE: 'on' },
+      env: { ...demoLogin, E2E_ERROR_ROUTE: 'on' },
     },
     {
       command: 'node e2e/stub-gateway.mjs',
@@ -52,7 +56,7 @@ export default defineConfig({
       url: e2eUrl(3104) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { ...gatewayData, GATEWAY_URL: e2eUrl(3103) },
+      env: { ...demoLogin, ...gatewayData, GATEWAY_URL: e2eUrl(3103) },
     },
     {
       // Real-data mode with nothing listening, to test the backend being down.
@@ -60,7 +64,7 @@ export default defineConfig({
       url: e2eUrl(3105) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { ...gatewayData, GATEWAY_URL: e2eUrl(3199) },
+      env: { ...demoLogin, ...gatewayData, GATEWAY_URL: e2eUrl(3199) },
     },
     {
       // Real-data mode for every feature the gateway has no route for (wallet, COD, NDR, setup,
@@ -70,7 +74,7 @@ export default defineConfig({
       url: e2eUrl(3106) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
-      env: { DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway', DATA_SOURCE_PICKUPS: 'gateway', DATA_SOURCE_INVOICES: 'gateway', DATA_SOURCE_WEIGHT: 'gateway', DATA_SOURCE_WEIGHT_SETTINGS: 'gateway', DATA_SOURCE_RATES: 'gateway', DATA_SOURCE_ANALYTICS: 'gateway', DATA_SOURCE_PROFILE: 'gateway', DATA_SOURCE_MESSAGES: 'gateway', DATA_SOURCE_COMPANY: 'gateway', DATA_SOURCE_TEAM: 'gateway', DATA_SOURCE_SUPPORT: 'gateway', DATA_SOURCE_TRACKING_PAGE: 'gateway', DATA_SOURCE_NOTIFICATIONS: 'gateway', DATA_SOURCE_COURIER_RULES: 'gateway', DATA_SOURCE_SUB_MERCHANTS: 'gateway' },
+      env: { ...demoLogin, DATA_SOURCE_WALLET: 'gateway', DATA_SOURCE_COD: 'gateway', DATA_SOURCE_NDR: 'gateway', DATA_SOURCE_ONBOARDING: 'gateway', DATA_SOURCE_B2B: 'gateway', DATA_SOURCE_PICKUP_ADDRESSES: 'gateway', DATA_SOURCE_PICKUPS: 'gateway', DATA_SOURCE_INVOICES: 'gateway', DATA_SOURCE_WEIGHT: 'gateway', DATA_SOURCE_WEIGHT_SETTINGS: 'gateway', DATA_SOURCE_RATES: 'gateway', DATA_SOURCE_ANALYTICS: 'gateway', DATA_SOURCE_PROFILE: 'gateway', DATA_SOURCE_MESSAGES: 'gateway', DATA_SOURCE_COMPANY: 'gateway', DATA_SOURCE_TEAM: 'gateway', DATA_SOURCE_SUPPORT: 'gateway', DATA_SOURCE_TRACKING_PAGE: 'gateway', DATA_SOURCE_NOTIFICATIONS: 'gateway', DATA_SOURCE_COURIER_RULES: 'gateway', DATA_SOURCE_SUB_MERCHANTS: 'gateway' },
     },
     {
       // Mock mode, for specs that submit company details. That sets KYC to submitted for the whole
@@ -79,6 +83,7 @@ export default defineConfig({
       url: e2eUrl(3108) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
+      env: demoLogin,
     },
     {
       // Mock mode, for the courier move tests. They read the exact order, so nothing else may move couriers here.
@@ -86,6 +91,7 @@ export default defineConfig({
       url: e2eUrl(3110) + '/login',
       reuseExistingServer: false,
       timeout: 60_000,
+      env: demoLogin,
     },
   ],
 });
