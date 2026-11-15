@@ -1,19 +1,51 @@
 import 'server-only';
 
-import { fromMock } from '../../../data/source';
-import { daysAgo, SEED_MERCHANTS } from '../seed';
+import { fromMock, type DataResult } from '../../../data/source';
+import { mockNotFound } from '../not-found';
+import { daysAgo, SEED_MERCHANTS, seedMerchant } from '../seed';
 import { cleanAuditEntry, filterAuditLog } from './audit';
-import type { AdminSystemService, AuditEntry, ServiceHealth } from './types';
+import type { AdminSystemService, AuditEntry, ServiceHealth, WebhookFailure } from './types';
 
-// The backend's services (Evoc_ships/services), as the system page will check them.
-const HEALTH: ServiceHealth[] = [
+// The backend's services (Evoc_ships/services). Adapters did not answer in time: "No answer".
+const HEALTH: Omit<ServiceHealth, 'checkedAt'>[] = [
   { service: 'gateway', status: 'up', latencyMs: 38 },
   { service: 'order-engine', status: 'up', latencyMs: 54 },
   { service: 'tracking-engine', status: 'up', latencyMs: 61 },
   { service: 'ledger-engine', status: 'up', latencyMs: 47 },
   { service: 'reconciliation', status: 'degraded', latencyMs: 912 },
   { service: 'webhooks', status: 'up', latencyMs: 43 },
-].map((entry) => ({ ...entry, status: entry.status as ServiceHealth['status'], checkedAt: daysAgo(0) }));
+  { service: 'adapters', status: 'down', latencyMs: null },
+];
+
+/** Invented failed deliveries, for merchants that ship (see the merchants sample data). */
+function sampleWebhookFailures(): WebhookFailure[] {
+  const rows: [id: string, merchantId: string, topic: string, url: string, attempts: number, http: number | null, error: string, hoursAgo: number, subscription: WebhookFailure['subscriptionStatus']][] = [
+    ['whd_0f3a', 'mer_001', 'shipment.status.updated', 'https://kalpahome.example/hooks/evoc', 8, 503, 'Service Unavailable', 2, 'paused'],
+    ['whd_1b7c', 'mer_003', 'shipment.delivered', 'https://urbanthread.example/api/webhooks', 8, null, 'Timed out after 10 seconds', 5, 'active'],
+    ['whd_2c91', 'mer_005', 'cod.remitted', 'https://pixelgadgets.example/evoc/cod', 8, 401, 'Unauthorized: signature rejected', 9, 'active'],
+    ['whd_3d44', 'mer_002', 'shipment.status.updated', 'https://neelgiri.example/webhook', 8, 404, 'Not Found', 20, 'active'],
+    ['whd_4e08', 'mer_004', 'shipment.rto_initiated', 'https://sahyadri.example/hooks', 8, 500, 'Internal Server Error', 30, 'deleted'],
+  ];
+  return rows.map(([id, merchantId, topic, targetUrl, attempts, lastHttpStatus, lastError, hoursAgo, subscriptionStatus]) => ({
+    id,
+    merchantId,
+    merchantName: seedMerchant(merchantId)!.name,
+    topic,
+    targetUrl,
+    attempts,
+    lastHttpStatus,
+    lastError,
+    lastAttemptAt: daysAgo(0, hoursAgo),
+    status: 'failed',
+    subscriptionStatus,
+  }));
+}
+
+const conflict = (message: string): DataResult<never> => ({
+  ok: false,
+  source: 'mock',
+  error: { kind: 'conflict', status: 409, message },
+});
 
 // Names come from the shared sample merchants, so they match every other admin page.
 const merchant = (index: number) => {
@@ -52,10 +84,26 @@ function sampleAudit(): AuditEntry[] {
 export function createMockAdminSystemService(): AdminSystemService {
   const audit = sampleAudit();
   let nextId = audit.length + 1;
+  const failures = sampleWebhookFailures();
 
   return {
     async getHealth() {
-      return fromMock(HEALTH);
+      // Checked now, so Refresh shows a new time.
+      const checkedAt = new Date().toISOString();
+      return fromMock(HEALTH.map((entry) => ({ ...entry, checkedAt })));
+    },
+
+    async listWebhookFailures() {
+      return fromMock(failures.map((entry) => ({ ...entry })).sort((a, b) => b.lastAttemptAt.localeCompare(a.lastAttemptAt)));
+    },
+
+    async retryWebhookDelivery(id) {
+      const delivery = failures.find((entry) => entry.id === id);
+      if (!delivery) return mockNotFound('Delivery');
+      if (delivery.subscriptionStatus === 'deleted') return conflict('The merchant deleted this webhook, so it cannot be sent again.');
+      if (delivery.status === 'queued') return conflict('This delivery is already queued to be sent again.');
+      delivery.status = 'queued';
+      return fromMock({ ...delivery });
     },
     async listAuditLog(filters) {
       return fromMock(filterAuditLog(audit, filters));
@@ -74,7 +122,16 @@ export function createMockAdminSystemService(): AdminSystemService {
 // Kept on globalThis so every page and server action in this server sees the same log.
 const shared = globalThis as typeof globalThis & { evocMockAdminSystem?: AdminSystemService };
 
+// The kept service outlives hot reloads in `pnpm dev`. When the code gains or loses a method, start a
+// fresh one instead of serving the old shape ("… is not a function" until the server restarts).
+let methods: string | undefined;
+const methodsOf = (service: object) => Object.keys(service).sort().join();
+
 export function mockAdminSystemService(): AdminSystemService {
-  shared.evocMockAdminSystem ??= createMockAdminSystemService();
+  if (shared.evocMockAdminSystem) {
+    methods ??= methodsOf(createMockAdminSystemService());
+    if (methodsOf(shared.evocMockAdminSystem) === methods) return shared.evocMockAdminSystem;
+  }
+  shared.evocMockAdminSystem = createMockAdminSystemService();
   return shared.evocMockAdminSystem;
 }
