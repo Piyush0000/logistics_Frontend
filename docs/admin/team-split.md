@@ -4,6 +4,10 @@ Two developers each build their own sections. The moderator (project lead) revie
 
 Read [README.md](README.md) first. It covers how to run the panel, sign in and build a section.
 
+**Each teammate's full brief** (rules, every task with what "done" means, tests and the PR checklist), written so it can also be pasted into an AI coding assistant:
+- Teammate 1: [prompts/teammate-1-operations.md](prompts/teammate-1-operations.md)
+- Teammate 2: [prompts/teammate-2-money-platform.md](prompts/teammate-2-money-platform.md)
+
 ## Teammate 1: Operations (merchants and their shipments)
 
 | Section | Route | Files you own | Build |

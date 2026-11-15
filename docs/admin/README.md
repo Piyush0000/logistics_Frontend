@@ -49,7 +49,7 @@ Locally the admin panel uses a demo account, which the sign-in page shows:
 2. **Page.** `requireAdminSession()`, then `PageHeader`, then a `DataCard` per data result (it shows the Sample badge and errors), with `StatTile` figures, charts from `src/components/charts` and tables with `tableStyles`.
 3. **Actions.** Write server actions next to the page (`actions.ts`). Each one calls `requireAdminSession()` again, validates its input on the server, and returns a plain state for `useActionState`.
 4. **Phone.** Below 1024px, show cards instead of wide tables. Tap targets are at least 44px (`h-11 lg:h-control`).
-5. **Tests.** Unit-test the logic: mock filters, input checks, formatting. Browser specs for admin go in `e2e/admin-*.spec.ts`. Admin routes are **not** added to `e2e/routes.ts`, whose checks sign in as a merchant.
+5. **Tests.** Unit-test the logic: mock filters, input checks, formatting. Browser specs for admin go in `e2e/admin-<section>.spec.ts` and start with `signInAdmin(page)` from `e2e/admin-helpers.ts`. `e2e/admin.spec.ts` already covers sign-in, the page guard, the menu and every section loading. The main e2e server (port 3101) is started with a test admin account (`testAdmin` in `playwright.config.ts`). Admin routes are **not** added to `e2e/routes.ts`, whose checks sign in as a merchant.
 6. **Docs.** Update `updatesDoc.md` and delete the section's items from its `PlannedWork` card as they ship. Remove the card when the section is done.
 
 Data sources switch per module with `DATA_SOURCE_ADMIN_<MODULE>=gateway|mock`, for example `DATA_SOURCE_ADMIN_MERCHANTS=gateway`. The default is `mock`.

@@ -40,8 +40,16 @@ Branch `feature/admin`, from `main`. A founder-only admin panel at `/admin`, ins
   - [docs/admin/team-split.md](docs/admin/team-split.md): the two teammates' sections, shared files, cross-team contracts, working agreement, suggested order;
   - [docs/admin/backend-needs.md](docs/admin/backend-needs.md): the admin routes the backend needs.
 
+- **Browser tests:** `e2e/admin.spec.ts` and `e2e/admin-helpers.ts` cover sign-in, the page guard, the menu and every section loading. The main e2e server gets a test admin account (`testAdmin` in `playwright.config.ts`).
+- **Teammate briefs:** [docs/admin/prompts/teammate-1-operations.md](docs/admin/prompts/teammate-1-operations.md) and [docs/admin/prompts/teammate-2-money-platform.md](docs/admin/prompts/teammate-2-money-platform.md) give each teammate the full task, rules, what "done" means, tests and the PR checklist.
+
 ### Verified
-- `pnpm typecheck`, `pnpm lint` and `pnpm build` pass. The new admin token unit tests (9) pass. No other suite was run.
+- On branch `feature/admin`, rebuilt from the latest `main`, the same steps CI runs all pass:
+  - `pnpm install --frozen-lockfile`;
+  - `pnpm lint` and `pnpm typecheck`;
+  - `pnpm test`: 91 files, 823 tests;
+  - `pnpm build`.
+- `pnpm exec playwright test e2e/admin.spec.ts --project=desktop --project=phone` gave 34 passed and 2 skipped (one desktop-only check, one phone-only check).
 - A browser check on the production build, run with admin settings, covered:
   - **Signed out:** `/admin` redirects to the sign-in page, a merchant session does not open the admin panel, and a wrong password shows the error.
   - **Unknown pages:** answer 404, signed in or out.
