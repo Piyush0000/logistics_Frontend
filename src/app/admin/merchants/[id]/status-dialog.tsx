@@ -144,6 +144,7 @@ export function MerchantStatusButton({
               </div>
               <textarea
                 id="status-reason"
+                name="reason"
                 required
                 rows={3}
                 minLength={5}
