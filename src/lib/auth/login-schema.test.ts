@@ -19,6 +19,20 @@ describe('emailSchema', () => {
   });
 });
 
+describe('emailSchema length', () => {
+  it('accepts an address of 254 characters', () => {
+    const email = `${'a'.repeat(64)}@${'b'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(57)}.com`;
+    expect(email).toHaveLength(254);
+    expect(emailSchema.safeParse(email).success).toBe(true);
+  });
+
+  it('rejects an address of 255 characters', () => {
+    const email = `${'a'.repeat(64)}@${'b'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(58)}.com`;
+    expect(email).toHaveLength(255);
+    expect(emailSchema.safeParse(email).success).toBe(false);
+  });
+});
+
 describe('otpSchema', () => {
   it('accepts six digits', () => {
     expect(otpSchema.safeParse('123456').success).toBe(true);
@@ -36,5 +50,10 @@ describe('passwordSchema', () => {
 
   it('rejects seven characters', () => {
     expect(passwordSchema.safeParse('1234567').success).toBe(false);
+  });
+
+  it('accepts 128 characters and rejects 129', () => {
+    expect(passwordSchema.safeParse('a'.repeat(128)).success).toBe(true);
+    expect(passwordSchema.safeParse('a'.repeat(129)).success).toBe(false);
   });
 });

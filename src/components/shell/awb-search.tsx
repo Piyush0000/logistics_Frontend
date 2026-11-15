@@ -69,7 +69,7 @@ export function AwbSearch() {
   return (
     <form ref={container} role="search" onSubmit={handleSubmit} className="relative min-w-0 flex-1">
       <div className="flex">
-        <span className="flex h-control shrink-0 items-center rounded-l-control bg-primary px-3 text-sm font-medium text-tertiary">
+        <span className="flex h-control shrink-0 items-center rounded-l-control bg-primary px-3 text-sm font-medium text-on-primary">
           AWB
         </span>
         <div className="relative min-w-0 flex-1">

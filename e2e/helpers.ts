@@ -21,3 +21,12 @@ export async function signIn(page: Page) {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForURL('**/dashboard');
 }
+
+/** Shifts every browser-test port by E2E_PORT_OFFSET (default 0), so two runs can share a machine. */
+export function e2ePort(port: number): number {
+  return port + Number(process.env.E2E_PORT_OFFSET ?? 0);
+}
+
+export function e2eUrl(port: number): string {
+  return `http://localhost:${e2ePort(port)}`;
+}

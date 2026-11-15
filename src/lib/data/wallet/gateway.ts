@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { notAvailable } from '../not-available';
 import type { WalletService } from './types';
 
@@ -6,4 +8,6 @@ import type { WalletService } from './types';
 export const gatewayWalletService: WalletService = {
   getBalance: notAvailable,
   listTransactions: notAvailable,
+  // PRD POST /v1/wallet/recharge has no gateway route yet.
+  startRecharge: notAvailable,
 };

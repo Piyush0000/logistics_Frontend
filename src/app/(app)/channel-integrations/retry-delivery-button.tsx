@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { retryDeliveryAction } from './actions';
-import { SECONDARY_BUTTON } from './dialog';
 
 export function RetryDeliveryButton({ id }: { id: string }) {
   const [message, setMessage] = useState<string | null>(null);

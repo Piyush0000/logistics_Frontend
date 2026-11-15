@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { indianDay } from '../../format/date';
 import { fromMock } from '../source';
 import type { DebitType, WalletFilters } from './filters';
@@ -115,5 +117,9 @@ export const mockWalletService: WalletService = {
       pageCount,
       total: found.length,
     });
+  },
+  // The sample takes no payment, so the balance never changes.
+  async startRecharge() {
+    return fromMock({ paymentUrl: null });
   },
 };

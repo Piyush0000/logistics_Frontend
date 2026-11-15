@@ -5,6 +5,7 @@ export const emailSchema = z
   .string()
   .trim()
   .min(1, 'Enter your work email.')
+  .max(254, 'Enter a valid work email.')
   .email('Enter a valid work email.');
 
 export const otpSchema = z
@@ -12,4 +13,7 @@ export const otpSchema = z
   .trim()
   .regex(/^\d{6}$/, 'Enter the 6-digit code.');
 
-export const passwordSchema = z.string().min(8, 'Use at least 8 characters.');
+export const passwordSchema = z
+  .string()
+  .min(8, 'Use at least 8 characters.')
+  .max(128, 'Use 128 characters or fewer.');

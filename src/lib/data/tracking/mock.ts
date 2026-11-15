@@ -1,5 +1,8 @@
+import 'server-only';
+
 import { fromMock, type DataResult } from '../source';
-import { AWB_NOT_FOUND, type TrackingSummary } from './types';
+import { mockOrdersService } from '../orders/mock';
+import { AWB_NOT_FOUND, type TrackingDetail, type TrackingSummary } from './types';
 
 const SAMPLES: TrackingSummary[] = [
   {
@@ -20,14 +23,44 @@ const SAMPLES: TrackingSummary[] = [
   },
 ];
 
+const notFound = {
+  ok: false,
+  source: 'mock',
+  error: { kind: 'not_found', status: 0, message: AWB_NOT_FOUND },
+} as const;
+
 export const mockTrackingService = {
   async lookup(awb: string): Promise<DataResult<TrackingSummary>> {
     const sample = SAMPLES.find((item) => item.awb === awb);
-    if (sample) return fromMock(sample);
-    return {
-      ok: false,
-      source: 'mock',
-      error: { kind: 'not_found', status: 0, message: AWB_NOT_FOUND },
-    };
+    return sample ? fromMock(sample) : notFound;
+  },
+
+  async getTimeline(awb: string): Promise<DataResult<TrackingDetail>> {
+    // The sample orders already carry a timeline, so every sample shipment has one here too.
+    const detail = await mockOrdersService.getOrderDetail(awb);
+    if (!detail.ok) return notFound;
+    const { data } = detail;
+    const last = data.timeline.at(-1);
+    return fromMock({
+      awb: data.awb,
+      carrier: data.carrier,
+      status: data.status,
+      rawStatus: null,
+      location: last?.location ?? null,
+      lastEventAt: last?.timestamp ?? null,
+      timeline: data.timeline
+        .map((event) => ({
+          status: event.status,
+          rawStatus: null,
+          location: event.location,
+          occurredAt: event.timestamp,
+        }))
+        .reverse(),
+    });
+  },
+
+  /** For the public page. The sample data needs no credential either way. */
+  getTimelinePublic(awb: string): Promise<DataResult<TrackingDetail>> {
+    return mockTrackingService.getTimeline(awb);
   },
 };

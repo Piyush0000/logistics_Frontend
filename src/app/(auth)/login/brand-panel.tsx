@@ -23,7 +23,7 @@ function RouteLine() {
       <path
         d="M-10 190 C 20 170, 40 160, 64 150 S 170 80, 212 96 S 300 190, 356 196 S 430 150, 440 96"
         fill="none"
-        stroke="var(--color-tertiary)"
+        stroke="var(--c-on-primary)"
         strokeOpacity="0.4"
         strokeWidth="2"
         strokeDasharray="2 10"
@@ -35,14 +35,14 @@ function RouteLine() {
           cx={cx}
           cy={cy}
           r="5"
-          fill="var(--color-primary)"
-          stroke="var(--color-tertiary)"
+          fill="var(--c-primary)"
+          stroke="var(--c-on-primary)"
           strokeOpacity="0.7"
           strokeWidth="2"
         />
       ))}
-      <circle cx="440" cy="96" r="16" fill="var(--color-accent)" fillOpacity="0.25" />
-      <circle cx="440" cy="96" r="7" fill="var(--color-accent)" />
+      <circle cx="440" cy="96" r="16" fill="var(--c-accent)" fillOpacity="0.25" />
+      <circle cx="440" cy="96" r="7" fill="var(--c-accent)" />
     </svg>
   );
 }
@@ -60,7 +60,7 @@ function RouteStrip() {
         y1="14"
         x2="300"
         y2="14"
-        stroke="var(--color-tertiary)"
+        stroke="var(--c-on-primary)"
         strokeOpacity="0.4"
         strokeWidth="2"
         strokeDasharray="2 10"
@@ -72,14 +72,14 @@ function RouteStrip() {
           cx={cx}
           cy="14"
           r="5"
-          fill="var(--color-primary)"
-          stroke="var(--color-tertiary)"
+          fill="var(--c-primary)"
+          stroke="var(--c-on-primary)"
           strokeOpacity="0.7"
           strokeWidth="2"
         />
       ))}
-      <circle cx="304" cy="14" r="13" fill="var(--color-accent)" fillOpacity="0.25" />
-      <circle cx="304" cy="14" r="6" fill="var(--color-accent)" />
+      <circle cx="304" cy="14" r="13" fill="var(--c-accent)" fillOpacity="0.25" />
+      <circle cx="304" cy="14" r="6" fill="var(--c-accent)" />
     </svg>
   );
 }
@@ -88,26 +88,29 @@ export function BrandPanel() {
   return (
     <aside
       data-testid="brand-panel"
-      className="relative flex flex-col justify-center overflow-hidden bg-primary px-5 py-6 text-center text-tertiary [@media(min-height:700px)]:max-sm:min-h-[30dvh] sm:block sm:px-10 sm:py-7 sm:text-start lg:flex lg:justify-between lg:p-12"
+      className="midnight relative flex flex-col justify-center overflow-hidden px-5 py-6 text-center [@media(min-height:700px)]:max-sm:min-h-[30dvh] sm:block sm:px-10 sm:py-7 sm:text-start lg:flex lg:justify-between lg:p-12"
     >
       <RouteLine />
       <div className="relative flex justify-center sm:justify-start">
-        <BrandMark />
+        <BrandMark onDark />
       </div>
       <div className="relative mt-4 lg:mt-0">
         <p className="font-heading text-[21px] leading-[26px] font-extrabold lg:text-[34px] lg:leading-[41px]">
-          Every shipment, one control panel.
+          Multiple logistics partners.{' '}
+          <span className="text-[var(--midnight-accent)]">One unified dashboard.</span>
         </p>
         <p
-          className={`mt-2 hidden text-sm leading-[22px] text-tertiary/90 lg:mt-4 lg:block lg:max-w-sm lg:text-base lg:leading-[26px] ${TALL_PHONE_ONLY}`}
+          className={`mt-2 hidden text-sm leading-[22px] text-on-primary/75 lg:mt-4 lg:block lg:max-w-sm lg:text-base lg:leading-[26px] ${TALL_PHONE_ONLY}`}
         >
           Book, track and reconcile deliveries across your carriers.
         </p>
         <RouteStrip />
-        <ul className="mt-6 hidden gap-3 text-base lg:grid">
+        <ul className="mt-6 hidden gap-2 rounded-card border border-on-primary/12 bg-on-primary/[0.06] p-4 text-base backdrop-blur-md lg:grid">
           {POINTS.map((point) => (
             <li key={point} className="flex items-center gap-3">
-              <CircleCheck aria-hidden="true" className="size-5 shrink-0" />
+              <span className="grid size-8 shrink-0 place-items-center rounded-control bg-primary/30 text-[var(--midnight-accent)]">
+                <CircleCheck aria-hidden="true" className="size-4" />
+              </span>
               {point}
             </li>
           ))}

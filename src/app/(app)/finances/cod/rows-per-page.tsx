@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { SelectField } from '@/components/ui/select-field';
 import {
   codHref,
   PAGE_SIZES,
   type CodFilters,
   type CodPageSize,
 } from '@/lib/data/cod/filters';
-import { SelectField } from '../wallet/select-field';
 
 type PageSizeValue = (typeof PAGE_SIZES)[number]['value'];
 

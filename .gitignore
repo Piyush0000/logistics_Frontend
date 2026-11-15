@@ -9,3 +9,6 @@ next-env.d.ts
 .env
 .env.*
 !.env.example
+
+# Local AI workflow notes (never committed)
+.superpowers/

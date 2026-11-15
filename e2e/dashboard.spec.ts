@@ -1,17 +1,27 @@
 import { expect, test, type Page } from '@playwright/test';
+import { NAV } from '../src/components/shell/nav-config';
 import { DEMO_EMAIL, signIn } from './helpers';
 
-const NAV_ITEMS = [
-  'Overview',
-  'Orders',
-  'NDR',
-  'Weight Discrepancy',
-  'Finances',
-  'Buyer Experience',
-  'Business Tools',
-  'KYC Info',
-  'Get Support',
-  'Channel Integrations',
+const NAV_GROUPS = [
+  'Home',
+  'Dashboard',
+  'Shipping Management',
+  'Operations',
+  'Billings',
+  'Reconciliation',
+  'Tools',
+  'Reports',
+  'Settings',
+  'Help & Support',
+];
+
+const NAV_SUBMENUS = [
+  'Shipping Management',
+  'Operations',
+  'Billings',
+  'Reconciliation',
+  'Tools',
+  'Help & Support',
 ];
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Main' });
@@ -25,11 +35,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('overview', () => {
-  test('shows the title with Overview selected and other tabs disabled', async ({ page }) => {
+  test('shows the title with Overview selected and every tab enabled', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
     await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
-    for (const name of ['Pickups', 'NDR', 'RTO', 'Delivered', 'Revenue', 'SMS']) {
-      await expect(page.getByRole('tab', { name })).toBeDisabled();
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toBeEnabled();
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('href', '/dashboard?tab=pickups');
+    for (const name of ['SMS']) {
+      await expect(page.getByRole('tab', { name })).toBeEnabled();
     }
   });
 
@@ -87,18 +99,108 @@ test.describe('overview', () => {
 });
 
 test.describe('sidebar', () => {
-  test('lists every section, with only Overview available', async ({ page }, testInfo) => {
+  test('lists every group from the new menu', async ({ page }, testInfo) => {
     await openSidebar(page, testInfo.project.name === 'phone');
 
-    for (const name of NAV_ITEMS) {
+    for (const name of NAV_GROUPS) {
       await expect(nav(page).getByText(name, { exact: true })).toBeVisible();
     }
-    await expect(nav(page).getByRole('link', { name: 'Overview' })).toHaveAttribute(
+    await expect(nav(page).getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(nav(page).getByRole('link', { name: 'Orders' })).toBeVisible();
-    await expect(nav(page).getByRole('button', { name: 'Weight Discrepancy' })).toBeDisabled();
+    await expect(nav(page).getByRole('button', { name: 'Shipping Management' })).toBeVisible();
+    await expect(nav(page).getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/home');
+
+    // Takes whichever planned entry is left, so making a screen live never breaks this check.
+    const single = NAV.find((entry) => entry.href && entry.status === 'planned');
+    const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
+    const child = group?.children?.find((item) => item.status === 'planned');
+    if (!single && !(group && child)) {
+      // Nothing is planned any more: every entry must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const all = NAV.flatMap((entry) => [entry, ...(entry.children ?? [])]);
+      expect(all.filter((entry) => entry.status === 'planned')).toEqual([]);
+      return;
+    }
+    if (!single && group && child) await nav(page).getByRole('button', { name: group.label }).click();
+    const label = single ? single.label : child!.label;
+
+    const entry = nav(page).getByRole('button', { name: label, exact: true });
+    await expect(entry).toBeDisabled();
+    await expect(entry).toHaveAttribute('title', `${label} is not available yet`);
+  });
+
+  test('opens the group for the current page', async ({ page }, testInfo) => {
+    const isPhone = testInfo.project.name === 'phone';
+    await openSidebar(page, isPhone);
+
+    for (const name of NAV_SUBMENUS) {
+      await expect(nav(page).getByRole('button', { name, exact: true })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+    }
+
+    await page.goto('/finances/wallet');
+    await openSidebar(page, isPhone);
+    await expect(nav(page).getByRole('button', { name: 'Billings' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(nav(page).getByRole('link', { name: 'Wallet Transactions' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
+  test('expands and collapses a group', async ({ page }, testInfo) => {
+    await openSidebar(page, testInfo.project.name === 'phone');
+    const group = nav(page).getByRole('button', { name: 'Operations' });
+    const link = nav(page).getByRole('link', { name: 'NDR' });
+
+    await expect(link).toBeHidden();
+
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'true');
+    await expect(link).toBeVisible();
+
+    await group.click();
+    await expect(group).toHaveAttribute('aria-expanded', 'false');
+    await expect(link).toBeHidden();
+  });
+
+  test('opens the rail and the group from a collapsed icon', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Desktop behaviour');
+    const sidebar = page.getByTestId('sidebar');
+
+    await expect(sidebar).toHaveCSS('width', '80px');
+    await nav(page).getByRole('button', { name: 'Billings' }).click();
+
+    await expect(sidebar).toHaveCSS('width', '320px');
+    await expect(nav(page).getByRole('button', { name: 'Billings' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(nav(page).getByRole('link', { name: 'Wallet Transactions' })).toBeVisible();
+  });
+
+  test('shows planned items as unavailable', async ({ page }, testInfo) => {
+    // Takes whichever child item is still planned, so building a screen never breaks this test.
+    const group = NAV.find((entry) => entry.children?.some((item) => item.status === 'planned'));
+    const planned = group?.children?.find((item) => item.status === 'planned');
+    if (!group || !planned) {
+      // Nothing is planned any more: every child must be live. Disabled rendering is covered in sidebar.test.tsx.
+      const children = NAV.flatMap((entry) => entry.children ?? []);
+      expect(children.filter((item) => item.status !== 'live')).toEqual([]);
+      return;
+    }
+
+    await openSidebar(page, testInfo.project.name === 'phone');
+    await nav(page).getByRole('button', { name: group.label }).click();
+
+    const item = nav(page).getByRole('button', { name: planned.label, exact: true });
+    await expect(item).toBeDisabled();
+    await expect(item).toHaveAttribute('title', `${planned.label} is not available yet`);
   });
 
   test('shows the user and sign out at the bottom', async ({ page }, testInfo) => {
@@ -114,7 +216,7 @@ test.describe('sidebar', () => {
     const before = await page.getByTestId('shipments-card').boundingBox();
 
     await expect(sidebar).toHaveCSS('width', '80px');
-    await expect(nav(page).getByText('Orders', { exact: true })).toBeHidden();
+    await expect(nav(page).getByText('Shipping Management', { exact: true })).toBeHidden();
 
     await openSidebar(page, false);
     await expect(sidebar).toHaveCSS('width', '320px');
@@ -141,7 +243,7 @@ test.describe('sidebar', () => {
 
   test('is a slide-in menu on phones', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'Phone behaviour');
-    const link = nav(page).getByRole('link', { name: 'Overview' });
+    const link = nav(page).getByRole('link', { name: 'Dashboard' });
 
     await expect(link).toBeHidden();
 
@@ -156,7 +258,7 @@ test.describe('sidebar', () => {
 
   test('closes the phone menu with Escape or the backdrop', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'Phone behaviour');
-    const link = nav(page).getByRole('link', { name: 'Overview' });
+    const link = nav(page).getByRole('link', { name: 'Dashboard' });
 
     await openSidebar(page, true);
     await page.keyboard.press('Escape');
@@ -175,6 +277,11 @@ test.describe('top bar', () => {
     await expect(wallet).toContainText('₹12,500.00');
     await page.getByRole('button', { name: 'Refresh balance' }).click();
     await expect(wallet).toContainText('₹12,500.00');
+  });
+
+  test('opens the wallet from the top bar balance', async ({ page }) => {
+    await page.getByTestId('wallet').click();
+    await expect(page).toHaveURL(/\/finances\/wallet$/);
   });
 
   test('offers Create shipment in the Quick menu', async ({ page }) => {

@@ -1,57 +1,165 @@
 'use client';
 
-import {
-  BriefcaseBusiness,
-  ChartColumn,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
-  Headset,
-  LogOut,
-  Package,
-  Undo2,
-  UserCheck,
-  WandSparkles,
-  Webhook,
-  Weight,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { Ref } from 'react';
+import { useId, useState, type PointerEvent, type Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
 import { BrandMark } from '@/components/brand-mark';
 import { userLabel } from '@/lib/format/user';
-
-interface NavItem {
-  label: string;
-  icon: LucideIcon;
-  hasChildren?: boolean;
-}
-
-const ACTIVE_ITEMS: (NavItem & { href: string })[] = [
-  { label: 'Overview', href: '/dashboard', icon: ChartColumn },
-  { label: 'Orders', href: '/orders', icon: Package, hasChildren: true },
-  { label: 'NDR', href: '/ndr', icon: Undo2 },
-];
-
-const DISABLED_ITEMS: NavItem[] = [
-  { label: 'Weight Discrepancy', icon: Weight },
-  { label: 'Finances', icon: CreditCard, hasChildren: true },
-  { label: 'Buyer Experience', icon: WandSparkles, hasChildren: true },
-  { label: 'Business Tools', icon: BriefcaseBusiness, hasChildren: true },
-  { label: 'KYC Info', icon: UserCheck },
-  { label: 'Get Support', icon: Headset },
-  { label: 'Channel Integrations', icon: Webhook },
-];
+import { activeGroupLabel, isActivePath, isGroupActive, NAV, type NavGroup, type NavItem } from './nav-config';
 
 const ROW = 'flex h-12 w-full shrink-0 items-center gap-3 rounded-control px-3 text-base';
+const CHILD_ROW = 'flex h-11 w-full items-center gap-3 rounded-control px-3 text-left text-[15px]';
+const ACTIVE =
+  'relative bg-muted font-semibold text-primary dark:before:absolute dark:before:inset-y-2 dark:before:left-0 dark:before:w-0.5 dark:before:rounded-full dark:before:bg-primary dark:before:shadow-[0_0_10px_var(--c-primary)]';
+const IDLE = 'font-medium text-on-surface/70 transition-colors duration-150 hover:bg-tertiary hover:text-on-surface';
+const PLANNED = 'cursor-not-allowed text-on-surface/40';
+
+const unavailable = (label: string) => `${label} is not available yet`;
+
+/** The group that holds the current page, so it can start expanded. */
+function submenuFor(pathname: string): string | null {
+  const label = activeGroupLabel(pathname);
+  return NAV.some((group) => group.label === label && group.children) ? label : null;
+}
+
+export function ChildLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const { label, href, icon: Icon } = item;
+
+  if (item.status === 'planned') {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-label={label}
+        title={unavailable(label)}
+        className={`${CHILD_ROW} ${PLANNED}`}
+      >
+        <Icon aria-hidden="true" className="size-5 shrink-0" />
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+      </button>
+    );
+  }
+
+  const isActive = isActivePath(href, pathname);
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? 'page' : undefined}
+      className={`${CHILD_ROW} ${isActive ? ACTIVE : IDLE}`}
+    >
+      <Icon aria-hidden="true" className="size-5 shrink-0" />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+    </Link>
+  );
+}
+
+function SingleLink({
+  group,
+  pathname,
+  railOpen,
+}: {
+  group: NavGroup & { href: string };
+  pathname: string;
+  railOpen: boolean;
+}) {
+  const { label: text, href, icon: Icon } = group;
+  const label = railOpen ? '' : 'lg:hidden';
+  const collapsedRow = railOpen ? '' : 'lg:justify-center lg:px-0';
+
+  if (group.status !== 'live') {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-label={text}
+        title={unavailable(text)}
+        className={`${ROW} ${collapsedRow} ${PLANNED} text-left`}
+      >
+        <Icon aria-hidden="true" className="size-6 shrink-0" />
+        <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
+      </button>
+    );
+  }
+
+  const isActive = isGroupActive(group, pathname);
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={text}
+      title={railOpen ? undefined : text}
+      className={`${ROW} ${collapsedRow} ${isActive ? ACTIVE : IDLE}`}
+    >
+      <Icon aria-hidden="true" className="size-6 shrink-0" />
+      <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
+    </Link>
+  );
+}
+
+function Submenu({
+  group,
+  pathname,
+  railOpen,
+  expanded,
+  onSelect,
+}: {
+  group: NavGroup & { children: NavItem[] };
+  pathname: string;
+  railOpen: boolean;
+  expanded: boolean;
+  onSelect: () => void;
+}) {
+  const listId = useId();
+  const { label: text, icon: Icon, children } = group;
+  const label = railOpen ? '' : 'lg:hidden';
+  const collapsedRow = railOpen ? '' : 'lg:justify-center lg:px-0';
+  // The list only shows inside the open menu: the collapsed rail has no room for it.
+  const shown = expanded && railOpen;
+  const holdsPage = activeGroupLabel(pathname) === text;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={text}
+        aria-expanded={shown}
+        aria-controls={listId}
+        title={railOpen ? undefined : text}
+        className={`${ROW} ${collapsedRow} text-left ${
+          holdsPage && !shown ? ACTIVE : IDLE
+        }`}
+      >
+        <Icon aria-hidden="true" className="size-6 shrink-0" />
+        <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-4 shrink-0 transition-transform ${shown ? 'rotate-180' : ''} ${label}`}
+        />
+      </button>
+      <ul
+        id={listId}
+        hidden={!shown}
+        className="mt-1 mb-1 ml-6 flex flex-col gap-1 border-l border-secondary pl-3"
+      >
+        {children.map((item) => (
+          <li key={item.href}>
+            <ChildLink item={item} pathname={pathname} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export function Sidebar({
   email,
   open,
+  peek = false,
+  onPeekEnter,
+  onPeekLeave,
   panelRef,
   closeButtonRef,
   onToggle,
@@ -59,6 +167,10 @@ export function Sidebar({
 }: {
   email: string;
   open: boolean;
+  /** Desktop only: the rail is shown open because the mouse rests on it (not pinned by a click). */
+  peek?: boolean;
+  onPeekEnter?: (event: PointerEvent<HTMLElement>) => void;
+  onPeekLeave?: () => void;
   panelRef: Ref<HTMLElement>;
   closeButtonRef: Ref<HTMLButtonElement>;
   onToggle: () => void;
@@ -66,26 +178,55 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const { name, initials } = userLabel(email);
+  // The desktop rail is wide when pinned open by a click or while the mouse rests on it.
+  const wide = open || peek;
   // Labels show in the phone menu and the expanded rail, and hide in the collapsed rail.
-  const label = open ? '' : 'lg:hidden';
-  const collapsedRow = open ? '' : 'lg:justify-center lg:px-0';
+  const label = wide ? '' : 'lg:hidden';
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => {
+    const current = submenuFor(pathname);
+    return new Set(current ? [current] : []);
+  });
+  const [seenPath, setSeenPath] = useState(pathname);
+
+  // Opening another page also opens the group that holds it.
+  if (pathname !== seenPath) {
+    setSeenPath(pathname);
+    const current = submenuFor(pathname);
+    if (current && !expanded.has(current)) setExpanded(new Set([...expanded, current]));
+  }
+
+  const selectGroup = (group: string) => {
+    if (!wide) {
+      // A collapsed rail icon opens the menu with that group showing.
+      // (While the rail is peeking, a group just opens in place and the rail still closes on leave.)
+      onToggle();
+      setExpanded(new Set([...expanded, group]));
+      return;
+    }
+    const next = new Set(expanded);
+    if (next.has(group)) next.delete(group);
+    else next.add(group);
+    setExpanded(next);
+  };
 
   return (
     <aside
       ref={panelRef}
       data-testid="sidebar"
+      onPointerEnter={onPeekEnter}
+      onPointerLeave={onPeekLeave}
       // Visibility only animates on close, so focus can move into the menu as soon as it opens.
-      className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,320px)] flex-col bg-primary text-tertiary duration-200 lg:visible lg:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex print:hidden w-[min(84vw,320px)] flex-col border-r glass text-on-surface duration-200 lg:visible lg:translate-x-0 ${
         open
-          ? 'transition-[transform,width] lg:w-80'
-          : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full lg:w-20'
-      }`}
+          ? 'transition-[transform,width]'
+          : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full'
+      } ${wide ? 'lg:w-80' : 'lg:w-20'} ${peek && !open ? 'lg:shadow-2xl' : ''}`}
     >
       <div className="flex h-[72px] shrink-0 items-center justify-between px-4">
-        <div className={open ? '' : 'lg:hidden'}>
+        <div className={wide ? '' : 'lg:hidden'}>
           <BrandMark />
         </div>
-        <div className={open ? 'hidden' : 'hidden lg:block'}>
+        <div className={wide ? 'hidden' : 'hidden lg:block'}>
           <BrandMark compact />
         </div>
         <button
@@ -104,7 +245,7 @@ export function Sidebar({
         onClick={onToggle}
         aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
         aria-expanded={open}
-        className="absolute top-5 -right-4 hidden size-8 place-items-center rounded-full border-2 border-tertiary bg-primary lg:grid"
+        className="absolute top-5 -right-4 hidden size-8 place-items-center rounded-full border border-secondary bg-surface text-on-surface/70 shadow-sm transition-colors duration-150 hover:text-primary lg:grid"
       >
         {open ? (
           <ChevronLeft aria-hidden="true" className="size-4" />
@@ -115,63 +256,58 @@ export function Sidebar({
 
       <nav
         aria-label="Main"
-        className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 py-2 [scrollbar-width:none]"
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 py-2 [scrollbar-width:none]"
       >
-        {ACTIVE_ITEMS.map(({ label: text, href, icon: Icon, hasChildren }) => {
-          const isActive =
-            href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
-          return (
-            <Link
-              key={text}
-              href={href}
-              aria-current={isActive ? 'page' : undefined}
-              aria-label={text}
-              className={`${ROW} ${collapsedRow} ${
-                isActive
-                  ? 'bg-surface font-medium text-primary'
-                  : 'font-medium text-tertiary/90 hover:bg-surface/10 hover:text-tertiary'
-              }`}
-            >
-              <Icon aria-hidden="true" className="size-6 shrink-0" />
-              <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
-              {hasChildren ? (
-                <ChevronDown aria-hidden="true" className={`size-4 shrink-0 ${label}`} />
-              ) : null}
-            </Link>
-          );
-        })}
-        {DISABLED_ITEMS.map(({ label: text, icon: Icon, hasChildren }) => (
-          <button
-            key={text}
-            type="button"
-            disabled
-            aria-label={text}
-            title={`${text} is not available yet`}
-            className={`${ROW} ${collapsedRow} cursor-not-allowed text-left text-tertiary/80`}
-          >
-            <Icon aria-hidden="true" className="size-6 shrink-0" />
-            <span className={`min-w-0 flex-1 truncate ${label}`}>{text}</span>
-            {hasChildren ? (
-              <ChevronDown aria-hidden="true" className={`size-4 shrink-0 ${label}`} />
+        {NAV.map((group) => (
+          <div key={group.label} className="contents">
+            {group.section ? (
+              <>
+                <p
+                  className={`shrink-0 px-3 pt-4 pb-1 text-[10px] font-semibold tracking-[0.12em] text-on-surface/40 uppercase first:pt-1 ${label}`}
+                >
+                  {group.section}
+                </p>
+                {group.dividerBefore ? (
+                  <hr
+                    aria-hidden="true"
+                    className={`my-1 shrink-0 border-secondary ${wide ? 'hidden' : 'hidden lg:block'}`}
+                  />
+                ) : null}
+              </>
             ) : null}
-          </button>
+            {group.children ? (
+              <Submenu
+                group={{ ...group, children: group.children }}
+                pathname={pathname}
+                railOpen={wide}
+                expanded={expanded.has(group.label)}
+                onSelect={() => selectGroup(group.label)}
+              />
+            ) : group.href ? (
+              <SingleLink group={{ ...group, href: group.href }} pathname={pathname} railOpen={wide} />
+            ) : null}
+          </div>
         ))}
       </nav>
 
       <div
         data-testid="sidebar-user"
-        className={`flex shrink-0 items-center gap-3 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] ${
-          open ? '' : 'lg:justify-center lg:px-0'
+        className={`flex shrink-0 items-center gap-3 border-t border-secondary px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] ${
+          wide ? '' : 'lg:justify-center lg:px-0'
         }`}
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-tertiary/60 text-sm font-medium">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-sm font-semibold text-primary">
           {initials}
         </span>
         <span className={`min-w-0 flex-1 ${label}`}>
           <span className="block truncate text-sm font-medium">{name}</span>
-          <span title="Profile is not available yet" className="block text-xs text-tertiary/80">
+          <Link
+            href="/settings/profile"
+            onClick={onClose}
+            className="flex min-h-11 items-center text-xs text-on-surface/60 underline-offset-2 hover:text-primary hover:underline"
+          >
             View Profile
-          </span>
+          </Link>
         </span>
         <form action={signOutAction} className={label}>
           <button

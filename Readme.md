@@ -1,10 +1,10 @@
-# Evoc Logistics Frontend
+# Evoc Ships Frontend
 
-The web frontend for the Evoc logistics platform. Merchants will use it to manage shipments, tracking, COD and webhooks.
+The web frontend for Evoc Ships, the logistics platform that brings many logistics partners into one dashboard. Merchants will use it to manage shipments, tracking, COD and webhooks.
 
-The final product name and logo are still to be supplied, so "Evoc Logistics" is a working name.
+The brand is **Evoc Ships**. The logo is at `public/brand/evoc-ships-logo.png` and is drawn as SVG in `src/components/brand-mark.tsx`.
 
-> **Status:** the login page is done, and the main dashboard, Orders & NDR, Wallet Transactions, COD Remittance and Channel Integrations are built and awaiting review. Sign-in is a demo, because the backend has no login yet. See [updatesDoc.md](updatesDoc.md) for what has been done so far.
+> **Status:** the full frontend is built: 41 screens (47 route variants are checked by the browser tests, including tab and query forms), every sidebar entry is live, and all 37 tasks are done on branch `feature/full-frontend`. Sign-in is a demo, because the backend has no login yet. Most data is labelled sample data, because the gateway has no route for it. The real gateway has not been run, as Docker is not installed on the build machine. See [updatesDoc.md](updatesDoc.md) for the record and the final summary.
 
 ## Getting started
 
@@ -24,6 +24,8 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 
 - **Email OTP:** use the code shown on screen, `123456`.
 - **Email + Password:** any password of 8 or more characters works.
+- **Forgot password:** the link under the password field opens `/forgot-password`. It gives the same message for any valid email and says no email is sent in demo mode.
+- **Create an account:** the `New here? Create an account` link on `/login` opens `/signup`. Enter company, name, work email, phone and a password of 8 to 128 characters, and accept the terms. The demo creates a session and opens `/home`. Nothing is stored, and the password is never kept or returned.
 
 **Do not deploy the demo sign-in publicly.** It accepts any email. Replace it when the backend adds login routes, in `src/lib/data/session/gateway.ts`.
 
@@ -39,6 +41,9 @@ Opening the app sends you to `/login`. Sign-in is a demo and no email is sent:
 | `pnpm test` | Runs the unit tests |
 | `pnpm test:e2e` | Runs browser tests at desktop and phone sizes on port 3101, so `pnpm dev` can stay running. Run `pnpm build` first |
 | `pnpm contracts:update` | Repacks `@logicore/contracts` from the backend into `vendor/` |
+| `node scripts/dev-smoke.mjs` | Opens every route in `e2e/routes.ts` under `next dev` on port 3107 and fails on any browser error. Stop `pnpm dev` first: Next.js allows one `next dev` per folder |
+| `node scripts/screenshots.mjs [--dark] [--menu] [route ...]` | Saves desktop, phone and 320px screenshots to `test-results/screenshots/` (`--dark` adds the `-dark` set), from the build on port 3102. Run `pnpm build` first. In Git Bash, prefix `MSYS_NO_PATHCONV=1` so routes stay as typed |
+| `E2E_PORT_OFFSET=200 pnpm test:e2e` | Shifts every browser-test and script port (3101 to 3108, 3110 and 3199) by the offset, so two runs can share a machine. Unset means 0 |
 
 ## How it connects to the backend
 
@@ -46,7 +51,7 @@ The backend lives in the separate `Evoc_ships` directory and must not be changed
 
 The frontend talks only to the backend's gateway on port 8080. Server code makes every call, so merchant keys never reach the browser and CORS isn't involved.
 
-Many backend features aren't available through the gateway yet. Screens use real data where a route exists and clearly labelled sample data where it doesn't. The [design spec](docs/superpowers/specs/2026-11-04-frontend-design.md) lists the routes and the backend gaps.
+Many backend features aren't available through the gateway yet. Screens use real data where a route exists and clearly labelled sample data where it doesn't. The [design spec](docs/superpowers/specs/2026-11-04-frontend-design.md) lists the routes; [docs/backend-connection-gaps.md](docs/backend-connection-gaps.md) is the current list of what blocks the live connection, written for the backend team. The shipment list accepts both the gateway demo shape and order-engine's `{ shipments, pagination }` shape (`normaliseOrdersPage`).
 
 ### Code layout
 
@@ -56,13 +61,19 @@ Many backend features aren't available through the gateway yet. Screens use real
 | `src/app/(auth)/` | Login and terms pages, using the `theme-auth` settings |
 | `src/app/(app)/` | Signed-in pages, using the `theme-app` settings |
 | `src/components/brand-mark.tsx` | The placeholder name and logo. Change them here only |
-| `src/components/shell/` | Sidebar, top bar and AWB search, shared by signed-in pages |
+| `src/components/shell/` | Sidebar, top bar and AWB search, shared by signed-in pages. `nav-config.ts` holds the sidebar menu |
+| `src/components/ui/` | Shared screen parts: page header, data card, empty state, stat tile, pagination, dialog and form fields |
+| `src/lib/url-params.ts` | Safe parsing of `page`, `limit`, enum and text URL parameters |
+| `src/content/help/` | The Help Centre articles, as plain data that ships with the app. `src/lib/help-search.ts` searches them |
+| `src/lib/csv.ts` | CSV building for downloads |
+| `src/lib/bulk-shipments.ts` | Reads the Bulk Upload CSV into shipment requests. `public/samples/bulk-shipments-template.csv` is its template |
 | `src/lib/format/` | Money, date, status and user name formatting |
 | `src/lib/gateway/` | Server-only gateway client, and the mapping of all backend errors to one `ApiError` |
 | `src/lib/data/` | Data source selection, and one folder per feature as screens are built |
 | `src/lib/auth/` | Server-only credential lookup |
 | `vendor/` | Packed copy of the backend's `@logicore/contracts` |
-| `e2e/` | Browser tests |
+| `e2e/` | Browser tests. `screen-checks.ts` holds the shared size, tap-target and signed-out checks, and `routes.ts` lists every route |
+| `scripts/` | Development scripts: dev-mode check, screenshots, contracts update |
 
 ### Real and sample data
 
@@ -71,12 +82,33 @@ Each feature has a gateway version and a mock version. It uses mock until switch
 | Feature | Variable | Gateway route today |
 |---|---|---|
 | Shipment counts | `DATA_SOURCE_SHIPMENTS` | Yes, but the gateway serves only its own mock data for now |
-| AWB search | `DATA_SOURCE_TRACKING` | Yes, needs tracking-engine |
+| Shipment list and booking in Orders | `DATA_SOURCE_ORDERS` | List: yes, same limits as shipment counts, and search covers the loaded page only. Booking: the route exists but answers 503 until merchant authentication is set up, so the form says booking is not available. No detail route, so shipment facts stay sample data |
+| AWB search and shipment timeline | `DATA_SOURCE_TRACKING` | Yes, needs tracking-engine |
 | Webhooks and delivery history | `DATA_SOURCE_WEBHOOKS` | Yes, needs the webhooks service and Postgres |
 | Sign-in | `DATA_SOURCE_SESSION` | No |
-| KPI cards, NDR | `DATA_SOURCE_OVERVIEW` | No |
-| Wallet balance and transactions | `DATA_SOURCE_WALLET` | No |
+| KPI cards | `DATA_SOURCE_OVERVIEW` | No |
+| NDR (screen, actions, Home tile) | `DATA_SOURCE_NDR` | No. Gateway shows it as unavailable |
+| Wallet balance, transactions and recharge | `DATA_SOURCE_WALLET` | No |
+| Home setup checklist | `DATA_SOURCE_ONBOARDING` | No |
+| B2B shipments | `DATA_SOURCE_B2B` | No |
+| Saved pickup addresses | `DATA_SOURCE_PICKUP_ADDRESSES` | No |
+| Pickups and manifests | `DATA_SOURCE_PICKUPS` | No for scheduling and the pickup list, so gateway mode shows them as unavailable. The shipments ready to ship come from the shipments list route, through `DATA_SOURCE_ORDERS` |
+| RTO (counts and lists) | `DATA_SOURCE_RTO` | Yes: counts from the stats route, lists from the shipments list route. RTO charges have no source, so gateway mode shows "Not available yet" |
 | COD remittance | `DATA_SOURCE_COD` | No |
+| Invoices and the invoice print view | `DATA_SOURCE_INVOICES` | No. Gateway mode shows them as unavailable |
+| Weight discrepancies | `DATA_SOURCE_WEIGHT` | No. Gateway mode shows them as unavailable |
+| Weight settings (package presets) | `DATA_SOURCE_WEIGHT_SETTINGS` | No. Gateway mode shows them as unavailable |
+| Profile and password | `DATA_SOURCE_PROFILE` | No. Gateway mode shows the profile and password change as unavailable |
+| Company details and KYC | `DATA_SOURCE_COMPANY` | No. Gateway mode shows company details and KYC as unavailable (the backend has no merchant onboarding route) |
+| Team (users and roles) | `DATA_SOURCE_TEAM` | No. Gateway mode shows the team and its invite, role and remove actions as unavailable |
+| Tracking page settings | `DATA_SOURCE_TRACKING_PAGE` | No. Gateway mode shows the branding form as unavailable. The public tracking page does not read these settings yet |
+| Courier rules | `DATA_SOURCE_COURIER_RULES` | No. The order engine reads `request.preference`, but the contract strips it and the backend has no settings route, so gateway mode shows the rules and every change as unavailable |
+| Sub-merchants | `DATA_SOURCE_SUB_MERCHANTS` | No. Gateway mode shows the seller list and onboarding as unavailable (the PRD's `/v1/merchants/onboard` is not built) |
+| Support tickets | `DATA_SOURCE_SUPPORT` | No. Gateway mode shows tickets as unavailable and hides New ticket |
+| Buyer notifications (channels and messages) | `DATA_SOURCE_NOTIFICATIONS` | No. Gateway mode shows them as unavailable |
+| Delivered and revenue per-day charts (dashboard) | `DATA_SOURCE_ANALYTICS` | No. Gateway mode shows the charts as unavailable; the delivered total still comes from the stats route |
+| Buyer message counts (dashboard SMS tab) | `DATA_SOURCE_MESSAGES` | No. Gateway mode shows them as unavailable |
+| Rate card | `DATA_SOURCE_RATES` | No. The backend keeps rate cards in memory and has no serviceability route, so gateway mode shows the rate card and quotes as unavailable |
 
 In sample mode, AWB search knows `DEMOEK001` and `DEMODL002`.
 
@@ -84,22 +116,85 @@ Browser tests cover real-data mode using a stand-in gateway, `e2e/stub-gateway.m
 
 ## Design
 
-Every screen uses the colour palette from [sharkship.in-design.md](sharkship.in-design.md). Tailwind's default colours are removed, so only palette colours are available.
+The redesign (branch `feature/redesign`, spec [2026-11-14-evoc-ships-redesign-design.md](docs/superpowers/specs/2026-11-14-evoc-ships-redesign-design.md)) gives every screen the Evoc Ships identity in two looks:
 
-Type, shape and control sizes come from the design file assigned to each group of screens. Add the class `theme-auth` or `theme-app` to a group, then use `font-heading`, `font-body`, `rounded-control`, `rounded-card`, `h-control` and `p-card`.
+- **Light, "Bento Light":** soft grey page (`#EEF0F5`), white rounded cards, navy text (`#17243A`), electric blue (`#183EEB`).
+- **Dark, "Midnight Glass":** deep navy page (`#070B16`) with two soft blue glows, frosted-glass cards from tablet width up (solid on phones), brighter blue (`#4C6BFF`).
 
-Screens are built for phones and desktops. Dashboard controls are 32px on desktop and 44px on touch devices, for comfortable tapping.
+Home and the Dashboard are the reference design (approved 2026-11-14): every screen uses the same page header, cards, toned stat tiles, tables and charts.
 
-| Screen | Design file | Stage | Data | Status |
+People choose Light, Dark or System (the default) in the account menu; sign-in pages have a small switch. The choice is stored in the browser (`evoc-theme`) and applied before the page paints (`src/lib/theme.ts`, `src/components/theme/`).
+
+- **Colours** are tokens in `src/app/globals.css` (`primary`, `on-primary`, `surface`, `on-surface`, `secondary`, `tertiary`, `muted`, `accent`, `success`, `warning`, `error`, plus chart hues `series-2` teal and `series-3` amber). Each is a CSS variable that changes with `data-theme` on `<html>`; Tailwind's default colours are removed. Use `dark:` for the rare dark-only style.
+- **Type:** Plus Jakarta Sans for text and headings, Geist Mono (`font-mono`) for figures, AWBs and amounts.
+- **Shape:** controls 10px radius, cards 16px; controls are 44px tall on touch and 36px on desktop.
+- **Motion:** 150ms presses, 250ms panels, up to 700ms chart entrances, one easing (`--ease-evoc`). Arrival motion uses opacity and clip-path only, never moving or resizing elements. Everything stops for "reduce motion".
+- **Shell:** the menu, top bar and wallet chip render once in `src/app/(app)/layout.tsx` and stay mounted between pages. Phones and tablets (below 1024px) get a bottom tab bar: Home, Shipments, Create, Wallet, More.
+- **Building blocks:** `src/components/ui` (cards, stat tiles with two-tone figures, fields, dialogs that become bottom sheets on phones, Loader, Skeleton, AnimatedNumber, tableStyles) and `src/components/charts` (bar, line, gauge, sparkline, segment bar, fill meter).
+
+- **Smart insights** (`src/lib/insights/`): rule-based notes built from the merchant's own data, shown on Home as Needs you today and Smart insights. No AI service is used.
+- **⌘K command search** (`src/components/shell/command-palette.tsx`): screens, quick actions and AWB tracking from anywhere.
+
+Screenshots of both looks: `node scripts/screenshots.mjs [--dark] [route ...]` after `pnpm build`.
+
+| Screen | Look | Stage | Data | Status |
 |---|---|---|---|---|
-| Login | [meracourierwala.com-design.md](meracourierwala.com-design.md) | 1 | Sample only, as the backend has no login | Done |
-| Main dashboard | [sharkship.in-design.md](sharkship.in-design.md) | 2 | Sample by default; shipments and AWB search can use the gateway | Built, awaiting review |
-| Orders & NDR | [sharkship.in-design.md](sharkship.in-design.md) | 3 | Shipment list can use gateway; detail, create, and NDR are sample data | Built, awaiting review |
-| Wallet Transactions, at `/finances/wallet` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no wallet routes | Built, awaiting review. No sidebar link yet |
-| COD Remittance, at `/finances/cod` | [sharkship.in-design.md](sharkship.in-design.md) | Finances | Sample only, as the gateway has no COD routes | Built, awaiting review. No sidebar link yet |
-| Channel Integrations, at `/channel-integrations` | [sharkship.in-design.md](sharkship.in-design.md) | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Built, awaiting review. No sidebar link yet |
+| Login | Evoc Ships | 1 | Sample only, as the backend has no login | Done |
+| Sign up, at `/signup` | Evoc Ships | Full build, Task 35 | `DATA_SOURCE_SESSION`: sample by default (nothing is stored, the password is never kept); in gateway mode it shows "Sign-in is not available yet.", as the backend has no sign-up route | Done. Public page, linked from `/login`. Signed-in visitors go to the dashboard. Success opens `/home` |
+| Forgot password, at `/forgot-password` | Evoc Ships | Full build, Task 34 | `DATA_SOURCE_SESSION`: sample by default (no email is sent); in gateway mode it shows "Password reset is not available yet.", as the backend has no reset route | Done. Public page, linked from the password field on `/login`. Signed-in visitors go to the dashboard |
+| Home, at `/home` | Evoc Ships | Full build, Task 3 | Stats and recent shipments can use the gateway; wallet, NDR and the setup checklist are sample, or unavailable in gateway mode | Done. In the sidebar as Home |
+| Main dashboard | Evoc Ships | 2 | Sample by default; shipments and AWB search can use the gateway | Done. Seven tabs, all live: Overview, Pickups (Task 20), NDR and RTO (Task 21), Delivered and Revenue (Task 22) and SMS (Task 23) |
+| Dashboard Pickups tab, at `/dashboard?tab=pickups` | Evoc Ships | Full build, Task 20 | Scheduled today, Picked up today and Pending pickup tiles, plus a 7-day bar chart. Sample by default; unavailable in gateway mode, as the gateway has no pickups route | Done |
+| Dashboard NDR and RTO tabs, at `/dashboard?tab=ndr` and `?tab=rto` | Evoc Ships | Full build, Task 21 | NDR: four figures, a chart of reasons, link to NDR. RTO: in-progress and delivered counts, a chart by courier, link to RTO. Sample by default; NDR is unavailable in gateway mode, RTO uses the stats and shipments routes | Done |
+| Dashboard Delivered and Revenue tabs, at `/dashboard?tab=delivered` and `?tab=revenue` | Evoc Ships | Full build, Task 22 | Delivered: the delivered total (stats route) and a delivered-per-day chart. Revenue: freight spend and COD collected totals with a chart each, in compact labels. A 7 or 30 day toggle in the URL as `range=`. Sample by default; in gateway mode the total is live and the per-day charts say "This data is not available yet.", as the gateway has no analytics route | Done |
+| Dashboard SMS tab, at `/dashboard?tab=sms` | Evoc Ships | Full build, Task 23 | Tiles for Sent, Delivered, Failed and Delivery rate (one decimal), a chart of messages by shipment status, a 7 or 30 day toggle, and a link to `/settings/notifications`. Sample by default; in gateway mode it says "This data is not available yet.", as the gateway has no message route | Done. Every dashboard tab is now enabled |
+| Orders & NDR | Evoc Ships | 3 | Shipment list, timeline and booking use the gateway when set (booking answers 503 today). The list reads either backend list shape; a shipment with no AWB shows Not assigned. Phone cards have Track and Copy AWB buttons and the same actions on a swipe left. Gateway search shows how many matched on the page and pages by gateway page; facts on the detail page are sample data; NDR is sample data, or unavailable in gateway mode (Task 9) | Merged to main |
+| Wallet Transactions, at `/finances/wallet` | Evoc Ships | Finances | Sample only, as the gateway has no wallet routes. Recharge button and popup added in Task 11 (no payment is taken) | Merged to main. In the sidebar under Billings |
+| COD Remittance, at `/finances/cod` | Evoc Ships | Finances | Sample only, as the gateway has no COD routes | Merged to main. In the sidebar under Billings |
+| B2C Shipments, at `/orders/b2c` | Evoc Ships | Full build, Task 5 | The All Shipments list, scoped to single-parcel shipments. Sample by default; uses the gateway list when set (every gateway shipment is single-parcel) | Done. In the sidebar under Shipping Management |
+| B2B Shipments, at `/orders/b2b` | Evoc Ships | Full build, Task 6 | Sample only, as the gateway has no B2B route; gateway mode shows it as unavailable. The create dialog offers saved pickup addresses (sample) | Done. In the sidebar under Shipping Management |
+| Bulk Upload, at `/orders/bulk` | Evoc Ships | Full build, Task 7 | Books each valid CSV row through the same path as Create Shipment (`DATA_SOURCE_ORDERS`): sample store by default; in gateway mode every row shows the booking-not-available message | Done. In the sidebar under Shipping Management |
+| Pickups & Manifests, at `/orders/pickups` | Evoc Ships | Full build, Task 8 | Ready to ship uses the shipments list (`MANIFESTED` shipments), sample by default. Scheduled pickups and scheduling are sample only, and unavailable in gateway mode. The print page is at `/orders/pickups/manifest-print/[id]` | Done. In the sidebar under Shipping Management |
+| RTO, at `/rto` | Evoc Ships | Full build, Task 10 | Stage tabs (In progress, Delivered), summary tiles and a list of returning shipments. Sample by default; gateway mode uses the stats and shipments list routes. RTO charges are sample only and show "Not available yet" in gateway mode. The courier status column is empty in gateway mode, because the list route does not send it | Done. In the sidebar under Operations; the dashboard RTO tile links here |
+| Invoices, at `/finances/invoices` | Evoc Ships | Full build, Task 12 | Monthly shipping invoices with 18% GST, a year filter (`?year=`) and pages. Sample only; gateway mode shows it as unavailable. The print view is at `/finances/invoices/[id]`, laid out for A4, with a "Sample invoice. Not a tax document." banner on sample data | Done. In the sidebar under Billings |
+| Weight discrepancies, at `/reconciliation/weight` | Evoc Ships | Full build, Task 13 | Couriers' weight disputes: declared against charged weight and the extra charge, with summary tiles, a status filter (`?status=`), an AWB search (`?q=`) and pages. Accept a charge, or dispute it with a note of 10 to 1,000 characters and 1 to 3 JPG or PNG images up to 5 MB (only file name, type and size are sent; no file is stored). Rows past their response window show "Response window closed" and cannot be disputed. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Reconciliation |
+| Weight settings, at `/reconciliation/weight-settings` | Evoc Ships | Full build, Task 14 | Package presets: name (1 to 40 characters), size (1 to 500 cm each side), weight (0.1 to 1000 kg) and one default, up to 20 presets. Add, edit and delete (delete asks first). The form shows the chargeable weight as you type: the larger of the real weight and length × width × height ÷ 5,000, to 2 decimals (`src/lib/volumetric.ts`, also used by the Rate Calculator later). The default preset cannot be deleted while others exist; make another the default first. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Reconciliation |
+| Rate card, at `/tools/rate-card` | Evoc Ships | Full build, Task 15 | Read-only shipping prices by courier and zone (A within city, B within state, C metro to metro, D rest of India, E special). A carrier filter (`?carrier=`; an unknown value shows every carrier), a zone legend, a table on desktop and one card per carrier on phones. Shows the base price for the first weight band, the price of each extra 500 g, and the COD fee as a percentage with a minimum. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Tools |
+| Rate calculator, at `/tools/rate-calculator` | Evoc Ships | Full build, Task 16 | Pickup and delivery pincodes (6 digits, not starting with 0), weight, size and payment type (COD needs an amount). Returns a quote from every courier, cheapest first, with couriers that cannot ship last as Not serviceable. Each quote shows the chargeable weight, the larger of the real and volumetric weight. Price is the base price plus each started 500 g above the base weight, plus the COD fee for COD. Ship with this opens Create Shipment with `?carrier=`. The server checks the session and the input again. Sample only (the zone is worked out as the backend does); gateway mode shows it as unavailable | Done. In the sidebar under Tools |
+| Order tracking, at `/tools/tracking` | Evoc Ships | Full build, Task 17 | One or more AWBs (commas, spaces or new lines, duplicates removed, at most 10). The AWBs stay in the URL as `?awb=`, so a result can be shared or reloaded. One AWB shows its status, courier, latest location, courier status and a timeline, newest first. Several show a summary list where each opens its timeline. An unknown AWB says No shipment found for this AWB.; any other failure shows its own message with Try again, and never hides the other AWBs. Share tracking link copies the public `/track/<awb>` address, and shows a selectable field when the browser blocks the clipboard. Sample data in mock mode; live through the gateway tracking route in gateway mode | Done. In the sidebar under Tools |
+| Public tracking, at `/track/[awb]` | Evoc Ships | Full build, Task 18 | The page a buyer opens from a shared link. No sign-in and no app shell, only the brand mark. It shows the AWB, status, courier, a four-stage progress bar (Manifested, In transit, Out for delivery, Delivered) and the timeline with places and times. Returned, cancelled and failed shipments show a plain message instead of a step. It shows no names, phone numbers, addresses, amounts or IDs: `toPublicView` picks each field by name. Tells search engines not to index it. An unknown or over-long (more than 40 characters) AWB is a real 404; a gateway failure shows Try again. Calls the tracking route with no token | Done. Outside the sidebar |
+| Reports, at `/reports` | Evoc Ships | Full build, Task 19 | Pick a From and To date (default: the last 30 days in Indian time, at most 92 days, to on or after from) and download one of five CSV reports: Shipments, NDR, RTO, COD remittance, Wallet transactions. `GET /reports/export?type&from&to` checks the session (401), validates (400) and builds the CSV, named `<type>-<from>-to-<to>.csv`. Shipments and RTO page through the shipments list route (up to 10 pages of 100); RTO joins RTO_INITIATED and RTO_DELIVERED. Mock data starts with the line `# Sample data`. A source with no gateway route (NDR, COD, wallet) answers 503 with its plain message | Done. In the sidebar as Reports |
+| Settings, at `/settings` and `/settings/profile` | Evoc Ships | Full build, Task 24 | `/settings` lists every settings section as a card. Every section is live: Profile, Company & KYC, Users & Roles, Pickup Addresses, Buyer Notifications, Tracking Page, Courier Rules, Sub-merchants, and API Keys & Channel Integrations (the existing `/channel-integrations`). Settings pages share a section list on the left on desktop, and a Back to Settings link on phones. Profile: name (1 to 80 characters), phone (`+` and 10 to 15 digits), the sign-in email shown read-only, and a password change (8 or more characters, matching its confirmation, different from the current one). Server actions check the session and every rule again. Sample only; gateway mode shows it as unavailable. The sidebar's Settings entry is current on `/settings`, its pages and `/channel-integrations`, and View Profile opens the profile | Done. In the sidebar as Settings |
+| Pickup Addresses, at `/settings/pickup-addresses` | Evoc Ships | Full build, Task 27 | Add, edit and delete saved pickup addresses, up to 25. Label 1 to 40 characters; the address uses the shared address rules (6-digit pincode not starting with 0, phone 10 to 15 digits). Exactly one default: the first address is it, Make default moves it, and the default cannot be deleted while others exist. Create Shipment has an optional Use saved address select that fills the origin fields. Pickups and B2B already offer these addresses. Sample only; gateway mode shows it as unavailable | Done. Linked from Settings |
+| Company & KYC, at `/settings/company` | Evoc Ships | Full build, Task 25 | Legal and brand name, GSTIN, PAN (both uppercased as you type, checked against their patterns), registered address (the shared address contract: contact name, phone, lines, city, state, 6-digit pincode), and bank account (holder, 9 to 18 digit account number, IFSC with a 0 as the fifth character). Three documents are needed, GST certificate, PAN card and cancelled cheque, as PDF, JPG or PNG up to 5 MB each, one per kind; a kind already on file does not need a new file. Only each file's name, type and size go to the server, not its bytes, so the 2 MB server action limit does not apply, and the files are not stored yet. Submitting sets the KYC status to Submitted for review, and the Home checklist's KYC step then shows done. After saving, only the last 4 digits of the account number are shown, and the number is typed again on each submit. Sample only; gateway mode shows it as unavailable | Done. Opens from Settings |
+| Users & Roles, at `/settings/users` | Evoc Ships | Full build, Task 26 | Lists the team with each person's email, status (Active or Invited) and role, and explains the four roles (Admin, Operations, Finance, Viewer). Invite user opens a dialog: the email is checked and a duplicate is refused. Each other row has a role picker and a Remove button, and removing asks for confirmation in a dialog. Your own row is marked You and has no role picker or Remove button. At least one admin must remain, so demoting or removing the last admin is refused. Server actions check the session and every rule again. Sample only; gateway mode shows it as unavailable | Done. Live card on Settings |
+| Tracking Page, at `/settings/tracking-page` | Evoc Ships | Full build, Task 29 | A branding form beside a live preview of the public tracking page, using the sample AWB. Display name (1 to 40 characters), optional support email and phone (checked), an accent colour limited to three palette tokens (Primary blue, Sky blue, Green), a show-courier switch, and a PNG or SVG logo up to 1 MB (only its name is kept). All text is shown as plain text. Saving does not change the public page; the page says so. Server action checks the session and every rule again. Sample only; gateway mode shows it as unavailable | Done. Live card on Settings |
+| Sub-merchants, at `/settings/sub-merchants` | Evoc Ships | Full build, Task 31 | The sellers who ship under your account: a list of 10 a page, newest first, with a search by name (`?q=`). Onboard a seller with a business name, email, optional GSTIN and bank details (holder, account number of 9 to 18 digits, IFSC); a new seller starts as Submitted for review. Only the last 4 digits of the account are ever shown. A duplicate email is refused. Create is one call per seller, so two people onboarding at once never undo each other. Sellers cannot be edited or removed yet. Sample only; gateway mode shows it as unavailable | Done. A card on the Settings page |
+| Buyer Notifications, at `/settings/notifications` | Evoc Ships | Full build, Task 28 | A switch for each shipment event (Manifested, In transit, Out for delivery, Delivered, RTO initiated) and channel (SMS, Email, WhatsApp), and one message for each event with a live preview using invented sample values. Messages may use only `{{buyer_name}}`, `{{awb}}`, `{{courier}}`, `{{tracking_link}}` and `{{store_name}}`; any other variable shows `Unknown variable: {{x}}` and blocks saving, and the server checks again. A message is 1 to 480 characters. Each message shows its length and how many SMS messages it sends as (160 characters each). The preview is plain text, never HTML. One Save saves the switches and messages together. Sample only; gateway mode shows it as unavailable. The Settings card and the dashboard SMS link are live | Done. Opened from Settings |
+| Courier Rules, at `/settings/courier-rules` | Evoc Ships | Full build, Task 30 | Choose how a courier is picked: Lowest cost, Fastest or Custom. Couriers are listed once each, in the order they are tried, with a Move up and Move down button per row (plain buttons, so they work by keyboard and by tap, with no dragging) and an On/Off switch. At least one courier must stay on: the last switch is locked and the server refuses it too. Every change is saved on its own and checked on the server, which keeps the order a complete list with each courier once. Server actions check the session and take one change each, never a whole rule set. Sample only; gateway mode shows it as unavailable | Done. Live card on Settings |
+| Support tickets, at `/support/tickets` and `/support/tickets/[id]` | Evoc Ships | Full build, Task 32 | Tickets with a subject, category, optional AWB and status (Open, Awaiting you, Resolved), as a table on desktop and cards on phones, with a status filter (`?status=`; an unknown value shows every status) and pages. New ticket opens a form: subject 5 to 120 characters, category, one optional AWB, message 20 to 5,000 characters. `?new=1` opens the form on arrival (the Help Centre link) and is dropped when it is closed. A ticket page shows the thread and a reply box; replying to a resolved ticket reopens it. The server checks the session and the input again. Sample only; gateway mode shows it as unavailable | Done. In the sidebar under Help & Support |
+| Help Centre, at `/support/help` and `/support/help/[slug]` | Evoc Ships | Full build, Task 33 | 14 merchant help articles in five topics, stored in `src/content/help/articles.ts` (no data source, no sample label). Search as you type: typing updates `?q=` after a short pause and the server filters (title matches first, then summary, then body; every word must match), so article bodies never reach the browser on the list page, a topic filter (`?category=`; an unknown value shows every topic) and `?q=` for a starting search. Each article ends with a Raise a ticket link to `/support/tickets?new=1`, which opens the new ticket form. An unknown article address is a real 404 | Done. In the sidebar under Help & Support |
+| Not-found and error pages, at `src/app/not-found.tsx`, `src/app/(app)/error.tsx` and `src/app/global-error.tsx` | Evoc Ships | Full build, Task 36 | An unknown address shows Page not found (a real 404) with links to Home and Dashboard. A page that throws inside the app shows Something went wrong on this page. with Try again (re-fetches the page) and Go to Home, inside the app shell, with no technical detail. `global-error.tsx` does the same with its own html when the root layout fails. The browser-test route `/e2e-error-test` throws only when `E2E_ERROR_ROUTE=on` (set only on test port 3101) and is a 404 everywhere else | Done. Outside the sidebar |
+| Channel Integrations, at `/channel-integrations` | Evoc Ships | Integrations | Sample by default; webhooks can use the gateway. API keys have no routes | Merged to main. Now linked from Settings |
 
 Further screens are added one at a time, as directed.
+
+### Sidebar menu
+
+The sidebar is built from `NAV` in [src/components/shell/nav-config.ts](src/components/shell/nav-config.ts): Home, Dashboard, Shipping Management, Operations, Billings, Reconciliation, Tools, Reports, Settings and Help & Support. Groups with sub-pages open and close, and the group holding the current page starts open. On desktop the rail also opens while the mouse rests on it (after 200 ms) and closes when the mouse leaves; the expand button pins it open. After a click on that button, Escape or a click outside, hovering waits until the mouse has left the rail once. Entries marked `planned` show greyed out with "<name> is not available yet".
+
+### Adding a screen
+
+New screens fit in without restructuring. Follow these six steps.
+
+1. **Navigation:** add an entry to `NAV` in `src/components/shell/nav-config.ts`, as a new group or a child of one, with `status: 'planned'`. For a settings page, add it to `SETTINGS_SECTIONS` instead.
+2. **Data:** create `src/lib/data/<feature>/` with the four standard files (types, mock, gateway, index). The gateway service uses `gatewayFetch` if the backend has a route, or `notAvailable()` until it does.
+3. **Page:** create the route folder under `src/app/(app)/`, following the pattern of the screens already built: check `getDemoSession()` and redirect to `/login` when missing. The `(app)` layout already renders the menu, top bar and wallet, so a page renders only its content (start with `PageHeader`) and adds a `loading.tsx` shaped like the page, except on routes that can answer 404 (and their parent folders): a loading screen starts the response with status 200 before the page can say not found. Build it with the parts in `src/components/ui/`.
+4. **Delivery:** write the browser spec first and see it fail, then build the screen, connect the gateway service, and flip the entry to `live`. Run lint, typecheck, the unit tests, the build, the browser suite and the dev-mode check, then update this file and `updatesDoc.md` before review.
+5. **Tests:** add the route to `e2e/routes.ts`, so the dev-mode check and screenshots include it.
+6. **Environment:** add the `DATA_SOURCE_<FEATURE>` line to `.env.example`, and the env entry to the right test server in `playwright.config.ts`.
+
+Known future work: API key management and the developer sandbox, cancel shipment, label download, real-time updates, real sign-in, and live data for every `notAvailable()` feature. All of these wait on backend routes, and each replaces one gateway file when its route lands.
 
 ## How the work is done
 
@@ -113,5 +208,5 @@ Further screens are added one at a time, as directed.
 |---|---|
 | [updatesDoc.md](updatesDoc.md) | Running record of what has been done |
 | [Design spec](docs/superpowers/specs/2026-11-04-frontend-design.md) | Architecture, design rules, backend reference and gaps |
-| [sharkship.in-design.md](sharkship.in-design.md) | Colour palette for all screens, and the main dashboard design |
-| [meracourierwala.com-design.md](meracourierwala.com-design.md) | Login page design |
+| [Redesign spec](docs/superpowers/specs/2026-11-14-evoc-ships-redesign-design.md) | The Evoc Ships look (Bento Light and Midnight Glass), motion, screens and performance |
+| [Backend connection gaps](docs/backend-connection-gaps.md) | What blocks the live connection, for the backend team |

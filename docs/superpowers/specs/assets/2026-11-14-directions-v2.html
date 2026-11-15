@@ -1,0 +1,230 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  .stack{display:flex;flex-direction:column;gap:26px;margin-top:16px}
+  .mini{border-radius:14px;overflow:hidden;position:relative;font-size:11px;line-height:1.3}
+  .notes{margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.5}
+  .notes li{margin-bottom:4px}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;margin:2px 4px 2px 0;background:#eef1fd;color:#112cab}
+  @keyframes rise{from{transform:scaleY(.05)}to{transform:scaleY(1)}}
+  @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes dash{to{stroke-dashoffset:0}}
+  @keyframes wave{to{transform:translateX(-50%)}}
+  @keyframes glow{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes typing{0%,100%{opacity:.2}50%{opacity:1}}
+  @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  .lift{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+  .lift:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(23,36,58,.12)}
+  .in{animation:slidein .5s both}
+  @media (prefers-reduced-motion:reduce){.mini *{animation:none!important;transition:none!important}}
+
+  /* D: Bento Light */
+  .d{background:#eef0f5;padding:10px;font-family:'Plus Jakarta Sans',sans-serif;color:#17243a;display:grid;grid-template-columns:120px 1fr;gap:10px;height:420px}
+  .d .sb{background:#fff;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:5px}
+  .d .brand{display:flex;align-items:center;gap:6px;font-weight:800;font-size:12px;margin-bottom:8px}
+  .d .blk{width:14px;height:11px;border-radius:4px 4px 0 0;background:linear-gradient(#183eeb 70%,#112cab 70%)}
+  .d .ni{padding:5px 7px;border-radius:7px;color:#5b6680;display:flex;justify-content:space-between}
+  .d .ni.on{background:#eef1fd;color:#183eeb;font-weight:700}
+  .d .ni kbd{font:10px 'Geist Mono';color:#9aa3b8}
+  .d .sec{font-size:9px;color:#9aa3b8;letter-spacing:.08em;margin-top:6px}
+  .d .main{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto 1fr 1fr;gap:10px}
+  .d .c{background:#fff;border-radius:12px;padding:10px;position:relative}
+  .d .lab{display:flex;align-items:center;gap:5px;font-weight:600}
+  .d .dt{width:6px;height:6px;border-radius:50%}
+  .d .num{font-size:24px;font-weight:700;letter-spacing:-.03em;margin:4px 0 2px}
+  .d .num span{color:#b4bccd}
+  .d .delta{font-size:10px;background:#f2f4f8;border-radius:6px;padding:2px 6px;display:inline-block}
+  .d .ai{grid-column:4;grid-row:1/4;display:flex;flex-direction:column;gap:6px}
+  .d .sug{border-radius:9px;padding:7px}
+  .d .ask{margin-top:auto;background:#f2f4f8;border-radius:9px;padding:7px;color:#9aa3b8;display:flex;gap:6px;align-items:center}
+  .d .ask i{width:4px;height:4px;border-radius:50%;background:#183eeb;display:inline-block;animation:typing 1.2s infinite}
+  .d .bars{display:flex;align-items:flex-end;gap:2px;height:72px;margin-top:6px}
+  .d .bars i{flex:1;background:#183eeb;border-radius:2px 2px 0 0;transform-origin:bottom;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+  .d .bars i.l{background:#c7d2fb}
+  .d .gauge{display:flex;justify-content:center;margin-top:4px}
+  .d .gauge path{stroke-dasharray:160;stroke-dashoffset:160;animation:dash 1.2s .2s ease-out forwards}
+  .d .tank{width:84px;height:84px;border-radius:50%;border:3px solid #dfe5fc;margin:6px auto 0;position:relative;overflow:hidden;background:#f5f7ff}
+  .d .water{position:absolute;left:0;bottom:0;width:200%;height:64%;background:#183eeb;border-radius:40% 40% 0 0;animation:wave 4s linear infinite}
+  .d .tank b{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:15px;z-index:1}
+
+  /* E: Midnight Glass */
+  .e{background:radial-gradient(600px 300px at 80% -10%,#183eeb55,transparent),radial-gradient(500px 260px at 0% 110%,#112cab55,transparent),#070b16;padding:12px;font-family:Geist,sans-serif;color:#d9e0f2;display:grid;grid-template-columns:130px 1fr;gap:10px;height:420px}
+  .e .glass{background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);border-radius:14px;backdrop-filter:blur(10px)}
+  .e .sb{padding:10px;display:flex;flex-direction:column;gap:4px}
+  .e .brand{font-weight:700;font-size:12px;margin-bottom:8px;display:flex;gap:6px;align-items:center}
+  .e .blk{width:14px;height:11px;border-radius:4px 4px 0 0;background:linear-gradient(#4c6bff 70%,#183eeb 70%);box-shadow:0 0 10px #183eeb}
+  .e .sec{font-size:9px;color:#6d7899;letter-spacing:.08em;margin-top:8px}
+  .e .ni{padding:5px 7px;border-left:1px solid #26314f;margin-left:4px;color:#8f9bbd}
+  .e .ni.on{color:#fff;background:linear-gradient(90deg,#183eeb44,transparent);border-left:2px solid #4c6bff}
+  .e .main{display:grid;grid-template-columns:1.2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px}
+  .e .c{padding:10px;position:relative;overflow:hidden}
+  .e .big{font-size:22px;font-weight:600;color:#fff}
+  .e .big em{font-style:normal;color:#7f96ff}
+  .e .aic{grid-row:1/2;display:flex;flex-direction:column}
+  .e .orb{flex:1;margin-top:6px;border-radius:10px;background:radial-gradient(circle at 50% 60%,#4c6bff 0,#183eeb55 30%,transparent 62%),#0b1430;display:grid;place-items:center;text-align:center;color:#c9d4ff;animation:glow 2.6s ease-in-out infinite}
+  .e .seg{display:flex;gap:3px;margin:8px 0}
+  .e .seg i{height:7px;border-radius:2px}
+  .e .chip{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;border:1px solid}
+  .e table{width:100%;border-collapse:collapse}
+  .e td{padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .e .line path{stroke-dasharray:300;stroke-dashoffset:300;animation:dash 1.6s ease-out forwards}
+
+  /* F: Blue Horizon */
+  .f{background:linear-gradient(135deg,#b9c8fb 0%,#e6ecfe 38%,#f4f6ff 55%,#c4d1fc 80%,#5b7cf5 100%);padding:12px 14px;font-family:'Plus Jakarta Sans',sans-serif;color:#17243a;height:440px;display:flex;flex-direction:column;gap:10px}
+  .f .top{display:flex;align-items:center;gap:8px}
+  .f .eyebrow{font-size:9px;letter-spacing:.12em;color:#5b6aa0;display:flex;gap:5px;align-items:center}
+  .f .eyebrow i{width:6px;height:6px;border-radius:50%;background:#22c55e}
+  .f h4{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .f .range{margin-left:auto;background:rgba(255,255,255,.75);border-radius:9px;padding:6px 9px}
+  .f .fr{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.85);border-radius:14px;backdrop-filter:blur(8px);padding:10px}
+  .f .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .f .cap{font-size:9px;letter-spacing:.1em;color:#6b7590}
+  .f .kv{font-size:21px;font-weight:800;margin:3px 0}
+  .f .up{font-size:10px;background:#dcfce7;color:#15803d;border-radius:5px;padding:1px 5px}
+  .f .row2{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;flex:1}
+  .f .status{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+  .f .st{background:#fff;border-radius:10px;padding:7px}
+  .f .st b{font-size:16px;display:block}
+  .f .tiles{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:6px}
+  .f .tiles span{aspect-ratio:1;border-radius:4px;display:grid;place-items:center;font-size:8px;color:#fff;animation:pop .4s both}
+  .f .legend{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:9px;color:#6b7590}
+  .f .legend i{flex:1;height:5px;border-radius:3px;background:linear-gradient(90deg,#dfe5fc,#183eeb)}
+</style>
+
+<h2>More directions, in the style of your references</h2>
+<p class="subtitle">Built in Evoc Ships colours with shipping content (not copied from the references). Hover for lift, watch the charts animate in. Click the one you like, or tell me what to combine.</p>
+
+<div class="stack">
+
+<div class="card" data-choice="d-bento-light" onclick="toggleSelect(this)">
+  <div class="card-image"><div class="mini d">
+    <div class="sb">
+      <div class="brand"><span class="blk"></span>Evoc Ships</div>
+      <div class="ni on">Home</div><div class="ni">Shipments<kbd>⌘S</kbd></div><div class="ni">Search<kbd>⌘K</kbd></div><div class="ni">Reports</div>
+      <div class="sec">MY DASHBOARD</div>
+      <div class="ni"><span>● NDR</span></div><div class="ni"><span>● Pickups</span></div><div class="ni"><span>● COD</span></div><div class="ni"><span>● Partners</span></div>
+    </div>
+    <div class="main">
+      <div class="c lift in"><div class="lab"><span class="dt" style="background:#183eeb"></span>Orders</div><div class="num">12,<span>384</span></div><span class="delta">↗ 9% vs last month</span></div>
+      <div class="c lift in" style="animation-delay:.06s"><div class="lab"><span class="dt" style="background:#22c55e"></span>Delivered</div><div class="num">10,<span>912</span></div><span class="delta">↗ 4% vs last month</span></div>
+      <div class="c lift in" style="animation-delay:.12s"><div class="lab"><span class="dt" style="background:#f59e0b"></span>RTO</div><div class="num">3<span>.2%</span></div><span class="delta">↘ 0.6 pts</span></div>
+      <div class="c ai in" style="animation-delay:.18s">
+        <div class="lab">✦ Ask Evoc</div>
+        <div class="sug" style="background:#eef1fd"><b>RTO risk</b><br>Which orders today are likely to come back?</div>
+        <div class="sug" style="background:#e9fbef"><b>Best courier</b><br>Who delivers fastest to Pune this week?</div>
+        <div class="sug" style="background:#fff4e0"><b>COD cash</b><br>When does my next payout land?</div>
+        <div class="ask">Ask anything about your shipments <i></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i></div>
+      </div>
+      <div class="c lift" style="grid-column:1/3"><b>Shipments per hour</b>
+        <div class="bars"><i class="l" style="height:20%"></i><i class="l" style="height:28%"></i><i style="height:45%;animation-delay:.05s"></i><i style="height:62%;animation-delay:.1s"></i><i style="height:80%;animation-delay:.15s"></i><i style="height:92%;animation-delay:.2s"></i><i style="height:74%;animation-delay:.25s"></i><i style="height:58%;animation-delay:.3s"></i><i class="l" style="height:35%"></i><i class="l" style="height:30%"></i><i style="height:48%;animation-delay:.35s"></i><i style="height:66%;animation-delay:.4s"></i><i style="height:86%;animation-delay:.45s"></i><i style="height:70%;animation-delay:.5s"></i><i class="l" style="height:40%"></i><i class="l" style="height:25%"></i></div>
+      </div>
+      <div class="c lift"><b>Delivery success</b>
+        <div class="gauge"><svg width="110" height="64"><path d="M10 58 A45 45 0 0 1 100 58" fill="none" stroke="#e8ecf6" stroke-width="10" stroke-linecap="round"/><path d="M10 58 A45 45 0 0 1 100 58" fill="none" stroke="#183eeb" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:142 160"/><text x="55" y="54" text-anchor="middle" font-size="16" font-weight="700" fill="#17243a">94%</text></svg></div>
+      </div>
+      <div class="c lift" style="grid-column:1/2"><b>Wallet used</b><div class="tank"><div class="water"></div><b>64%</b></div></div>
+      <div class="c lift" style="grid-column:2/4"><b>Top partners</b>
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:5px 10px;margin-top:6px">
+          <span>Delhivery</span><span>4,120</span><span style="color:#15803d">● on time</span>
+          <span>Blue Dart</span><span>2,288</span><span style="color:#15803d">● on time</span>
+          <span>Ekart</span><span>1,904</span><span style="color:#b45309">● slower</span>
+          <span>Shadowfax</span><span>1,330</span><span style="color:#15803d">● on time</span>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="card-body">
+    <h3>D · Bento Light <span style="font-weight:400;color:#6b7590">(like Vento + ICarePro)</span></h3>
+    <p>Bright bento grid of rounded white cards on soft grey. Two-tone big numbers, coloured dots for categories, a gauge, a filling "wallet tank", and an <b>Ask Evoc</b> assistant panel with suggested questions.</p>
+    <span class="tag">Plus Jakarta Sans</span><span class="tag">light</span><span class="tag">keyboard shortcuts in the menu</span>
+    <ul class="notes">
+      <li><b>Motion:</b> cards cascade in; bars grow from the base; the gauge sweeps to its value; the wallet water gently waves.</li>
+      <li><b>Micro:</b> hover lifts a card with a soft shadow; suggestion cards fill the question box on click; "typing" dots while the assistant answers.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card" data-choice="e-midnight-glass" onclick="toggleSelect(this)">
+  <div class="card-image"><div class="mini e">
+    <div class="sb glass">
+      <div class="brand"><span class="blk"></span>Evoc Ships</div>
+      <div class="sec">MAIN</div><div class="ni on">Overview</div><div class="ni">Shipments</div><div class="ni">Wallet</div><div class="ni">COD</div>
+      <div class="sec">INSIGHTS</div><div class="ni">✦ Smart insights</div><div class="ni">✦ Assistant</div>
+      <div class="sec">TOOLS</div><div class="ni">Settings</div><div class="ni">Help</div>
+    </div>
+    <div class="main">
+      <div class="c glass aic"><div style="display:flex;justify-content:space-between"><span class="big"><em>₹</em>4,12,540</span><span style="color:#6ee7a0">+12.4%</span></div><span style="color:#6d7899">COD collected this month</span>
+        <div class="orb">✦ Evoc assistant<br><span style="font-size:10px;color:#8f9bbd">is checking 46 open NDRs…</span></div></div>
+      <div class="c glass"><span style="color:#8f9bbd">Wallet balance</span><div class="big">₹12,500</div><span style="color:#6d7899">Auto-recharge at ₹2,000</span>
+        <div style="display:flex;justify-content:space-between;margin-top:14px"><div><div class="big" style="font-size:16px">₹265</div><span style="color:#6d7899">Avg cost / order</span></div><div><div class="big" style="font-size:16px">₹8.1k</div><span style="color:#6d7899">Saved vs rate card</span></div></div></div>
+      <div class="c glass"><span style="color:#8f9bbd">Deliveries · 7 days</span>
+        <svg class="line" width="100%" height="110" viewBox="0 0 160 110" preserveAspectRatio="none"><path d="M0 80 C20 60 35 90 55 62 S90 40 110 52 S140 20 160 18" fill="none" stroke="#4c6bff" stroke-width="2.5"/><path d="M0 95 C25 88 40 98 60 84 S100 76 120 80 S145 60 160 58" fill="none" stroke="#22c55e" stroke-width="2"/></svg></div>
+      <div class="c glass" style="grid-column:1/2"><span style="color:#8f9bbd">Monthly shipping spend</span><div class="big" style="font-size:18px">₹1,39,000 <span style="font-size:11px;color:#6d7899">/ ₹1,60,000 budget</span></div>
+        <div class="seg"><i style="flex:4;background:#4c6bff"></i><i style="flex:2.5;background:#22c55e"></i><i style="flex:2;background:#f59e0b"></i><i style="flex:1.5;background:#e5e7eb"></i></div>
+        <span style="color:#8f9bbd">● Forward 40% ● Express 25% ● RTO 20% ● Other</span></div>
+      <div class="c glass" style="grid-column:2/4"><span style="color:#8f9bbd">Recent shipments</span>
+        <table><tr><td>DL98234112</td><td>Delhivery</td><td><span class="chip" style="color:#6ee7a0;border-color:#22c55e66">Delivered</span></td></tr>
+        <tr><td>BD55120934</td><td>Blue Dart</td><td><span class="chip" style="color:#9db0ff;border-color:#4c6bff66">In transit</span></td></tr>
+        <tr><td>EK77310245</td><td>Ekart</td><td><span class="chip" style="color:#fcd34d;border-color:#f59e0b66">NDR</span></td></tr></table></div>
+    </div>
+  </div></div>
+  <div class="card-body">
+    <h3>E · Midnight Glass <span style="font-weight:400;color:#6b7590">(like Hynex)</span></h3>
+    <p>Dark, premium, frosted-glass cards over deep navy with electric-blue light. A glowing assistant card, a grouped tree-style menu (Main · Insights · Tools), outlined status chips.</p>
+    <span class="tag">Geist + Geist Mono</span><span class="tag">dark (light mode available)</span>
+    <ul class="notes">
+      <li><b>Motion:</b> the assistant orb breathes while it works; line charts draw themselves; background light shifts slowly.</li>
+      <li><b>Micro:</b> active menu item glows; chips brighten on hover; glass cards catch a highlight under the cursor.</li>
+      <li><b>Watch:</b> glass blur is heavier on low-end phones, so phones get solid cards.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card" data-choice="f-blue-horizon" onclick="toggleSelect(this)">
+  <div class="card-image"><div class="mini f">
+    <div class="top"><div><div class="eyebrow"><i></i>OPERATIONS COMMAND CENTRE</div><h4>Shipping performance</h4></div><div class="range">📅 Last 30 days ▾</div></div>
+    <div class="kp">
+      <div class="fr lift in"><div class="cap">ORDERS</div><div class="kv">12,384</div><span class="up">↗ 9.0%</span></div>
+      <div class="fr lift in" style="animation-delay:.06s"><div class="cap">DELIVERED</div><div class="kv">94.1%</div><span class="up">↗ 1.2%</span></div>
+      <div class="fr lift in" style="animation-delay:.12s"><div class="cap">AVG SHIPPING COST</div><div class="kv">₹62</div><span class="up">↘ ₹4</span></div>
+      <div class="fr lift in" style="animation-delay:.18s"><div class="cap">COD OUTSTANDING</div><div class="kv">₹4.1L</div><span class="up" style="background:#e0e7ff;color:#183eeb">Fri payout</span></div>
+    </div>
+    <div class="row2">
+      <div class="fr"><b>Order status breakdown</b><div class="cap">WHERE YOUR ORDERS STAND NOW</div>
+        <div class="status">
+          <div class="st"><span class="cap">PICKUP DUE</span><b>184</b></div><div class="st"><span class="cap">IN TRANSIT</span><b>3,902</b></div><div class="st"><span class="cap">OUT FOR DELIVERY</span><b>611</b></div>
+          <div class="st"><span class="cap">DELIVERED</span><b>10,912</b></div><div class="st"><span class="cap">NDR</span><b>46</b></div><div class="st"><span class="cap">RTO</span><b>397</b></div>
+        </div></div>
+      <div class="fr"><b>Deliveries by state</b><div class="cap">WHERE YOUR PARCELS ARE GOING</div>
+        <div class="tiles">
+          <span style="background:#dfe5fc;color:#5b6aa0"></span><span style="background:#a9b9f8;animation-delay:.02s">PB</span><span style="background:#8099f5;animation-delay:.04s">HR</span><span style="background:#183eeb;animation-delay:.06s">DL</span><span style="background:#a9b9f8;animation-delay:.08s">UP</span><span style="background:#c3cffa;animation-delay:.1s">BR</span><span style="background:#dfe5fc"></span>
+          <span style="background:#c3cffa;animation-delay:.12s">RJ</span><span style="background:#a9b9f8;animation-delay:.14s">GJ</span><span style="background:#c3cffa;animation-delay:.16s">MP</span><span style="background:#a9b9f8;animation-delay:.18s">CG</span><span style="background:#c3cffa;animation-delay:.2s">JH</span><span style="background:#8099f5;animation-delay:.22s">WB</span><span style="background:#dfe5fc"></span>
+          <span style="background:#dfe5fc"></span><span style="background:#183eeb;animation-delay:.24s">MH</span><span style="background:#8099f5;animation-delay:.26s">TS</span><span style="background:#c3cffa;animation-delay:.28s">OD</span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span>
+          <span style="background:#dfe5fc"></span><span style="background:#a9b9f8;animation-delay:.3s">GA</span><span style="background:#2f55ee;animation-delay:.32s">KA</span><span style="background:#8099f5;animation-delay:.34s">AP</span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span>
+          <span style="background:#dfe5fc"></span><span style="background:#a9b9f8;animation-delay:.36s">KL</span><span style="background:#2f55ee;animation-delay:.38s">TN</span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span><span style="background:#dfe5fc"></span>
+        </div>
+        <div class="legend">Low<i></i>High · tap a state for its couriers</div></div>
+    </div>
+  </div></div>
+  <div class="card-body">
+    <h3>F · Blue Horizon <span style="font-weight:400;color:#6b7590">(like your 4th reference)</span></h3>
+    <p>A soft blue gradient wash behind frosted white cards, small uppercase captions explaining each card, an "Operations command centre" header, order-status tiles, and a map of India showing deliveries by state.</p>
+    <span class="tag">Plus Jakarta Sans</span><span class="tag">light with a blue gradient</span>
+    <ul class="notes">
+      <li><b>Motion:</b> KPI cards rise in one after another; map tiles pop in by intensity; the gradient drifts very slowly.</li>
+      <li><b>Micro:</b> tap a state to see its couriers and delivery times; switch between map and list; date-range picker opens as a sheet on phones.</li>
+      <li><b>Note:</b> the final map will be a proper India outline (shown here as a tile map for speed).</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:26px">
+  <h3>One thing to decide with these: the assistant</h3>
+  <p class="subtitle">D and E show an "Ask Evoc" assistant. The backend has no AI service today, so there are two honest ways to do it.</p>
+  <div class="options">
+    <div class="option" data-choice="ai-insights" onclick="toggleSelect(this)"><div class="letter">1</div><div class="content"><h3>Smart insights now, chat later</h3><p>Cards that point out things from your own data ("14 NDRs need an answer", "Ekart is slower to Pune this week"). No AI service needed; works today. The chat box comes when the backend adds AI.</p></div></div>
+    <div class="option" data-choice="ai-chat" onclick="toggleSelect(this)"><div class="letter">2</div><div class="content"><h3>Real chat assistant</h3><p>A Claude-powered assistant that answers questions about your shipments. Needs an API key and a server route in the frontend, plus care about which data it can see.</p></div></div>
+    <div class="option" data-choice="ai-none" onclick="toggleSelect(this)"><div class="letter">3</div><div class="content"><h3>No assistant</h3><p>Use that space for another chart or the "Needs you today" task list.</p></div></div>
+  </div>
+</div>

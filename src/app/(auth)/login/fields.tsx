@@ -108,6 +108,12 @@ export function PasswordField({
       <p id={`${id}-hint`} className="mt-1.5 text-[13px] leading-5 text-on-surface/70">
         Demo mode: any password of 8 or more characters works.
       </p>
+      <Link
+        href="/forgot-password"
+        className="mt-1 inline-flex min-h-11 items-center text-sm font-extrabold text-primary underline-offset-2 hover:underline"
+      >
+        Forgot password?
+      </Link>
     </div>
   );
 }
@@ -173,7 +179,7 @@ export function SubmitButton({
       type="submit"
       disabled={disabled || pending}
       aria-busy={pending}
-      className="flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 font-extrabold text-tertiary transition-colors enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-primary/50"
+      className="flex h-control w-full items-center justify-center gap-2 rounded-control bg-primary px-4 font-extrabold text-on-primary transition-colors enabled:hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-primary/50"
     >
       {pending ? <LoaderCircle aria-hidden="true" className="size-5 animate-spin" /> : null}
       {pending ? pendingLabel : children}

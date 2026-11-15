@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: 'Terms and policies | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Terms and policies | Evoc Ships' };
 
 export default function TermsPage() {
   return (

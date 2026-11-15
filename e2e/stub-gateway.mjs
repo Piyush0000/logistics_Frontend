@@ -24,6 +24,14 @@ const TRACKING = {
   stuck: false,
   timeline: [
     {
+      event_id: '0',
+      status: 'IN_TRANSIT',
+      raw_status: 'In Transit',
+      location: 'Pune',
+      occurred_at: '2026-10-22T09:00:00.000Z',
+      source: 'webhook',
+    },
+    {
       event_id: '1',
       status: 'DELIVERED',
       raw_status: 'Delivered',
@@ -33,6 +41,55 @@ const TRACKING = {
     },
   ],
 };
+
+const SHIPMENT_LIST_PATH = '/api/v1/shipments';
+
+const SHIPMENT_LIST_ITEM = {
+  shipment_id: TRACKING.shipment_id,
+  reference_id: 'REF-LIVE-1',
+  carrier: 'ekart',
+  awb: 'LIVE123',
+  status: 'DELIVERED',
+  created_at: '2026-10-23T08:00:00.000Z',
+  last_status_at: '2026-10-23T10:00:00.000Z',
+  stuck: false,
+};
+
+// With no status, the one DELIVERED shipment that earlier tests rely on. With MANIFESTED, two
+// shipments for the same carrier. Any other status has none, as the real list route filters on it.
+const MANIFESTED_ITEMS = ['LIVE201', 'LIVE202'].map((awb, index) => ({
+  ...SHIPMENT_LIST_ITEM,
+  shipment_id: `10000000-0000-4000-8000-00000000020${index + 1}`,
+  reference_id: `REF-${awb}`,
+  awb,
+  status: 'MANIFESTED',
+}));
+
+// One shipment for each RTO stage, for the RTO screen.
+const RTO_ITEMS = { RTO_INITIATED: ['LIVE301', 1], RTO_DELIVERED: ['LIVE302', 2] };
+
+function rtoItem(status) {
+  const [awb, n] = RTO_ITEMS[status];
+  return {
+    ...SHIPMENT_LIST_ITEM,
+    shipment_id: `10000000-0000-4000-8000-00000000030${n}`,
+    reference_id: `REF-${awb}`,
+    awb,
+    status,
+  };
+}
+
+function handleShipmentList(url, res) {
+  const status = url.searchParams.get('status');
+  const items = !status
+    ? [SHIPMENT_LIST_ITEM]
+    : status === 'MANIFESTED'
+      ? MANIFESTED_ITEMS
+      : Object.hasOwn(RTO_ITEMS, status)
+        ? [rtoItem(status)]
+        : [];
+  return send(res, 200, { items, page: 1, limit: 50, total: items.length });
+}
 
 const WEBHOOKS_PATH = '/api/v1/webhooks';
 const NOW = '2026-10-23T10:00:00.000Z';
@@ -119,10 +176,20 @@ async function handleWebhooks(req, res, path) {
 }
 
 createServer((req, res) => {
-  const path = new URL(req.url, 'http://localhost').pathname;
+  const url = new URL(req.url, 'http://localhost');
+  const path = url.pathname;
   if (path.startsWith(WEBHOOKS_PATH)) return handleWebhooks(req, res, path);
+  // The real gateway keeps booking closed until merchant authentication exists.
+  if (path === SHIPMENT_LIST_PATH && req.method === 'POST') {
+    return send(res, 503, {
+      message: 'Shipment creation is disabled until merchant authentication is configured',
+      error: 'Service Unavailable',
+      statusCode: 503,
+    });
+  }
+  if (path === SHIPMENT_LIST_PATH && req.method === 'GET') return handleShipmentList(url, res);
   if (req.url === '/health') return send(res, 200, { status: 'ok' });
   if (req.url === '/api/v1/shipments/stats') return send(res, 200, STATS);
   if (req.url === '/api/v1/shipments/LIVE123/tracking') return send(res, 200, TRACKING);
   return send(res, 404, { message: 'Not Found', statusCode: 404 });
-}).listen(3103);
+}).listen(3103 + Number(process.env.E2E_PORT_OFFSET ?? 0));

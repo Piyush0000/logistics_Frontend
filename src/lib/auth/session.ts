@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 import { emailSchema } from './login-schema';
 
 // Separate from SESSION_COOKIE, whose value is sent to the gateway as a merchant credential.
@@ -17,10 +18,11 @@ export function parseDemoSession(value: string | undefined): DemoSession | null 
   return email.success ? { email: email.data } : null;
 }
 
-export async function getDemoSession(): Promise<DemoSession | null> {
+/** Read once per request, however many server components ask (layout, page, wallet chip). */
+export const getDemoSession = cache(async (): Promise<DemoSession | null> => {
   const store = await cookies();
   return parseDemoSession(store.get(DEMO_SESSION_COOKIE)?.value);
-}
+});
 
 export async function createDemoSession(email: string): Promise<void> {
   const store = await cookies();

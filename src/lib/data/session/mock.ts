@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock } from '../source';
 import type { SessionService } from './types';
 
@@ -23,5 +25,13 @@ export const mockSessionService: SessionService = {
 
   async signInWithPassword(email) {
     return fromMock({ email });
+  },
+
+  async signUp({ email }) {
+    return fromMock({ email });
+  },
+
+  async requestPasswordReset() {
+    return fromMock({ demo: true });
   },
 };

@@ -3,17 +3,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { AppShell } from '@/components/shell/app-shell';
+import { PRIMARY_BUTTON } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
-import { walletService } from '@/lib/data/wallet';
 import { webhookService } from '@/lib/data/webhooks';
 import { DetailCard } from '../dashboard/sections';
 import { DeliveryHistory } from './delivery-history';
-import { PRIMARY_BUTTON } from './dialog';
 import { WebhookInfo } from './webhook-info';
 import { WebhooksPanel } from './webhooks-panel';
 
-export const metadata: Metadata = { title: 'Channel Integrations | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Channel Integrations | Evoc Ships' };
 
 const PATH = '/channel-integrations';
 
@@ -24,14 +23,19 @@ const TABS = [
 
 function Tabs({ active }: { active: string }) {
   return (
-    <nav aria-label="Integration sections" className="flex gap-2 border-b border-secondary pb-2">
+    <nav
+      aria-label="Integration sections"
+      className="flex w-full gap-1 rounded-card border border-secondary bg-surface p-1.5 sm:w-fit"
+    >
       {TABS.map(({ id, label, href }) => (
         <Link
           key={id}
           href={href}
           aria-current={id === active ? 'page' : undefined}
-          className={`inline-flex h-control items-center rounded-control px-4 text-sm font-medium ${
-            id === active ? 'bg-muted text-primary' : 'hover:bg-muted'
+          className={`inline-flex h-11 min-w-28 flex-1 items-center justify-center rounded-control px-4 text-sm transition-colors duration-150 sm:flex-none lg:h-10 ${
+            id === active
+              ? 'bg-muted font-semibold text-primary'
+              : 'font-medium text-on-surface/75 hover:bg-muted hover:text-primary'
           }`}
         >
           {label}
@@ -46,9 +50,11 @@ function ApiKeys() {
   return (
     <section
       aria-label="API Keys"
-      className="grid justify-items-center gap-3 rounded-card border border-secondary bg-surface p-card py-12 text-center"
+      className="motion-rise grid justify-items-center gap-3 rounded-card border border-secondary bg-surface p-card py-12 text-center"
     >
-      <KeyRound aria-hidden="true" className="size-8 text-primary" />
+      <span className="grid size-14 place-items-center rounded-card bg-muted text-primary">
+        <KeyRound aria-hidden="true" className="size-7" />
+      </span>
       <p className="text-sm">API keys are not available yet.</p>
       <p className="text-sm text-on-surface/70">You will be able to create them here later.</p>
       <button type="button" disabled className={PRIMARY_BUTTON}>
@@ -75,28 +81,20 @@ export default async function ChannelIntegrationsPage({
   const cursor = z.string().uuid().safeParse(first(params.cursor)).data;
 
   const service = webhookService();
-  const [wallet, webhooks, deliveries] = await Promise.all([
-    walletService().getBalance(),
+  const [webhooks, deliveries] = await Promise.all([
     tab === 'webhooks' ? service.list() : null,
     tab === 'webhooks' ? service.listDeliveries(cursor) : null,
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
-      <div>
-        <h1 className="font-heading text-[28px] leading-9 font-bold lg:text-[40px] lg:leading-10">
-          Channel Integrations
-        </h1>
-        <p className="mt-1 text-sm text-on-surface/70 lg:text-base">
-          Manage API keys and webhook subscriptions
-        </p>
-      </div>
+    <>
+      <PageHeader title="Channel Integrations" description="Manage API keys and webhook subscriptions" />
 
       <Tabs active={tab} />
 
       {webhooks && deliveries ? (
         <>
-          <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-5">
+          <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-5 2xl:grid-cols-[26rem_minmax(0,1fr)]">
             <DetailCard testId="webhooks-card" title="Webhooks" result={webhooks}>
               {(items) => <WebhooksPanel webhooks={items} />}
             </DetailCard>
@@ -110,6 +108,6 @@ export default async function ChannelIntegrationsPage({
       ) : (
         <ApiKeys />
       )}
-    </AppShell>
+    </>
   );
 }

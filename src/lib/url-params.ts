@@ -1,0 +1,48 @@
+/** Safe parsing of URL search parameters, so bad input falls back instead of crashing a page. */
+
+/** The backend's highest page number. */
+const MAX_PAGE = 10_000;
+
+/** A whole page number from 1 to 10,000, else 1. */
+export function parsePage(value: unknown): number {
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) return 1;
+  const page = Number(value);
+  return Number.isSafeInteger(page) && page >= 1 && page <= MAX_PAGE ? page : 1;
+}
+
+/** One of the `allowed` page sizes, else `fallback`. */
+export function parseLimit(value: unknown, allowed: readonly number[], fallback: number): number {
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) return fallback;
+  const limit = Number(value);
+  return allowed.includes(limit) ? limit : fallback;
+}
+
+/** The value when it is one of `allowed`, else undefined. */
+export function parseEnum<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
+  return typeof value === 'string' && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : undefined;
+}
+
+/** Trimmed text, cut to `max` characters. */
+export function parseText(value: unknown, max = 100): string {
+  return typeof value === 'string' ? value.trim().slice(0, max) : '';
+}
+
+/**
+ * A list page's link: `pathname` with every non-empty param except `page`, then `page` when it
+ * is above 1. Pass `params` in the order they should appear.
+ */
+export function buildPageHref(
+  pathname: string,
+  params: Record<string, string | undefined>,
+  page: number,
+): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value && key !== 'page') query.set(key, value);
+  }
+  if (page > 1) query.set('page', String(page));
+  const text = query.toString();
+  return text ? `${pathname}?${text}` : pathname;
+}

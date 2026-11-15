@@ -5,7 +5,7 @@ import { getDemoSession } from '@/lib/auth/session';
 import { BrandPanel } from './brand-panel';
 import { LoginForm } from './login-form';
 
-export const metadata: Metadata = { title: 'Sign in | Evoc Logistics' };
+export const metadata: Metadata = { title: 'Sign in | Evoc Ships' };
 
 export default async function LoginPage() {
   if (await getDemoSession()) redirect('/dashboard');

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { fromMock, type DataResult } from '../source';
 import type { NdrActionInput, NdrDashboardData, NdrRecord, NdrService } from './types';
 

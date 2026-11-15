@@ -18,18 +18,38 @@ test.describe('Orders screen', () => {
 
       // Status tabs
       await expect(page.getByRole('tab', { name: 'All' })).toBeVisible();
-      await expect(page.getByRole('tab', { name: 'Delivered' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Delivered', exact: true })).toBeVisible();
       await expect(page.getByRole('tab', { name: 'In Transit' })).toBeVisible();
+    });
+
+    test('ignores bad URL input', async ({ page }) => {
+      for (const query of ['?page=abc', '?page=-1', '?page=1.5', '?status=FOO', '?carrier=FOO']) {
+        const response = await page.goto(`/orders${query}`);
+        expect(response?.status()).toBe(200);
+        await expect(page.getByRole('heading', { level: 1, name: 'Shipments & Orders' })).toBeVisible();
+        // A bad value is dropped, so the unfiltered list still shows.
+        await expect(page.getByTestId('orders-empty')).toHaveCount(0);
+        await expect(page.getByTestId('orders-error')).toHaveCount(0);
+      }
     });
 
     test('filters list by status tabs', async ({ page }, testInfo) => {
       await page.goto('/orders');
-      await page.getByRole('tab', { name: 'Delivered' }).click();
+      await page.getByRole('tab', { name: 'Delivered', exact: true }).click();
       await page.waitForURL('**/orders?status=DELIVERED');
 
       // Check that delivered item appears and others are filtered
       const container = testInfo.project.name === 'phone' ? page.getByTestId('order-card') : page.getByTestId('order-row');
       await expect(container.filter({ hasText: 'DEMOEK003' })).toBeVisible();
+    });
+
+    test('separates RTO in progress from RTO delivered', async ({ page }) => {
+      await page.goto('/orders');
+      await page.getByRole('tab', { name: 'RTO in progress' }).click();
+      await page.waitForURL('**/orders?status=RTO_INITIATED');
+
+      await page.getByRole('tab', { name: 'RTO delivered' }).click();
+      await page.waitForURL('**/orders?status=RTO_DELIVERED');
     });
 
     test('filters list by carrier dropdown', async ({ page }, testInfo) => {
@@ -58,7 +78,7 @@ test.describe('Orders screen', () => {
       await page.goto('/orders/DEMOEK001');
 
       await expect(page.getByRole('heading', { level: 1, name: 'DEMOEK001' })).toBeVisible();
-      await expect(page.getByText('Sample data')).toBeVisible();
+      await expect(page.getByText('Sample data').first()).toBeVisible();
 
       // Check sections
       await expect(page.getByTestId('timeline-card')).toBeVisible();
@@ -105,6 +125,30 @@ test.describe('Orders screen', () => {
     });
   });
 
+  test.describe('create shipment retries', () => {
+    test('reuses the idempotency key on retry', async ({ page }) => {
+      await page.goto('/orders/create');
+      const key = page.getByTestId('idempotency-key');
+      const before = await key.inputValue();
+      expect(before).toMatch(/^idem-/);
+
+      // A pincode that is too short is refused, which forces a failure.
+      await page.getByLabel('Customer Name *').fill('Edited Buyer');
+      await page.locator('#destination_pincode').fill('12');
+      await page.getByTestId('submit-shipment').click();
+      await expect(page.getByText('Please check the form for errors')).toBeVisible();
+      await expect(page.getByLabel('Customer Name *')).toHaveValue('Edited Buyer');
+      const afterFirst = await key.inputValue();
+
+      await page.getByTestId('submit-shipment').click();
+      await expect(page.getByText('Please check the form for errors')).toBeVisible();
+      const afterSecond = await key.inputValue();
+
+      expect(afterFirst).toBe(before);
+      expect(afterSecond).toBe(before);
+    });
+  });
+
   test.describe('NDR management', () => {
     test('renders NDR dashboard with KPI cards and sample badge', async ({ page }) => {
       await page.goto('/ndr');
@@ -118,10 +162,16 @@ test.describe('Orders screen', () => {
       await expect(page.getByTestId('ndr-kpis').getByText('NDR Returned')).toBeVisible();
     });
 
-    test('opens action modal for reattempt and logs action', async ({ page }) => {
+    test('opens action modal for reattempt and logs action', async ({ page }, testInfo) => {
       await page.goto('/ndr');
 
-      const reattemptBtn = page.getByRole('button', { name: 'Reattempt' }).first();
+      // Desktop and phone runs share the sample store, and only its two "action required" rows
+      // have the buttons, so each run acts on its own row.
+      const phone = testInfo.project.name === 'phone';
+      const row = page
+        .getByTestId(phone ? 'ndr-card' : 'ndr-row')
+        .filter({ hasText: phone ? 'DEMODH006' : 'DEMODL002' });
+      const reattemptBtn = row.getByRole('button', { name: 'Reattempt' });
       await expect(reattemptBtn).toBeVisible();
       await reattemptBtn.click();
 

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { randomBytes, randomUUID } from 'node:crypto';
 import { fromMock, type DataResult } from '../source';
 import type { ApiError } from '../../gateway/errors';

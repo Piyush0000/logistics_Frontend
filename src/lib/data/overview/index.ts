@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { notAvailable } from '../not-available';
 import { fromMock, resolveDataSource, type DataResult } from '../source';
 

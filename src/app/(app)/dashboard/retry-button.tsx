@@ -12,7 +12,7 @@ export function RetryButton() {
       type="button"
       disabled={pending}
       onClick={() => startTransition(() => router.refresh())}
-      className="h-control rounded-control bg-primary px-4 text-sm font-medium text-tertiary disabled:bg-primary/50"
+      className="h-control rounded-control bg-primary px-4 text-sm font-medium text-on-primary disabled:bg-primary/50"
     >
       Try again
     </button>

@@ -2,63 +2,52 @@ import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/shell/app-shell';
 import { SampleBadge } from '@/components/sample-badge';
+import { DataCard } from '@/components/ui/data-card';
+import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { ndrService } from '@/lib/data/ndr';
-import { walletService } from '@/lib/data/wallet';
 import { NdrView } from './ndr-view';
 
-export const metadata: Metadata = { title: 'NDR Management | Evoc Logistics' };
+export const metadata: Metadata = { title: 'NDR Management | Evoc Ships' };
 
 export default async function NdrPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [wallet, ndrResult] = await Promise.all([
-    walletService().getBalance(),
+  const [ndrResult] = await Promise.all([
     ndrService().getNdrDashboard(),
   ]);
 
   return (
-    <AppShell email={session.email} wallet={wallet}>
-      <div className="grid gap-6">
-        {/* Navigation Breadcrumb */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/orders"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-          >
-            <ArrowLeft className="size-4" />
-            <span>Back to Orders</span>
-          </Link>
-          <SampleBadge />
-        </div>
+    <>
+      <Link
+        href="/orders"
+        className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-primary hover:underline lg:min-h-0"
+      >
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        <span>Back to Orders</span>
+      </Link>
 
-        {/* Page Title */}
-        <div>
-          <h1 className="font-heading text-2xl font-bold lg:text-3xl">
-            Non-Delivery Reports (NDR)
-          </h1>
-          <p className="mt-1 text-sm text-on-surface/70">
-            Take proactive merchant action on failed delivery attempts to reduce RTO rates.
-          </p>
-        </div>
+      {/* One sample badge for the page: every section below comes from the same NDR result. */}
+      <PageHeader
+        title="Non-Delivery Reports (NDR)"
+        description="Take proactive merchant action on failed delivery attempts to reduce RTO rates."
+        actions={ndrResult.source === 'mock' ? <SampleBadge /> : null}
+      />
 
-        {/* Content */}
-        {!ndrResult.ok ? (
-          <div
-            data-testid="ndr-error"
-            className="rounded-card border border-error/30 bg-error/10 p-6 text-center text-error"
-          >
-            <p className="font-semibold">Failed to load NDR reports</p>
-            <p className="mt-1 text-xs text-on-surface/80">{ndrResult.error.message}</p>
-          </div>
-        ) : (
-          <NdrView data={ndrResult.data} />
-        )}
-      </div>
-    </AppShell>
+      {!ndrResult.ok ? (
+        <>
+          <DataCard testId="ndr-kpis" title="Summary" result={ndrResult}>
+            {() => null}
+          </DataCard>
+          <DataCard testId="ndr-list" title="Failed deliveries" result={ndrResult}>
+            {() => null}
+          </DataCard>
+        </>
+      ) : (
+        <NdrView data={ndrResult.data} />
+      )}
+    </>
   );
 }
-

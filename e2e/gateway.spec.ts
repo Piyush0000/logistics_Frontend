@@ -1,8 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signIn } from './helpers';
+import { BULK_COLUMNS } from '../src/lib/bulk-shipments';
+import { e2eUrl, signIn } from './helpers';
 
 test.describe('with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   test('shows gateway numbers with no sample label', async ({ page }) => {
     await signIn(page);
@@ -33,8 +34,20 @@ test.describe('with the gateway answering', () => {
   });
 });
 
+test.describe('orders search with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('says gateway search covers this page only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders?search=LIVE');
+
+    await expect(page.getByText('Search covers the shipments on this page only.')).toBeVisible();
+    await expect(page.getByText('LIVE123').first()).toBeVisible();
+  });
+});
+
 test.describe('with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('explains the failure and offers a retry', async ({ page }) => {
     await signIn(page);
@@ -66,7 +79,7 @@ test.describe('with the gateway down', () => {
 });
 
 test.describe('with no wallet or COD route', () => {
-  test.use({ baseURL: 'http://localhost:3106' });
+  test.use({ baseURL: e2eUrl(3106) });
 
   test('shows the wallet as unavailable, never as sample data', async ({ page }) => {
     await signIn(page);
@@ -103,7 +116,7 @@ test.describe('with no wallet or COD route', () => {
 });
 
 test.describe('webhooks with the gateway answering', () => {
-  test.use({ baseURL: 'http://localhost:3104' });
+  test.use({ baseURL: e2eUrl(3104) });
 
   const open = async (page: Page) => {
     await signIn(page);
@@ -158,7 +171,7 @@ test.describe('webhooks with the gateway answering', () => {
 });
 
 test.describe('webhooks with the gateway down', () => {
-  test.use({ baseURL: 'http://localhost:3105' });
+  test.use({ baseURL: e2eUrl(3105) });
 
   test('explains the failure and offers a retry', async ({ page }) => {
     await signIn(page);
@@ -171,5 +184,835 @@ test.describe('webhooks with the gateway down', () => {
       await expect(card.getByText('Sample data')).toBeHidden();
     }
     await expect(page.getByRole('button', { name: 'Create Webhook' })).toHaveCount(0);
+  });
+});
+
+test.describe('home with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows live shipment counts from the gateway', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    await expect(page.getByTestId('stat-in-transit')).toContainText('3');
+    await expect(page.getByTestId('stat-in-transit').getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('stat-delivered')).toContainText('5');
+    const recent = page.getByTestId('recent-shipments-card');
+    await expect(recent.getByTestId('recent-shipment')).toHaveAttribute('href', '/orders/LIVE123');
+    await expect(recent.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('home with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('keeps Home working when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    const recent = page.getByTestId('recent-shipments-card');
+    await expect(recent.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(recent.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByTestId('stat-in-transit').getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(page.getByTestId('checklist-card').getByText('2 of 4 done')).toBeVisible();
+    await expect(page.getByTestId('quick-actions')).toBeVisible();
+  });
+});
+
+test.describe('home with no wallet or setup route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows wallet, NDR and setup steps as unavailable, never as sample data', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/home');
+
+    for (const id of ['stat-wallet', 'stat-ndr', 'checklist-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+      await expect(card.getByText('Sample data')).toBeHidden();
+    }
+  });
+});
+
+test.describe('shipments with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the gateway timeline on a shipment', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/LIVE123');
+
+    const card = page.getByTestId('timeline-card');
+    await expect(card.getByText('Jaipur')).toBeVisible();
+    await expect(card.getByText('Pune')).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    // Newest event first.
+    await expect(card.getByRole('listitem').first()).toContainText('Jaipur');
+  });
+
+  test('explains that booking is unavailable and keeps the form', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/create');
+    await page.getByLabel('Customer Name *').fill('Edited Buyer');
+    await page.getByTestId('submit-shipment').click();
+
+    await expect(
+      page.getByText(
+        'Booking is not available yet: Shipment creation is disabled until merchant authentication is configured',
+      ),
+    ).toBeVisible();
+    await expect(page.getByLabel('Customer Name *')).toHaveValue('Edited Buyer');
+    await expect(page.getByTestId('create-success')).toHaveCount(0);
+  });
+});
+
+test.describe('shipments with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the timeline error but keeps shipment facts', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/DEMOEK001');
+
+    const card = page.getByTestId('timeline-card');
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'DEMOEK001' })).toBeVisible();
+    await expect(page.getByTestId('destination-card')).toBeVisible();
+  });
+});
+
+test.describe('B2C shipments with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows gateway shipments with no sample label', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c');
+    const card = page.getByTestId('b2c-card');
+
+    await expect(card.getByText('LIVE123').first()).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('says gateway search covers this page only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c?search=LIVE');
+
+    await expect(page.getByText('Search covers the shipments on this page only.')).toBeVisible();
+  });
+});
+
+test.describe('B2C shipments with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the list error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2c');
+    const card = page.getByTestId('b2c-card');
+
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'B2C Shipments' })).toBeVisible();
+  });
+});
+
+test.describe('B2B with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows B2B as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/b2b', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('b2b-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Create B2B shipment' })).toHaveCount(0);
+  });
+});
+
+test.describe('bulk upload with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the booking-unavailable message per row', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/bulk');
+    const head = 'Central Hub,9876543210,42 Industrial Road,Bengaluru,Karnataka,560100';
+    await page.getByLabel('Shipment file').setInputFiles({
+      name: 'shipments.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        [
+          BULK_COLUMNS.join(','),
+          `${head},Aditi Rao,9988776655,Flat 302,,Bengaluru,Karnataka,560103,1.2,25,15,10,Keyboard,1,3499,PREPAID,0,GW-1,`,
+          `${head},Ravi Kumar,9988776656,Flat 9,,Pune,Maharashtra,411001,1,20,15,10,Mouse,1,499,PREPAID,0,GW-2,`,
+        ].join('\r\n'),
+      ),
+    });
+    await expect(page.getByText('Sample data')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Submit 2 valid rows' }).click();
+
+    const message =
+      'Booking is not available yet: Shipment creation is disabled until merchant authentication is configured';
+    const results = page.getByTestId('bulk-result');
+    await expect(results).toHaveCount(2);
+    await expect(results.nth(0)).toContainText(message);
+    await expect(results.nth(1)).toContainText(message);
+    await expect(page.getByText('0 booked, 2 not booked')).toBeVisible();
+  });
+});
+
+test.describe('pickups with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('lists manifested gateway shipments as ready to ship', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups');
+    const card = page.getByTestId('ready-card');
+
+    await expect(card.getByText('LIVE201').first()).toBeVisible();
+    await expect(card.getByText('LIVE202').first()).toBeVisible();
+    // The stand-in keeps the DELIVERED shipment out, because it is not manifested.
+    await expect(card.getByText('LIVE123')).toHaveCount(0);
+    await expect(card.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('pickups with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the ready list error but keeps the page', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups');
+    const card = page.getByTestId('ready-card');
+
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Pickups & Manifests' })).toBeVisible();
+    await expect(page.getByTestId('pickups-card')).toBeVisible();
+  });
+});
+
+test.describe('pickups with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows pickups as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('pickups-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    // Scheduling needs the pickup routes, so it is not offered.
+    await expect(page.getByRole('button', { name: 'Schedule pickup' })).toHaveCount(0);
+    await expect(page.getByRole('checkbox')).toHaveCount(0);
+  });
+
+  test('refuses the manifest page as unavailable', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/orders/pickups/manifest-print/pk-001');
+
+    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByTestId('sample-manifest')).toHaveCount(0);
+  });
+});
+
+test.describe('invoices with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows invoices as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/invoices', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('invoices-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('invoice-row')).toHaveCount(0);
+  });
+
+  test('refuses the print view as unavailable, with no sample banner', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/invoices/inv-2026-10');
+
+    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Sample invoice. Not a tax document.')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  });
+});
+
+test.describe('NDR with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows NDR as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/ndr', { waitUntil: 'networkidle' });
+
+    for (const id of ['ndr-kpis', 'ndr-list']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: /Reattempt|RTO/ })).toHaveCount(0);
+  });
+});
+
+test.describe('RTO with the stand-in gateway', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows gateway RTO shipments', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    await expect(page.getByTestId('tile-rto-in-progress')).toContainText('6');
+    await expect(page.getByTestId('tile-rto-delivered')).toContainText('7');
+    const card = page.getByTestId('rto-card');
+    await expect(card.getByText('LIVE301').locator('visible=true').first()).toBeVisible();
+    await expect(card.getByText('LIVE302')).toHaveCount(0);
+    await expect(page.getByText('Sample data')).toBeHidden();
+
+    await page.getByRole('tab', { name: 'Delivered' }).click();
+    await page.waitForURL('**/rto?stage=delivered');
+    await expect(card.getByText('LIVE302').locator('visible=true').first()).toBeVisible();
+    await expect(card.getByText('LIVE301')).toHaveCount(0);
+  });
+
+  test('shows RTO charges as not available in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    const tile = page.getByTestId('tile-rto-charges');
+    await expect(tile).toContainText('Not available yet');
+    await expect(tile).not.toContainText('₹');
+  });
+
+  test('links the dashboard RTO tile to the RTO screen', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard');
+    await page.getByTestId('tile-RTO').click();
+    await page.waitForURL('**/rto');
+  });
+});
+
+test.describe('RTO with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/rto');
+
+    for (const id of ['rto-summary', 'rto-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByRole('heading', { level: 1, name: 'RTO' })).toBeVisible();
+    await expect(page.getByRole('tablist', { name: 'RTO stage' })).toBeVisible();
+  });
+});
+
+test.describe('wallet recharge with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows recharge as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/finances/wallet?recharge=1', { waitUntil: 'networkidle' });
+    const dialog = page.getByRole('dialog', { name: 'Recharge wallet' });
+
+    await dialog.getByRole('button', { name: 'Recharge', exact: true }).click();
+
+    await expect(dialog.getByText('This data is not available yet.')).toBeVisible();
+    await expect(dialog.getByText('No payment was taken')).toBeHidden();
+  });
+});
+
+test.describe('weight with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows weight as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/reconciliation/weight', { waitUntil: 'networkidle' });
+
+    for (const id of ['weight-summary', 'weight-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('weight-row')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Weight discrepancies' })).toBeVisible();
+  });
+});
+
+test.describe('support tickets with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows tickets as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/support/tickets', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tickets-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('ticket-row')).toHaveCount(0);
+    await expect(page.getByTestId('ticket-item')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'New ticket', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Support tickets' })).toBeVisible();
+
+    // A ticket page shows the same card, not a made-up ticket or a not-found page.
+    await page.goto('/support/tickets/tk-001', { waitUntil: 'networkidle' });
+    const ticket = page.getByTestId('ticket-card');
+    await expect(ticket.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('ticket-message')).toHaveCount(0);
+  });
+});
+
+test.describe('weight settings with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows presets as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/reconciliation/weight-settings', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('presets-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('preset-row')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add preset' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Weight settings' })).toBeVisible();
+  });
+});
+
+test.describe('profile with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the profile as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/profile', { waitUntil: 'networkidle' });
+
+    for (const id of ['profile-card', 'password-card']) {
+      const card = page.getByTestId(id);
+      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Save profile' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Change password' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
+  });
+});
+
+test.describe('pickup addresses with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows addresses as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/pickup-addresses', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('addresses-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('address-item')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add address' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Pickup Addresses' })).toBeVisible();
+  });
+});
+
+test.describe('buyer notifications with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows notifications as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/notifications', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('notifications-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('switch')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Save notifications' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Buyer notifications' })).toBeVisible();
+  });
+});
+
+test.describe('company with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows company details as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/company', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('company-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Company & KYC' })).toBeVisible();
+  });
+});
+
+test.describe('users and roles with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the team as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/users', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('team-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Invite user' })).toHaveCount(0);
+    await expect(page.getByTestId('member')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Users & Roles' })).toBeVisible();
+    // The role descriptions are plain text, so they still explain the roles.
+    await expect(page.getByTestId('roles-card')).toBeVisible();
+  });
+});
+
+test.describe('courier rules with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows courier rules as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/courier-rules', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('rules-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('courier-row')).toHaveCount(0);
+    await expect(page.getByRole('radio')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Courier Rules' })).toBeVisible();
+  });
+});
+
+test.describe('sub-merchants with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows sub-merchants as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/sub-merchants', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('sub-merchants-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Onboard seller' })).toHaveCount(0);
+    await expect(page.getByTestId('sub-merchant')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Sub-merchants' })).toBeVisible();
+  });
+});
+
+test.describe('rate card with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows rates as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/rate-card', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('rates-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('rate-row')).toHaveCount(0);
+    await expect(page.getByTestId('rate-item')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Rate card' })).toBeVisible();
+    // The zone legend is plain text, so it still explains the zones.
+    await expect(page.getByTestId('zone-legend')).toBeVisible();
+  });
+});
+
+test.describe('rate calculator with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows quotes as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/rate-calculator', { waitUntil: 'networkidle' });
+    await page.getByLabel('Pickup pincode').fill('110001');
+    await page.getByLabel('Delivery pincode').fill('400001');
+    await page.getByLabel('Weight (kg)').fill('1');
+    await page.getByLabel('Length (cm)').fill('10');
+    await page.getByLabel('Width (cm)').fill('10');
+    await page.getByLabel('Height (cm)').fill('10');
+    await page.getByRole('button', { name: 'Get quotes' }).click();
+
+    const card = page.getByTestId('quotes-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByTestId('quote-item')).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Rate calculator' })).toBeVisible();
+  });
+});
+
+test.describe('order tracking with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the gateway timeline for LIVE123', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=LIVE123', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tracking-card');
+    await expect(card.getByText('LIVE123').first()).toBeVisible();
+    await expect(card.getByTestId('status-badge')).toContainText('Delivered');
+    await expect(card.getByText('Jaipur').first()).toBeVisible();
+    const events = card.getByTestId('timeline-event');
+    await expect(events).toHaveCount(2);
+    await expect(events.first()).toContainText('Jaipur');
+    await expect(events.last()).toContainText('Pune');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('says no shipment found for an unknown AWB', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=MISSING1', { waitUntil: 'networkidle' });
+    await expect(page.getByText('No shipment found for this AWB.')).toBeVisible();
+  });
+});
+
+test.describe('order tracking with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error when the gateway is down', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/tools/tracking?awb=LIVE123,LIVE124', { waitUntil: 'networkidle' });
+
+    const items = page.getByTestId('tracking-item');
+    await expect(items).toHaveCount(2);
+    for (const item of await items.all()) {
+      await expect(item.getByText('Could not reach the server. Please try again.')).toBeVisible();
+      await expect(item.getByRole('button', { name: 'Try again' })).toBeVisible();
+    }
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1, name: 'Order tracking' })).toBeVisible();
+    await expect(page.getByLabel('AWB numbers')).toBeVisible();
+  });
+});
+
+test.describe('public tracking with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the gateway timeline', async ({ page }) => {
+    const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { level: 1, name: 'LIVE123' })).toBeVisible();
+    await expect(page.getByTestId('status-badge')).toContainText('Delivered');
+    const events = page.getByTestId('timeline-event');
+    await expect(events).toHaveCount(2);
+    await expect(events.first()).toContainText('Jaipur');
+    await expect(events.last()).toContainText('Pune');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+
+  test('answers 404 for an AWB the gateway does not know', async ({ page }) => {
+    const response = await page.goto('/track/MISSING1');
+    expect(response?.status()).toBe(404);
+  });
+});
+
+test.describe('public tracking with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows a clear error, not a 404', async ({ page }) => {
+    const response = await page.goto('/track/LIVE123', { waitUntil: 'networkidle' });
+    expect(response?.status()).not.toBe(404);
+    await expect(page.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('reports with the gateway answering', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  const RANGE = 'from=2026-10-01&to=2026-10-31';
+
+  test('downloads gateway shipments', async ({ page }) => {
+    await signIn(page);
+
+    const response = await page.request.get(`/reports/export?type=shipments&${RANGE}`);
+    const text = await response.text();
+
+    expect(response.status()).toBe(200);
+    expect(text.split('\r\n')[0]).toBe('Reference,AWB,Courier,Status,Created,Last Update');
+    expect(text).toContain('LIVE123');
+    expect(text).not.toContain('# Sample data');
+  });
+
+  test('combines both RTO stages', async ({ page }) => {
+    await signIn(page);
+
+    const text = await (await page.request.get(`/reports/export?type=rto&${RANGE}`)).text();
+
+    expect(text).toContain('LIVE301');
+    expect(text).toContain('LIVE302');
+  });
+});
+
+test.describe('reports with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('returns 503 with a plain message for shipments', async ({ page }) => {
+    await signIn(page);
+
+    const response = await page.request.get('/reports/export?type=shipments&from=2026-10-01&to=2026-10-31');
+
+    expect(response.status()).toBe(503);
+    expect(await response.text()).toBe('Could not reach the server. Please try again.');
+  });
+});
+
+test.describe('reports with no COD, wallet or NDR route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('returns 503 for COD in gateway mode', async ({ page }) => {
+    await signIn(page);
+
+    for (const type of ['cod', 'wallet', 'ndr']) {
+      const response = await page.request.get(`/reports/export?type=${type}&from=2026-10-01&to=2026-10-31`);
+
+      expect(response.status(), type).toBe(503);
+      expect(await response.text(), type).toBe('This data is not available yet.');
+    }
+  });
+});
+
+test.describe('dashboard pickups tab with no pickups route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows pickups as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=pickups', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('pickups-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(card.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard NDR tab with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=ndr');
+    const card = page.getByTestId('ndr-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'NDR' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard RTO tab with the stand-in gateway', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('RTO tab shows counts from gateway stats', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=rto');
+    const card = page.getByTestId('rto-tab-card');
+    await expect(card.getByTestId('tile-RTO in progress')).toContainText('6');
+    await expect(card.getByTestId('tile-RTO delivered')).toContainText('7');
+    await expect(card.getByRole('img', { name: /^RTO by courier\./ })).toBeVisible();
+    // The stand-in list route returns one record per stage while its stats say 6 and 7.
+    await expect(card.getByTestId('rto-chart-note')).toHaveText('Based on 2 of 13 RTO shipments.');
+    await expect(page.getByText('Sample data')).toBeHidden();
+  });
+});
+
+test.describe('dashboard RTO tab with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error in the tab card only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=rto');
+    const card = page.getByTestId('rto-tab-card');
+    await expect(card.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'RTO' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard Delivered tab with the stand-in gateway', () => {
+  test.use({ baseURL: e2eUrl(3104) });
+
+  test('shows the live delivered total but unavailable trend in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=delivered');
+    const total = page.getByTestId('delivered-total-card');
+    await expect(total.getByTestId('tile-Delivered')).toContainText('5');
+    await expect(total.getByText('Sample data')).toBeHidden();
+    const trend = page.getByTestId('delivered-trend-card');
+    await expect(trend.getByText('This data is not available yet.')).toBeVisible();
+    await expect(trend.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Delivered' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard Delivered tab with the gateway down', () => {
+  test.use({ baseURL: e2eUrl(3105) });
+
+  test('shows the error in the total card only', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=delivered');
+    const total = page.getByTestId('delivered-total-card');
+    await expect(total.getByText('Could not reach the server. Please try again.')).toBeVisible();
+    await expect(total.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible();
+    await expect(page.getByTestId('delivered-trend-card')).toBeVisible();
+  });
+});
+
+test.describe('dashboard Revenue tab with no gateway route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=revenue');
+    const card = page.getByTestId('revenue-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'Revenue' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('dashboard SMS tab with no gateway route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows the unavailable message, with the tabs still working', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/dashboard?tab=sms');
+    const card = page.getByTestId('sms-tab-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('tracking page settings with no route', () => {
+  test.use({ baseURL: e2eUrl(3106) });
+
+  test('shows tracking-page settings as unavailable in gateway mode', async ({ page }) => {
+    await signIn(page);
+    await page.goto('/settings/tracking-page', { waitUntil: 'networkidle' });
+
+    const card = page.getByTestId('tracking-page-card');
+    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
+    await expect(page.getByText('Sample data')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { level: 1, name: 'Tracking Page' })).toBeVisible();
   });
 });

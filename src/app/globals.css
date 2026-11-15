@@ -1,21 +1,15 @@
 @import 'tailwindcss';
 
-/* Colours for every screen, from sharkship.in-design.md. Default Tailwind colours are removed. */
+/* `dark:` follows the app's theme choice (data-theme on <html>), not only the OS setting. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Evoc Ships colours. Values live in --c-* variables so light (Bento Light) and dark (Midnight Glass)
+   swap by data-theme on <html>. Default Tailwind colours are removed. */
 @theme {
   --color-*: initial;
-  --color-primary: #184fa2;
-  --color-secondary: #e5e5e5;
-  --color-tertiary: #fafafa;
-  --color-neutral: #ffffff;
-  --color-surface: #ffffff;
-  --color-on-surface: #0a0a0a;
-  --color-muted: #184fa21a;
-  --color-accent: #2ea8e6;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
 
   --animate-ticker: ticker 45s linear infinite;
+  --ease-evoc: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   @keyframes ticker {
     to {
@@ -24,48 +18,267 @@
   }
 }
 
-/* Tailwind names for values that change per screen group: font-heading, rounded-card, h-control. */
 @theme inline {
+  --color-primary: var(--c-primary);
+  --color-on-primary: var(--c-on-primary);
+  --color-secondary: var(--c-secondary);
+  --color-tertiary: var(--c-tertiary);
+  --color-neutral: var(--c-surface);
+  --color-surface: var(--c-surface);
+  --color-on-surface: var(--c-on-surface);
+  --color-muted: var(--c-muted);
+  --color-accent: var(--c-accent);
+  --color-success: var(--c-success);
+  --color-warning: var(--c-warning);
+  --color-error: var(--c-error);
+  --color-series-2: var(--c-series-2);
+  --color-series-3: var(--c-series-3);
+
   --font-heading: var(--theme-font-heading);
   --font-display: var(--theme-font-display);
   --font-body: var(--theme-font-body);
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-control: var(--theme-radius-control);
   --radius-card: var(--theme-radius-card);
   --spacing-control: var(--theme-control-height);
   --spacing-card: var(--theme-card-padding);
 }
 
-/* Login group, from meracourierwala.com-design.md. Manrope's heaviest weight is 800. */
-.theme-auth {
-  --theme-font-heading: var(--font-manrope), system-ui, sans-serif;
-  --theme-font-display: var(--font-manrope), system-ui, sans-serif;
-  --theme-font-body: var(--font-manrope), system-ui, sans-serif;
-  --theme-radius-control: 14px;
-  --theme-radius-card: 26px;
-  --theme-control-height: 48px;
-  --theme-card-padding: 16px;
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --c-primary: #183eeb;
+  --c-on-primary: #ffffff;
+  --c-secondary: #e3e7ef;
+  --c-tertiary: #eef0f5;
+  --c-surface: #ffffff;
+  --c-on-surface: #17243a;
+  --c-muted: #eef1fd;
+  --c-accent: #112cab;
+  --c-success: #16a34a;
+  --c-warning: #d97706;
+  --c-error: #dc2626;
+  --c-series-2: #0d9488;
+  --c-series-3: #d97706;
+  --shadow-lift: 0 8px 22px rgb(23 36 58 / 0.12);
+  --page-glow: none;
 }
 
-/* Signed-in group, from sharkship.in-design.md. Phone sizes are raised for touch. */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --c-primary: #4c6bff;
+  --c-on-primary: #ffffff;
+  --c-secondary: #1f2942;
+  --c-tertiary: #070b16;
+  --c-surface: #0f1629;
+  --c-on-surface: #e6ebf7;
+  --c-muted: #4c6bff29;
+  --c-accent: #183eeb;
+  --c-success: #4ade80;
+  --c-warning: #fbbf24;
+  --c-error: #f87171;
+  --c-series-2: #0d9488;
+  --c-series-3: #d97706;
+  --shadow-lift: none;
+  --page-glow:
+    radial-gradient(60rem 30rem at 80% -10%, rgb(24 62 235 / 0.3), transparent),
+    radial-gradient(50rem 26rem at 0% 110%, rgb(17 44 171 / 0.3), transparent);
+}
+
+/* Paper is white: printing from dark mode uses the light colours. */
+@media print {
+  [data-theme='dark'] {
+    color-scheme: light;
+    --c-primary: #183eeb;
+    --c-secondary: #e3e7ef;
+    --c-tertiary: #eef0f5;
+    --c-surface: #ffffff;
+    --c-on-surface: #17243a;
+    --c-muted: #eef1fd;
+    --c-accent: #112cab;
+    --c-success: #16a34a;
+    --c-warning: #d97706;
+    --c-error: #dc2626;
+    --page-glow: none;
+  }
+}
+
+/* One token set for every screen (the old login/app split is gone). Phone sizes are raised for touch. */
+.theme-auth,
 .theme-app {
-  --theme-font-heading: var(--font-plex), system-ui, sans-serif;
-  --theme-font-display: var(--font-inter), system-ui, sans-serif;
-  --theme-font-body: var(--font-manrope), system-ui, sans-serif;
-  --theme-radius-control: 8px;
+  --theme-font-heading: var(--font-jakarta), system-ui, sans-serif;
+  --theme-font-display: var(--font-jakarta), system-ui, sans-serif;
+  --theme-font-body: var(--font-jakarta), system-ui, sans-serif;
+  --theme-radius-control: 10px;
   --theme-radius-card: 16px;
   --theme-control-height: 44px;
   --theme-card-padding: 16px;
 }
 
 @media (min-width: 48rem) {
+  .theme-auth,
   .theme-app {
     --theme-card-padding: 24px;
   }
 }
 
 @media (min-width: 64rem) and (pointer: fine) {
+  .theme-auth,
   .theme-app {
-    --theme-control-height: 32px;
+    --theme-control-height: 36px;
+  }
+}
+
+/* Midnight Glass: the sign-in brand panel, deep navy with the logo's blues glowing, in both themes. */
+@utility midnight {
+  background-color: #070b16;
+  background-image:
+    radial-gradient(36rem 22rem at 95% -10%, rgb(24 62 235 / 0.55), transparent),
+    radial-gradient(30rem 20rem at -10% 110%, rgb(17 44 171 / 0.55), transparent);
+  color: #e6ebf7;
+  --midnight-accent: #8ea2ff;
+}
+
+/* Cards: solid everywhere; frosted glass in dark mode from tablet width up. */
+@utility glass {
+  background-color: var(--c-surface);
+  border-color: var(--c-secondary);
+}
+
+@media (min-width: 48rem) {
+  [data-theme='dark'] .glass {
+    background-color: transparent;
+    background-image: linear-gradient(160deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02));
+    border-color: rgb(255 255 255 / 0.09);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Every existing card (rounded-card + bg-surface) turns to glass in dark mode on wider screens, so the
+   screens built before the redesign pick up the Midnight Glass look without per-screen edits. */
+@media (min-width: 48rem) {
+  [data-theme='dark'] .rounded-card.bg-surface:not(dialog) {
+    background-color: transparent;
+    background-image: linear-gradient(160deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02));
+    border-color: rgb(255 255 255 / 0.09);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Hover lift for cards that link somewhere. */
+@utility lift {
+  transition:
+    transform 150ms var(--ease-evoc),
+    box-shadow 150ms var(--ease-evoc);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+/* Arrival motion: fade up; children of motion-stagger arrive 50ms apart (set --i on each). */
+@utility motion-rise {
+  animation: evoc-rise 250ms var(--ease-evoc) both;
+}
+
+@utility motion-stagger {
+  & > * {
+    animation: evoc-rise 300ms var(--ease-evoc) both;
+    animation-delay: calc(var(--i, 0) * 50ms);
+  }
+}
+
+@utility motion-grow {
+  animation: evoc-grow 700ms var(--ease-evoc) both;
+}
+
+@utility motion-reveal-x {
+  animation: evoc-reveal-x 900ms var(--ease-evoc) both;
+}
+
+/* Arrival and chart motion never change an element's box (opacity and clip-path only), so layout
+   measurements and clicks are never thrown off mid-animation. */
+@keyframes evoc-rise {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes evoc-grow {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes evoc-reveal-x {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes evoc-bars {
+  0%,
+  100% {
+    transform: scaleX(0.35);
+  }
+  50% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes evoc-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes evoc-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes evoc-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(34 197 94 / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgb(34 197 94 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
+  }
+}
+
+@keyframes evoc-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes evoc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -77,9 +290,11 @@
 
   body {
     min-height: 100dvh;
-    background-color: var(--color-tertiary);
-    color: var(--color-on-surface);
-    font-family: var(--font-manrope), system-ui, sans-serif;
+    background-color: var(--c-tertiary);
+    background-image: var(--page-glow);
+    background-attachment: fixed;
+    color: var(--c-on-surface);
+    font-family: var(--font-jakarta), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -89,7 +304,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--c-primary);
     outline-offset: 2px;
   }
 

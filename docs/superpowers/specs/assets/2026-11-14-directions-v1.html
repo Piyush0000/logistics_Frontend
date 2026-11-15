@@ -1,0 +1,218 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .dir-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-top:16px}
+  .mini{height:330px;border-radius:12px;overflow:hidden;position:relative;font-size:11px;line-height:1.3}
+  .notes{margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.5}
+  .notes li{margin-bottom:4px}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;margin:2px 4px 2px 0;background:#eef1fd;color:#112cab}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  @keyframes rise{from{transform:scaleY(.05)}to{transform:scaleY(1)}}
+  @keyframes bars{0%,100%{transform:scaleX(.35)}50%{transform:scaleX(1)}}
+  @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+  @keyframes dash{to{stroke-dashoffset:0}}
+  .lift{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+  .lift:hover{transform:translateY(-2px)}
+  @media (prefers-reduced-motion:reduce){.mini *{animation:none!important;transition:none!important}}
+
+  /* A: Control Room */
+  .a{background:#0d1526;color:#d7def0;font-family:Geist,Inter,sans-serif;display:flex}
+  .a .side{width:46px;background:#0a1120;border-right:1px solid #1b2742;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:12px}
+  .a .side i{width:18px;height:18px;border-radius:5px;background:#1b2742;display:block}
+  .a .side i.on{background:#183eeb;box-shadow:0 0 12px #183eeb88}
+  .a .main{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .a .top{display:flex;align-items:center;gap:8px}
+  .a .cmd{flex:1;background:#121c33;border:1px solid #22304f;border-radius:8px;padding:6px 8px;color:#7d8bb0;font-family:'Geist Mono',monospace}
+  .a .live{display:flex;align-items:center;gap:6px;color:#9fe3b8;font-family:'Geist Mono',monospace}
+  .a .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.8s infinite}
+  .a .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .a .k{background:#121c33;border:1px solid #1e2b49;border-radius:10px;padding:8px}
+  .a .k b{display:block;font-family:'Geist Mono',monospace;font-size:17px;color:#fff;font-weight:500;margin-top:4px}
+  .a .k small{color:#6ee7a0}
+  .a .lanes{background:#121c33;border:1px solid #1e2b49;border-radius:10px;padding:8px;flex:1;display:flex;flex-direction:column;gap:6px}
+  .a .lane{display:grid;grid-template-columns:70px 1fr 40px;align-items:center;gap:8px;animation:slidein .5s both}
+  .a .track{height:8px;background:#1b2742;border-radius:4px;overflow:hidden;position:relative}
+  .a .fill{height:100%;background:linear-gradient(90deg,#112cab,#183eeb,#4c6bff);border-radius:4px}
+  .a .lane span:last-child{font-family:'Geist Mono',monospace;text-align:right;color:#fff}
+
+  /* B: Calm Ledger */
+  .b{background:#f5f6fa;color:#17243a;font-family:Inter,sans-serif;display:flex;flex-direction:column}
+  .b .top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e3e6ef;background:#fff}
+  .b .logo{display:flex;align-items:center;gap:6px;font-family:'Bricolage Grotesque';font-weight:800;font-size:13px}
+  .b .logo .blk{width:16px;height:12px;border-radius:4px 4px 0 0;background:linear-gradient(#183eeb 70%,#112cab 70%)}
+  .b nav{display:flex;gap:12px;color:#5b6680}
+  .b nav .on{color:#17243a;font-weight:600;border-bottom:2px solid #183eeb;padding-bottom:2px}
+  .b .body{padding:14px 16px;display:grid;grid-template-columns:1.3fr 1fr;gap:12px;flex:1}
+  .b h4{font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;margin:0;letter-spacing:-.02em}
+  .b .eq{display:flex;flex-direction:column;gap:3px;margin:8px 0}
+  .b .eq i{display:block;height:3px;width:22px;background:#183eeb;transform-origin:left;animation:bars 2.4s ease-in-out infinite}
+  .b .eq i:last-child{animation-delay:.3s}
+  .b .big{font-family:'Bricolage Grotesque';font-size:34px;font-weight:700;letter-spacing:-.03em}
+  .b .muted{color:#6b7590}
+  .b .card{background:#fff;border:1px solid #e3e6ef;border-radius:14px;padding:10px}
+  .b .chart{display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:8px}
+  .b .chart i{flex:1;background:#dfe5fc;border-radius:4px 4px 0 0;transform-origin:bottom;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+  .b .chart i.hi{background:#183eeb}
+  .b .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e3e6ef}
+  .b .row:last-child{border:0}
+  .b .pill{font-size:10px;padding:1px 7px;border-radius:99px;background:#e9fbef;color:#15803d}
+  .b .pill.w{background:#fff4e0;color:#a35c00}
+
+  /* C: Signal */
+  .c{background:#fff;color:#17243a;font-family:Inter,sans-serif;display:flex;flex-direction:column}
+  .c .band{background:#183eeb;color:#fff;padding:12px 16px 34px;position:relative;overflow:hidden}
+  .c .band::after{content:'';position:absolute;left:0;right:0;bottom:0;height:12px;background:#112cab}
+  .c .band .sh{position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.18) 50%,transparent 70%);animation:sweep 3.5s ease-in-out infinite}
+  .c .topnav{display:flex;align-items:center;gap:12px;font-family:'Space Grotesk';font-weight:600}
+  .c .topnav .pills{display:flex;gap:4px;margin-left:auto}
+  .c .topnav .pills span{padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.14)}
+  .c .topnav .pills span.on{background:#fff;color:#183eeb}
+  .c h4{font-family:'Space Grotesk';font-size:20px;margin:12px 0 0;font-weight:700}
+  .c .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px;margin-top:-22px;position:relative;z-index:1}
+  .c .cc{background:#fff;border-radius:14px 14px 6px 6px;box-shadow:0 6px 20px rgba(23,36,58,.12);padding:9px;border-top:4px solid #183eeb}
+  .c .cc b{display:block;font-family:'Space Grotesk';font-size:18px;margin-top:3px}
+  .c .partners{padding:12px 16px;display:flex;flex-direction:column;gap:7px}
+  .c .pr{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid #e6e9f2;border-radius:10px;animation:slidein .5s both}
+  .c .av{width:20px;height:20px;border-radius:6px;background:#eef1fd;color:#183eeb;display:grid;place-items:center;font-weight:700;font-size:10px}
+  .c .spark{margin-left:auto}
+  .c .spark path{stroke-dasharray:120;stroke-dashoffset:120;animation:dash 1.4s .3s ease-out forwards}
+  .c .bestt{font-size:10px;background:#e9fbef;color:#15803d;padding:1px 6px;border-radius:99px}
+
+  .demo-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px}
+  .btn-demo{font:600 13px Inter,sans-serif;border:0;border-radius:9px;padding:9px 14px;background:#183eeb;color:#fff;position:relative;overflow:hidden;transition:transform .12s,background .2s}
+  .btn-demo:hover{background:#112cab}
+  .btn-demo:active{transform:scale(.97)}
+  .loader{display:flex;flex-direction:column;gap:4px}
+  .loader i{display:block;height:4px;width:30px;background:#183eeb;border-radius:2px;transform-origin:left;animation:bars 1.1s ease-in-out infinite}
+  .loader i:last-child{animation-delay:.18s}
+  .skel{width:160px;height:12px;border-radius:6px;background:linear-gradient(90deg,#eceff6 25%,#f7f8fc 50%,#eceff6 75%);background-size:200% 100%;animation:sk 1.3s linear infinite}
+  @keyframes sk{to{background-position:-200% 0}}
+  .toggle{width:38px;height:22px;border-radius:99px;background:#c9cfdd;position:relative;cursor:pointer;transition:background .2s}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.3,1.4,.5,1)}
+  .toggle.on{background:#183eeb}.toggle.on::after{transform:translateX(16px)}
+  .copied{font:500 12px Inter;color:#15803d}
+</style>
+
+<h2>Three directions for the new Evoc Ships look</h2>
+<p class="subtitle">All three are built from your logo: electric blue <code>#183EEB</code>, deep blue <code>#112CAB</code>, navy <code>#17243A</code>, and the "=" bars. They differ in mood. Hover the mockups: they're animated. Click the one closest to what you want (you can mix: "A's colours with C's layout").</p>
+
+<div class="dir-grid">
+  <div class="card" data-choice="a-control-room" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="mini a">
+      <div class="side"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <div class="main">
+        <div class="top"><div class="cmd">⌘K  Search AWB, order, buyer…</div><div class="live"><span class="dot"></span>LIVE</div></div>
+        <div class="kpis">
+          <div class="k lift">Shipped today<b>1,284</b><small>▲ 8.2%</small></div>
+          <div class="k lift">In transit<b>3,902</b><small>▲ 2.1%</small></div>
+          <div class="k lift">NDR open<b>46</b><small style="color:#fbbf24">needs action</small></div>
+          <div class="k lift">COD due<b>₹4.1L</b><small>Fri payout</small></div>
+        </div>
+        <div class="lanes"><div style="color:#7d8bb0;margin-bottom:2px">Carrier performance · on-time %</div>
+          <div class="lane" style="animation-delay:.05s"><span>Delhivery</span><div class="track"><div class="fill" style="width:92%"></div></div><span>92%</span></div>
+          <div class="lane" style="animation-delay:.12s"><span>Blue Dart</span><div class="track"><div class="fill" style="width:89%"></div></div><span>89%</span></div>
+          <div class="lane" style="animation-delay:.19s"><span>Ekart</span><div class="track"><div class="fill" style="width:84%"></div></div><span>84%</span></div>
+          <div class="lane" style="animation-delay:.26s"><span>Shadowfax</span><div class="track"><div class="fill" style="width:78%"></div></div><span>78%</span></div>
+          <div class="lane" style="animation-delay:.33s"><span>Xpressbees</span><div class="track"><div class="fill" style="width:74%"></div></div><span>74%</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="card-body">
+      <h3>A · Control Room</h3>
+      <p>Dark navy operations console. Dense, numbers-first, monospace figures, a live pulse. Feels like mission control for shipping.</p>
+      <span class="tag">Geist + Geist Mono</span><span class="tag">dark by default, light option</span>
+      <ul class="notes">
+        <li><b>Motion:</b> live dot pulses while data is fresh; numbers tick to new values; carrier bars fill in a stagger.</li>
+        <li><b>Micro:</b> ⌘K command bar for everything; cards glow faintly on hover; keyboard shortcuts shown in tooltips.</li>
+        <li><b>Risk:</b> dark dashboards tire some users in daylight; dense = steeper for new sellers.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b-calm-ledger" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="mini b">
+      <div class="top"><div class="logo"><span class="blk"></span>Evoc Ships</div><nav><span class="on">Overview</span><span>Shipments</span><span>Money</span><span>Partners</span></nav></div>
+      <div class="body">
+        <div>
+          <h4>Good morning, Ops</h4>
+          <div class="eq"><i></i><i></i></div>
+          <div class="muted">Delivered this week</div>
+          <div class="big">2,418</div>
+          <div class="card" style="margin-top:6px"><div class="muted">Orders by day</div>
+            <div class="chart"><i style="height:40%;animation-delay:.0s"></i><i style="height:55%;animation-delay:.05s"></i><i style="height:48%;animation-delay:.1s"></i><i style="height:70%;animation-delay:.15s"></i><i style="height:62%;animation-delay:.2s"></i><i class="hi" style="height:88%;animation-delay:.25s"></i><i style="height:58%;animation-delay:.3s"></i></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="card lift"><b>Needs you today</b>
+            <div class="row"><span>14 NDRs to answer</span><span class="pill w">act</span></div>
+            <div class="row"><span>3 weight disputes</span><span class="pill w">act</span></div>
+            <div class="row"><span>Pickup 4 pm confirmed</span><span class="pill">ok</span></div>
+          </div>
+          <div class="card lift"><b>Wallet</b><div class="big" style="font-size:22px">₹12,500</div><span class="muted">COD ₹41,200 lands Fri</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="card-body">
+      <h3>B · Calm Ledger</h3>
+      <p>Light, airy, editorial. Big confident numbers, a "Needs you today" list up front, blue used sparingly. Matches the landing page's "simple" promise.</p>
+      <span class="tag">Bricolage Grotesque + Inter</span><span class="tag">light, soft grey paper</span>
+      <ul class="notes">
+        <li><b>Motion:</b> the logo's "=" bars breathe as the loading mark; charts grow up from the baseline; sections fade up gently on arrival.</li>
+        <li><b>Micro:</b> tasks tick off with a check-draw animation; hover lifts cards 2px; undo toasts slide in from the bottom.</li>
+        <li><b>Risk:</b> less data per screen; power users scroll more.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c-signal" onclick="toggleSelect(this)">
+    <div class="card-image"><div class="mini c">
+      <div class="band"><div class="sh"></div>
+        <div class="topnav"><span>▀ = Evoc Ships</span><div class="pills"><span class="on">Overview</span><span>Ship</span><span>Money</span><span>Partners</span></div></div>
+        <h4>All your partners, one view</h4>
+      </div>
+      <div class="cards">
+        <div class="cc lift"><span>Orders</span><b>1,284</b></div>
+        <div class="cc lift"><span>Delivered</span><b>94.1%</b></div>
+        <div class="cc lift"><span>RTO</span><b>3.2%</b></div>
+      </div>
+      <div class="partners">
+        <div class="pr" style="animation-delay:.1s"><span class="av">DL</span>Delhivery · 412 live<span class="bestt">best for metro</span><svg class="spark" width="60" height="16"><path d="M0 12 L10 9 L20 10 L30 6 L40 7 L50 3 L60 4" fill="none" stroke="#183eeb" stroke-width="2"/></svg></div>
+        <div class="pr" style="animation-delay:.18s"><span class="av">BD</span>Blue Dart · 208 live<svg class="spark" width="60" height="16"><path d="M0 10 L10 11 L20 7 L30 8 L40 5 L50 6 L60 3" fill="none" stroke="#183eeb" stroke-width="2"/></svg></div>
+        <div class="pr" style="animation-delay:.26s"><span class="av">EK</span>Ekart · 331 live<svg class="spark" width="60" height="16"><path d="M0 8 L10 9 L20 6 L30 9 L40 7 L50 8 L60 5" fill="none" stroke="#183eeb" stroke-width="2"/></svg></div>
+      </div>
+    </div></div>
+    <div class="card-body">
+      <h3>C · Signal</h3>
+      <p>Bold brand band on every page (the logo block, literally), cards with the logo's rounded-top shape, top navigation instead of a sidebar, and partners as the centre of the story.</p>
+      <span class="tag">Space Grotesk + Inter</span><span class="tag">light with a blue header band</span>
+      <ul class="notes">
+        <li><b>Motion:</b> a soft light sweep crosses the band; sparklines draw left to right; partner rows cascade in.</li>
+        <li><b>Micro:</b> tab pills slide between sections; KPI cards lift with a shadow; "best for" chips suggest a carrier.</li>
+        <li><b>Risk:</b> the band uses vertical space on phones (it shrinks to a slim bar on scroll).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:28px">
+  <h3>Animations and micro-interactions (these apply to whichever direction you pick)</h3>
+  <p class="subtitle">Try them: press the button, flip the switch, watch the loaders.</p>
+  <div class="demo-row">
+    <button class="btn-demo" onclick="event.stopPropagation();this.textContent='Booked ✓';setTimeout(()=>this.textContent='Book shipment',1400)">Book shipment</button>
+    <div class="toggle" onclick="event.stopPropagation();this.classList.toggle('on')"></div>
+    <div class="loader" title="Brand loader: the logo's = bars"><i></i><i></i></div>
+    <div class="skel" title="Skeleton while data streams in"></div>
+    <span class="copied" onclick="event.stopPropagation();this.textContent='Copied AWB ✓'">Click: copy AWB</span>
+  </div>
+  <ul class="notes" style="margin-top:14px">
+    <li><b>Purpose first:</b> motion only explains a change (something arrived, moved, saved, failed). Nothing loops forever except "live" indicators.</li>
+    <li><b>Timing:</b> 120–180 ms for presses and hovers, 200–300 ms for panels and dialogs, up to 700 ms for chart entrances. One shared easing curve.</li>
+    <li><b>Page loads:</b> menu and top bar stay put between pages; the content area shows a skeleton of its real shape, then each card streams in on its own (faster perceived speed).</li>
+    <li><b>Feedback:</b> every button shows pressed → working (the "=" loader) → done/failed; saves confirm inline with a check and an undo toast where safe.</li>
+    <li><b>Numbers:</b> KPIs count to their new value on refresh; status badges cross-fade when a shipment changes state.</li>
+    <li><b>Lists:</b> new rows slide in, removed rows collapse; filters animate the result count; drag-to-reorder for courier priority.</li>
+    <li><b>Phone:</b> bottom tab bar, sheets that slide up instead of dialogs, swipe actions on shipment rows, pull to refresh, light haptic on supported phones.</li>
+    <li><b>Respect settings:</b> people with "reduce motion" on get instant changes, no movement.</li>
+  </ul>
+</div>

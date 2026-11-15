@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // Minimal self-contained server for the Docker image (see Dockerfile).
   output: 'standalone',
   poweredByHeader: false,
+  // Bulk Upload sends a CSV of up to 1 MB as text; the default 1 MB limit would reject files near it.
+  experimental: { serverActions: { bodySizeLimit: '2mb' } },
   async headers() {
     return [
       {

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
-import { ShipmentListResponseSchema } from '../../gateway/schemas/orders';
+import { CreateShipmentResponseSchema, OrdersPageSchema } from '../../gateway/schemas/orders';
 import { fromGateway, type DataResult } from '../source';
 import { mockOrdersService } from './mock';
 import type {
@@ -29,7 +29,7 @@ export async function fetchOrdersList(
   const path = `/api/v1/shipments${qs ? `?${qs}` : ''}`;
 
   const result = await gatewayFetch(path, {
-    schema: ShipmentListResponseSchema,
+    schema: OrdersPageSchema,
     token,
   });
 
@@ -57,6 +57,37 @@ export async function fetchOrdersList(
   });
 }
 
+/** Books a shipment. The gateway answers 202 with no AWB, so the result has none yet. */
+export async function postShipment(
+  input: CreateShipmentInput,
+  token: string | null,
+): Promise<DataResult<CreateShipmentResult>> {
+  // The gateway takes the merchant from the credential, so the body never carries merchant_id.
+  const body: Record<string, unknown> = { ...input };
+  delete body.merchant_id;
+
+  const result = await gatewayFetch('/api/v1/shipments', {
+    method: 'POST',
+    body,
+    schema: CreateShipmentResponseSchema,
+    token,
+  });
+  if (!result.ok) return fromGateway(result);
+
+  const { shipment_id, carrier, status } = result.data;
+  return fromGateway({
+    ...result,
+    data: {
+      shipment_id,
+      carrier: carrier as CreateShipmentResult['carrier'],
+      status: status as CreateShipmentResult['status'],
+      awb: null,
+      reference_id: input.reference_id ?? '',
+      created_at: new Date().toISOString(),
+    },
+  });
+}
+
 export const gatewayOrdersService: OrdersService = {
   async listOrders(query: OrderListQuery) {
     return fetchOrdersList(query, await merchantCredential('shipments'));
@@ -68,8 +99,6 @@ export const gatewayOrdersService: OrdersService = {
   },
 
   async createShipment(input: CreateShipmentInput): Promise<DataResult<CreateShipmentResult>> {
-    // Backend gateway unconditionally throws 503 on POST /api/v1/shipments
-    // Fall back to mock store so users can test creation workflow seamlessly with Sample data badge
-    return mockOrdersService.createShipment(input);
+    return postShipment(input, await merchantCredential('shipments'));
   },
 };
