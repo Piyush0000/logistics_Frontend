@@ -8,4 +8,5 @@ import type { AdminOnboardingService } from './types';
 export const gatewayAdminOnboardingService: AdminOnboardingService = {
   listApplications: notAvailable,
   getApplication: notAvailable,
+  decide: notAvailable,
 };

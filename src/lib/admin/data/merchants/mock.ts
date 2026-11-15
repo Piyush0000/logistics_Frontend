@@ -4,7 +4,7 @@ import { fromMock } from '../../../data/source';
 import { matchesQuery, paginate } from '../common';
 import { mockNotFound } from '../not-found';
 import { SEED_MERCHANTS, type SeedMerchant } from '../seed';
-import type { AdminMerchantsService, MerchantDetail, MerchantStatus, MerchantSummary } from './types';
+import type { AdminMerchantsService, KycStatus, MerchantDetail, MerchantStatus, MerchantSummary } from './types';
 
 // Per-merchant figures for the sample data, keyed by merchant id.
 const FIGURES: Record<string, { shipments30d: number; walletPaise: number; phone: string; gstin: string | null }> = {
@@ -18,11 +18,12 @@ const FIGURES: Record<string, { shipments30d: number; walletPaise: number; phone
   mer_008: { shipments30d: 0, walletPaise: 0, phone: '+919812300008', gstin: null },
 };
 
-function initialStore(): Map<string, { status: MerchantStatus; notes: string[] }> {
-  const map = new Map<string, { status: MerchantStatus; notes: string[] }>();
+function initialStore(): Map<string, { status: MerchantStatus; kyc: KycStatus; notes: string[] }> {
+  const map = new Map<string, { status: MerchantStatus; kyc: KycStatus; notes: string[] }>();
   for (const m of SEED_MERCHANTS) {
     map.set(m.id, {
       status: m.status,
+      kyc: m.kyc,
       notes: m.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
     });
   }
@@ -36,11 +37,35 @@ export function resetMockMerchants() {
   store = initialStore();
 }
 
+/** Updates merchant KYC and status when an onboarding decision is made. */
+export function setMerchantKycDecision(
+  merchantId: string,
+  decision: 'approved' | 'rejected',
+  reason?: string,
+) {
+  const entry = store.get(merchantId);
+  const currentNotes = entry?.notes ?? [];
+  if (decision === 'approved') {
+    store.set(merchantId, {
+      status: 'active',
+      kyc: 'approved',
+      notes: [...currentNotes, 'KYC approved. Merchant account activated.'],
+    });
+  } else {
+    store.set(merchantId, {
+      status: entry?.status ?? 'pending',
+      kyc: 'rejected',
+      notes: [...currentNotes, `KYC rejected: ${reason || 'Application rejected.'}`],
+    });
+  }
+}
+
 function summary(merchant: SeedMerchant): MerchantSummary {
   const figures = FIGURES[merchant.id]!;
   const current = store.get(merchant.id);
   const status = current?.status ?? merchant.status;
-  return { ...merchant, status, shipments30d: figures.shipments30d, walletPaise: figures.walletPaise };
+  const kyc = current?.kyc ?? merchant.kyc;
+  return { ...merchant, status, kyc, shipments30d: figures.shipments30d, walletPaise: figures.walletPaise };
 }
 
 function detail(merchant: SeedMerchant): MerchantDetail {
@@ -100,6 +125,7 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
 
     const current = store.get(id) ?? {
       status: merchant.status,
+      kyc: merchant.kyc,
       notes: merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
     };
 
@@ -113,6 +139,7 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
 
     store.set(id, {
       status,
+      kyc: current.kyc,
       notes: [noteEntry, ...current.notes],
     });
 

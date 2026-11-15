@@ -2,6 +2,7 @@ import 'server-only';
 
 import { fromMock } from '../../../data/source';
 import { indianDay } from '../../../format/date';
+import { countPendingApplications } from '../onboarding';
 import { daysAgo, SEED_MERCHANTS } from '../seed';
 import type { AdminOverviewService, AttentionItem, PlatformOverview } from './types';
 
@@ -34,6 +35,16 @@ const OVERVIEW: PlatformOverview = {
 
 export const mockAdminOverviewService: AdminOverviewService = {
   async getOverview() {
-    return fromMock(OVERVIEW);
+    const kycCount = countPendingApplications();
+    const attention = ATTENTION.map((item) =>
+      item.id === 'kyc'
+        ? { ...item, title: `${kycCount} KYC application${kycCount === 1 ? '' : 's'} waiting` }
+        : item,
+    );
+    return fromMock({
+      ...OVERVIEW,
+      merchants: { ...OVERVIEW.merchants, pendingKyc: kycCount },
+      attention,
+    });
   },
 };

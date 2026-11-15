@@ -6,10 +6,42 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Teammate 1 Operations: Merchants complete on `admin/merchants`. Ready for Phase 2: Onboarding & KYC. |
-| **Waiting on** | Branch merge or review into `main`, then starting `admin/onboarding` |
-| **Next step** | Phase 2: Onboarding & KYC (`/admin/onboarding`, `/admin/onboarding/[id]`) |
-| **Testing** | 16 unit tests, 12 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+| **Current stage** | Teammate 1 Operations: Onboarding & KYC complete on `admin/onboarding`. Ready for Phase 3: Shipments. |
+| **Waiting on** | Branch review/merge, then starting `admin/shipments` |
+| **Next step** | Phase 3: Shipments (`/admin/shipments`, `/admin/shipments/[awb]`) |
+| **Testing** | 20 unit tests, 16 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+
+## 2026-11-16: Teammate 1 - Onboarding & KYC section complete
+
+Branch `admin/onboarding`. Completed the entire Onboarding & KYC section (status tabs, instant search, review detail page, approve and reject decision dialogs, shared mock updates).
+
+### What was built
+- **Onboarding List (`/admin/onboarding`):**
+  - Status tabs: `Pending` (default), `Approved`, `Rejected`, and `All`, with live count badges on every tab.
+  - Search input with dynamic filtering across business name, email, city, PAN, and GSTIN.
+  - Desktop table with links to `/admin/onboarding/[id]` review pages.
+  - Mobile card layout below 1024px with company initials avatar, status chip, city pin, submitted date, and document count pill.
+  - Removed the `PlannedWork` card upon completion.
+- **Review Page (`/admin/onboarding/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent IDs (handles both application ID and merchant ID lookups).
+  - Business details card (name, email, city, merchant ID, GSTIN, PAN, and link to merchant profile).
+  - Submitted documents card displaying document kind (GST Certificate, PAN Card, Cancelled Cheque), file name, and file size (never exposes file contents).
+  - Decision status banners with timestamp and reason for approved/rejected applications.
+- **Approve and Reject Decisions:**
+  - Added `decide(id, 'approved' | 'rejected', reason?)` to `AdminOnboardingService` (types, mock, gateway).
+  - Server actions in `actions.ts` with server-side validation.
+  - Approve action marks application approved, and updates merchant KYC to `approved` and status to `active` in the shared store.
+  - Reject action validates audit reason (10 to 500 characters) and marks application rejected.
+  - Double decision prevention (returns clear message: `This application has already been decided.`).
+  - Overview "KYC waiting" count matches the pending tab dynamically.
+- **Tests & Verification:**
+  - Vitest: 13 tests passing across `onboarding.test.ts` and `actions.test.ts` (852 total project tests pass).
+  - Playwright E2E: 16 tests passing across desktop and mobile viewports (`admin-onboarding.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
 
 ## 2026-11-15: Teammate 1 - Merchants section complete
 
