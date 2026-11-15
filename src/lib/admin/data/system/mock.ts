@@ -74,7 +74,16 @@ export function createMockAdminSystemService(): AdminSystemService {
 // Kept on globalThis so every page and server action in this server sees the same log.
 const shared = globalThis as typeof globalThis & { evocMockAdminSystem?: AdminSystemService };
 
+// The kept service outlives hot reloads in `pnpm dev`. When the code gains or loses a method, start a
+// fresh one instead of serving the old shape ("… is not a function" until the server restarts).
+let methods: string | undefined;
+const methodsOf = (service: object) => Object.keys(service).sort().join();
+
 export function mockAdminSystemService(): AdminSystemService {
-  shared.evocMockAdminSystem ??= createMockAdminSystemService();
+  if (shared.evocMockAdminSystem) {
+    methods ??= methodsOf(createMockAdminSystemService());
+    if (methodsOf(shared.evocMockAdminSystem) === methods) return shared.evocMockAdminSystem;
+  }
+  shared.evocMockAdminSystem = createMockAdminSystemService();
   return shared.evocMockAdminSystem;
 }
