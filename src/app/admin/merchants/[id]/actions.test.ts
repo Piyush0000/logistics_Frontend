@@ -57,3 +57,4 @@ describe('updateMerchantStatusAction', () => {
     expect(reactivateRes).toEqual({ ok: true, message: 'Merchant status updated.' });
   });
 });
+

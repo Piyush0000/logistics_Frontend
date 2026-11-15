@@ -21,14 +21,15 @@ test.describe('admin merchants', () => {
     }
   });
 
-  test('filters merchants by status tab', async ({ page }) => {
+  test('filters merchants by status tab', async ({ page }, testInfo) => {
     await page.goto('/admin/merchants');
     await page.getByRole('tab', { name: 'Suspended' }).click();
     await expect(page).toHaveURL(/status=suspended/);
 
-    const suspendedRows = page.getByTestId('admin-merchant-row');
-    if ((await suspendedRows.count()) > 0) {
-      await expect(suspendedRows.first()).toContainText('suspended');
+    const selector = testInfo.project.name === 'phone' ? 'admin-merchant-card' : 'admin-merchant-row';
+    const suspendedItems = page.getByTestId(selector);
+    if ((await suspendedItems.count()) > 0) {
+      await expect(suspendedItems.first()).toContainText('suspended');
     }
   });
 
@@ -75,3 +76,4 @@ test.describe('admin merchants', () => {
     await expect(statusBtn).toContainText(isSuspended ? 'Suspend merchant' : 'Reactivate merchant');
   });
 });
+

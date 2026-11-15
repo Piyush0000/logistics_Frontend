@@ -50,3 +50,4 @@ export async function updateMerchantStatusAction(
   const label = status === 'suspended' ? 'Merchant suspended.' : 'Merchant status updated.';
   return { ok: true, message: label };
 }
+

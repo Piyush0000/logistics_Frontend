@@ -1,3 +1,4 @@
+import { ChevronRight, MapPin } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { StatusChip, type ChipTone } from '@/components/admin/status-chip';
@@ -48,7 +49,7 @@ export default async function AdminMerchantsPage({
   };
 
   return (
-    <>
+    <div className="grid gap-4 lg:gap-5">
       <PageHeader title="Merchants" description="Every seller on Evoc Ships." />
 
       <MerchantFilters />
@@ -59,7 +60,7 @@ export default async function AdminMerchantsPage({
             <EmptyState message="No merchants match these filters." />
           ) : (
             <>
-              {/* Desktop table */}
+              {/* Desktop table (>=1024px) */}
               <div className="hidden lg:block">
                 <div className={t.wrap}>
                   <table className={t.table}>
@@ -112,50 +113,76 @@ export default async function AdminMerchantsPage({
               <div className="grid gap-3 lg:hidden" data-testid="admin-merchants-mobile">
                 {data.items.map((merchant) => {
                   const [kycLabel, kycTone] = KYC_LABEL[merchant.kyc];
+                  const initials = merchant.name
+                    .split(' ')
+                    .filter(Boolean)
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase();
+
                   return (
-                    <div
+                    <Link
                       key={merchant.id}
+                      href={`/admin/merchants/${merchant.id}`}
                       data-testid="admin-merchant-card"
-                      className="rounded-card border border-secondary bg-surface p-4"
+                      className="group flex flex-col gap-3 rounded-control border border-secondary/70 bg-tertiary/30 p-3.5 transition-all duration-150 hover:border-primary/50 hover:bg-tertiary/60 active:scale-[0.99]"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <Link
-                          href={`/admin/merchants/${merchant.id}`}
-                          className="flex min-h-11 flex-col justify-center font-semibold text-primary transition-colors hover:underline"
-                        >
-                          <span>{merchant.name}</span>
-                          <span className="text-xs font-normal text-on-surface/60">{merchant.email}</span>
-                        </Link>
-                        <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
-                          <StatusChip tone={STATUS_TONE[merchant.status]}>{merchant.status}</StatusChip>
-                          <StatusChip tone={kycTone}>{kycLabel}</StatusChip>
-                        </div>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2 border-t border-secondary/60 pt-3 text-xs">
-                        <div>
-                          <span className="text-on-surface/60">City</span>
-                          <div className="font-medium text-on-surface">{merchant.city}</div>
-                        </div>
-                        <div>
-                          <span className="text-on-surface/60">Joined</span>
-                          <div className="font-medium text-on-surface">{formatDate(merchant.joinedAt)}</div>
-                        </div>
-                        <div>
-                          <span className="text-on-surface/60">Shipments (30d)</span>
-                          <div className="font-mono font-medium text-on-surface">
-                            {merchant.shipments30d.toLocaleString('en-IN')}
+                      {/* Top Header: Avatar + Name/Email + Status Chip + Chevron */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-control bg-primary/10 font-heading text-xs font-bold text-primary transition-colors group-hover:bg-primary/20">
+                            {initials}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-heading text-sm font-bold text-on-surface transition-colors group-hover:text-primary">
+                              {merchant.name}
+                            </div>
+                            <div className="truncate text-xs text-on-surface/60">{merchant.email}</div>
                           </div>
                         </div>
-                        <div>
-                          <span className="text-on-surface/60">Wallet</span>
-                          <div
-                            className={`font-mono font-medium ${merchant.walletPaise < 0 ? 'text-error' : 'text-on-surface'}`}
+
+                        <div className="flex shrink-0 items-center gap-2">
+                          <StatusChip tone={STATUS_TONE[merchant.status]}>{merchant.status}</StatusChip>
+                          <ChevronRight
+                            aria-hidden="true"
+                            className="size-4 text-on-surface/40 transition-colors group-hover:text-primary"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Middle metadata: City & KYC Status & Joined */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1 text-on-surface/70">
+                          <MapPin aria-hidden="true" className="size-3 text-on-surface/40" />
+                          <span>{merchant.city}</span>
+                        </span>
+                        <span className="text-on-surface/30">·</span>
+                        <StatusChip tone={kycTone}>{kycLabel}</StatusChip>
+                        <span className="text-on-surface/30">·</span>
+                        <span className="text-on-surface/50">Joined {formatDate(merchant.joinedAt)}</span>
+                      </div>
+
+                      {/* Bottom stats row */}
+                      <div className="grid grid-cols-2 gap-2 rounded-control border border-secondary/50 bg-surface/80 p-2.5 text-xs">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-on-surface/60">Shipments (30d)</span>
+                          <span className="mt-0.5 font-mono text-sm font-semibold text-on-surface">
+                            {merchant.shipments30d.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] text-on-surface/60">Wallet</span>
+                          <span
+                            className={`mt-0.5 font-mono text-sm font-semibold ${
+                              merchant.walletPaise < 0 ? 'text-error' : 'text-on-surface'
+                            }`}
                           >
                             {formatPaise(merchant.walletPaise)}
-                          </div>
+                          </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -175,6 +202,6 @@ export default async function AdminMerchantsPage({
           )
         }
       </DataCard>
-    </>
+    </div>
   );
 }
