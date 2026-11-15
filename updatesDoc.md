@@ -37,7 +37,7 @@ Teammate 2, on the branch `admin/pricing-couriers` (built on `admin/system-audit
 |---|---|
 | `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
 | `pnpm test` | 891 of 891 passed (44 new) |
-| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-pricing.spec.ts` | 79 passed, 5 skipped |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-pricing.spec.ts` | 79 passed, 5 skipped. A 404 check was added later; `admin.spec.ts` + `admin-pricing.spec.ts` then gave 58 passed, 4 skipped |
 | Under `pnpm dev` | The courier, edit and custom-price popups stay open, desktop and phone, no browser errors |
 
 The tests were written after the code. Turning couriers off changes what every other test sees, so that browser test runs once, on desktop; the last-courier rule is also covered by unit and action tests. After Remove, the row and its popup disappear together, so no "Removed" message is shown; the row going is the confirmation.

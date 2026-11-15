@@ -23,6 +23,12 @@ test('sends a signed-out visitor to the admin sign-in', async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/login$/);
 });
 
+test('answers 404 for a Pricing page that does not exist', async ({ page }) => {
+  await signInAdmin(page);
+  const response = await page.goto(`${PRICING}/no-such-page`);
+  expect(response?.status()).toBe(404);
+});
+
 test.describe('couriers', () => {
   // Turning couriers off changes what every other test sees, so only one test, in one project, does it.
   test('asks before turning a courier off, and never turns off the last one', async ({ page }, testInfo) => {
