@@ -6,10 +6,40 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Teammate 1 Operations: Onboarding & KYC complete on `admin/onboarding`. Ready for Phase 3: Shipments. |
-| **Waiting on** | Branch review/merge, then starting `admin/shipments` |
-| **Next step** | Phase 3: Shipments (`/admin/shipments`, `/admin/shipments/[awb]`) |
-| **Testing** | 20 unit tests, 16 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+| **Current stage** | Teammate 1 Operations: Shipments complete on `admin/shipments`. Ready for Phase 4: Support. |
+| **Waiting on** | Branch review/merge, then starting `admin/support` |
+| **Next step** | Phase 4: Support (`/admin/support`, `/admin/support/[id]`) |
+| **Testing** | 22 unit tests, 14 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+
+## 2026-11-16: Teammate 1 - Shipments section complete
+
+Branch `admin/shipments`. Completed the entire Shipments section (category tabs for All, Stuck, NDR, and RTO, instant dynamic search, multi-filter dropdowns, pagination, phone cards, and shipment detail with vertical tracking timeline).
+
+### What was built
+- **Shipments List (`/admin/shipments`):**
+  - Category tabs: `All shipments`, `Stuck only` (`?stuck=1`), `NDR reports` (`?view=ndr`), and `RTO` (`?view=rto`) with live count badges.
+  - Search input with instant filtering across AWB, merchant name, carrier, and destination city.
+  - Dropdown filters for shipment status and merchant account.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Desktop table and mobile card layout below 1024px with AWB link, CarrierBadge, StatusBadge, Stuck chip, and route details.
+  - Removed the `PlannedWork` card upon completion.
+- **Shipment Detail (`/admin/shipments/[awb]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent AWBs.
+  - Merchant info card linking to merchant profile (`/admin/merchants/[id]`) and merchant-filtered shipments list.
+  - Package & Route details card: origin → destination route, recipient contact, package weight, and COD amount / Prepaid payment type.
+  - Tracking timeline card: vertical timeline displaying status badges, location, raw courier description, and timestamps in chronological order (newest first).
+- **NDR and RTO Views:**
+  - Dedicated service methods `listNdrShipments()` and `listRtoShipments()`.
+  - NDR view displays failure reasons, attempt counts, and required merchant action.
+  - RTO view displays return reasons and initiation dates.
+- **Tests & Verification:**
+  - Vitest: 9 tests passing in `shipments.test.ts` (861 total repository tests pass).
+  - Playwright E2E: 14 tests passing across desktop and mobile viewports (`admin-shipments.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
 
 ## 2026-11-16: Teammate 1 - Onboarding & KYC section complete
 
