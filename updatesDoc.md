@@ -6,10 +6,43 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Admin panel foundation on branch `feature/admin` (from `main`, after the redesign merged in PR #4) |
-| **Waiting on** | The moderator merging `feature/admin` into `main`, then handing the sections to the two teammates ([docs/admin/team-split.md](docs/admin/team-split.md)) |
-| **Next step** | Teammates branch `admin/<section>` from `main` and open PRs into `main`; the moderator reviews and merges |
-| **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
+| **Current stage** | Teammate 1 Operations: Merchants complete on `admin/merchants`. Ready for Phase 2: Onboarding & KYC. |
+| **Waiting on** | Branch merge or review into `main`, then starting `admin/onboarding` |
+| **Next step** | Phase 2: Onboarding & KYC (`/admin/onboarding`, `/admin/onboarding/[id]`) |
+| **Testing** | 16 unit tests, 12 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+
+## 2026-11-15: Teammate 1 - Merchants section complete
+
+Branch `admin/merchants`. Completed the entire Merchants section (list, dynamic search, mobile card design, detail page, activate & suspend actions).
+
+### What was built
+- **Merchants List (`/admin/merchants`):**
+  - Instant real-time in-memory search across merchant name, email, city, and ID on every keystroke with URL sync.
+  - Status tabs (`All`, `Active`, `Pending`, `Suspended`) syncing with URL `?status=`.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Mobile cards below 1024px with merchant avatar initials, live chips, city pin, KYC pill, and 30-day shipment & wallet metrics.
+  - Linked rows and cards navigating to `/admin/merchants/[id]`.
+- **Merchant Detail (`/admin/merchants/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for unknown merchant IDs.
+  - Merchant profile (email, phone, city, GSTIN, joined date).
+  - Merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+  - Shipments breakdown bar by status (`DELIVERED`, `IN_TRANSIT`, `RTO_INITIATED`, `FAILED`).
+  - Related records quick links to `/admin/shipments?merchant=<id>`, `/admin/support?merchant=<id>`, `/admin/onboarding/<id>`.
+  - Notes block showing audit timeline of actions.
+- **Activate & Suspend Actions:**
+  - Added `setMerchantStatus(id, status, reason)` to `AdminMerchantsService` (types, mock, gateway).
+  - Mutable mock store preserving status transitions and audit notes during runtime.
+  - Action dialog requiring audit reason (5 to 300 characters) validated on the server.
+  - Pending merchants show both **Activate merchant** and **Suspend merchant** buttons.
+  - Live page refresh on successful submission.
+- **Tests & Verification:**
+  - Vitest: 16 tests passing across `merchants.test.ts` and `actions.test.ts`.
+  - Playwright E2E: 12 tests passing across desktop and mobile viewports (`admin-merchants.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
 
 ## 2026-11-15: Admin panel foundation
 
