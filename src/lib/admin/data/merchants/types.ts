@@ -37,5 +37,5 @@ export interface MerchantListQuery {
 export interface AdminMerchantsService {
   listMerchants(query: MerchantListQuery): Promise<DataResult<Page<MerchantSummary>>>;
   getMerchant(id: string): Promise<DataResult<MerchantDetail>>;
-  // Planned (Teammate 1): setMerchantStatus(id, status, reason) to suspend or reactivate.
+  setMerchantStatus(id: string, status: MerchantStatus, reason: string): Promise<DataResult<MerchantDetail>>;
 }

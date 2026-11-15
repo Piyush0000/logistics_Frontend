@@ -2017,3 +2017,14 @@ The full route list and the gaps to raise with the backend team are in the [desi
   - Tech choices are Tailwind, pnpm and port 3100.
 - Final product name and logo.
 - Docker Desktop, which isn't installed on this machine. The gateway needs it to run.
+
+## 2026-11-15 - Admin Panel: Merchants Section (Teammate 1)
+
+### Changes
+- Implemented full `/admin/merchants` list view with search filter (`?q=`), status tabs (`?status=active|pending|suspended`), and pagination preserving active query filters.
+- Added responsive phone card layout below 1024px with accessible tap targets (>= 44px) and linked merchant names.
+- Built merchant detail page at `/admin/merchants/[id]` with real 404 response on missing merchant, merchant profile data, shipment stage breakdown using `SegmentBar`, operational notes, and cross-contract merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+- Added suspend and reactivate functionality with server action (`updateMerchantStatusAction`), `setMerchantStatus` in merchants data service, server-side validation (5 to 300 character reasons), and status dialog.
+- Added unit tests for service filters, status transitions, and server action validation (15 unit tests).
+- Added full Playwright test suite in `e2e/admin-merchants.spec.ts` covering list filtering, search empty states, responsive layouts, 404 handling, and suspend/reactivate workflows.
+

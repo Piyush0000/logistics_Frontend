@@ -4,7 +4,7 @@ import { fromMock } from '../../../data/source';
 import { matchesQuery, paginate } from '../common';
 import { mockNotFound } from '../not-found';
 import { SEED_MERCHANTS, type SeedMerchant } from '../seed';
-import type { AdminMerchantsService, MerchantDetail, MerchantSummary } from './types';
+import type { AdminMerchantsService, MerchantDetail, MerchantStatus, MerchantSummary } from './types';
 
 // Per-merchant figures for the sample data, keyed by merchant id.
 const FIGURES: Record<string, { shipments30d: number; walletPaise: number; phone: string; gstin: string | null }> = {
@@ -18,14 +18,36 @@ const FIGURES: Record<string, { shipments30d: number; walletPaise: number; phone
   mer_008: { shipments30d: 0, walletPaise: 0, phone: '+919812300008', gstin: null },
 };
 
+function initialStore(): Map<string, { status: MerchantStatus; notes: string[] }> {
+  const map = new Map<string, { status: MerchantStatus; notes: string[] }>();
+  for (const m of SEED_MERCHANTS) {
+    map.set(m.id, {
+      status: m.status,
+      notes: m.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
+    });
+  }
+  return map;
+}
+
+let store = initialStore();
+
+/** Resets mutable mock state back to seed values. Useful for test isolation. */
+export function resetMockMerchants() {
+  store = initialStore();
+}
+
 function summary(merchant: SeedMerchant): MerchantSummary {
   const figures = FIGURES[merchant.id]!;
-  return { ...merchant, shipments30d: figures.shipments30d, walletPaise: figures.walletPaise };
+  const current = store.get(merchant.id);
+  const status = current?.status ?? merchant.status;
+  return { ...merchant, status, shipments30d: figures.shipments30d, walletPaise: figures.walletPaise };
 }
 
 function detail(merchant: SeedMerchant): MerchantDetail {
   const base = summary(merchant);
   const figures = FIGURES[merchant.id]!;
+  const current = store.get(merchant.id);
+  const notes = current?.notes ?? (merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : []);
   const n = base.shipments30d;
   return {
     ...base,
@@ -40,16 +62,20 @@ function detail(merchant: SeedMerchant): MerchantDetail {
             { status: 'RTO_INITIATED', count: Math.round(n * 0.06) },
             { status: 'FAILED', count: Math.round(n * 0.04) },
           ],
-    notes: merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
+    notes,
   };
 }
 
 export const mockAdminMerchantsService: AdminMerchantsService = {
   async listMerchants({ q, status, page }) {
-    const rows = SEED_MERCHANTS.filter(
-      (merchant) =>
-        (!status || merchant.status === status) && matchesQuery(q, merchant.name, merchant.email, merchant.city, merchant.id),
-    )
+    const rows = SEED_MERCHANTS.map((m) => {
+      const current = store.get(m.id);
+      return current ? { ...m, status: current.status } : m;
+    })
+      .filter(
+        (merchant) =>
+          (!status || merchant.status === status) && matchesQuery(q, merchant.name, merchant.email, merchant.city, merchant.id),
+      )
       .map(summary)
       .sort((a, b) => b.joinedAt.localeCompare(a.joinedAt));
     return fromMock(paginate(rows, page));
@@ -58,5 +84,33 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
   async getMerchant(id) {
     const merchant = SEED_MERCHANTS.find((entry) => entry.id === id);
     return merchant ? fromMock(detail(merchant)) : mockNotFound('Merchant');
+  },
+
+  async setMerchantStatus(id, status, reason) {
+    const trimmed = reason.trim();
+    if (trimmed.length < 5 || trimmed.length > 300) {
+      return {
+        ok: false,
+        source: 'mock',
+        error: { kind: 'validation', status: 400, message: 'Reason must be between 5 and 300 characters.' },
+      };
+    }
+    const merchant = SEED_MERCHANTS.find((entry) => entry.id === id);
+    if (!merchant) return mockNotFound('Merchant');
+
+    const current = store.get(id) ?? {
+      status: merchant.status,
+      notes: merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
+    };
+
+    const actionLabel = status === 'suspended' ? 'Suspended' : status === 'active' ? 'Reactivated' : 'Status set to pending';
+    const noteEntry = `${actionLabel}: ${trimmed}`;
+
+    store.set(id, {
+      status,
+      notes: [noteEntry, ...current.notes],
+    });
+
+    return fromMock(detail(merchant));
   },
 };
