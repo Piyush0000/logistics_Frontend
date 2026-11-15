@@ -21,6 +21,7 @@ Teammate 2, on the branch `admin/system-health` (built on `admin/system-audit`).
 - Gateway health: calls the future `GET /api/v1/admin/health` with a 3-second timeout and checks the answer's shape. A timeout, a server error or a wrong shape shows as an error in the health card only; the webhook and audit cards keep working, because each loads on its own.
 - Failed webhooks across all merchants: merchant, target URL, event, attempts, last error (HTTP status and message), time, status, and Retry. Mirrors the webhooks service's `POST /deliveries/:id/retry`: a queued delivery cannot be retried again, and one whose webhook the merchant deleted has no Retry.
 - A retry turns the row to "Retry queued", shows "Queued. It goes out with the next send." and records "Webhook retried" in the audit log.
+- Sample webhook rows take the merchant name and the webhook domain (from the merchant's email) from `seed.ts`, so no merchant details are copied into the module. A unit test checks this.
 - Phone cards for the webhook list. Tap targets of at least 44px.
 - The System section is complete, so its "Still to build here" card is removed. What it listed is Teammate 1's `recordAudit()` calls and the backend routes, which are already in `docs/admin/backend-needs.md`.
 - The sample system service now starts fresh when its methods change during `pnpm dev`. This is the same fix as on the Money branch, since this branch starts from the audit commit.
@@ -37,7 +38,7 @@ Teammate 2, on the branch `admin/system-health` (built on `admin/system-audit`).
 | Check | Result |
 |---|---|
 | `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
-| `pnpm test` | 859 of 859 passed |
+| `pnpm test` | 860 of 860 passed |
 | `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts` | 67 passed, 3 skipped (now with a 404 check) |
 | Under `pnpm dev` (after a restart) | Works, desktop and phone, no browser errors |
 

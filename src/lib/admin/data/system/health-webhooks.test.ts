@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DataResult } from '../../../data/source';
 import { gatewayAdminSystemService, HEALTH_TIMEOUT_MS } from './gateway';
 import { createMockAdminSystemService } from './mock';
+import { seedMerchant } from '../seed';
 
 function data<T>(result: DataResult<T>): T {
   if (!result.ok) throw new Error(result.error.message);
@@ -34,6 +35,14 @@ describe('mock webhook failures', () => {
     expect(new Set(list.map((entry) => entry.merchantId)).size).toBeGreaterThan(1);
     expect(list.every((entry) => entry.status === 'failed')).toBe(true);
     expect([...list].sort((a, b) => b.lastAttemptAt.localeCompare(a.lastAttemptAt))).toEqual(list);
+  });
+
+  it('takes each merchant name and webhook domain from the shared seed merchants', async () => {
+    for (const entry of data(await createMockAdminSystemService().listWebhookFailures())) {
+      const merchant = seedMerchant(entry.merchantId)!;
+      expect(entry.merchantName).toBe(merchant.name);
+      expect(new URL(entry.targetUrl).hostname).toBe(merchant.email.split('@')[1]);
+    }
   });
 
   it('queues a retry once, and the row shows it', async () => {

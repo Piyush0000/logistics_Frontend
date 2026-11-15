@@ -19,26 +19,30 @@ const HEALTH: Omit<ServiceHealth, 'checkedAt'>[] = [
 
 /** Invented failed deliveries, for merchants that ship (see the merchants sample data). */
 function sampleWebhookFailures(): WebhookFailure[] {
-  const rows: [id: string, merchantId: string, topic: string, url: string, attempts: number, http: number | null, error: string, hoursAgo: number, subscription: WebhookFailure['subscriptionStatus']][] = [
-    ['whd_0f3a', 'mer_001', 'shipment.status.updated', 'https://kalpahome.example/hooks/evoc', 8, 503, 'Service Unavailable', 2, 'paused'],
-    ['whd_1b7c', 'mer_003', 'shipment.delivered', 'https://urbanthread.example/api/webhooks', 8, null, 'Timed out after 10 seconds', 5, 'active'],
-    ['whd_2c91', 'mer_005', 'cod.remitted', 'https://pixelgadgets.example/evoc/cod', 8, 401, 'Unauthorized: signature rejected', 9, 'active'],
-    ['whd_3d44', 'mer_002', 'shipment.status.updated', 'https://neelgiri.example/webhook', 8, 404, 'Not Found', 20, 'active'],
-    ['whd_4e08', 'mer_004', 'shipment.rto_initiated', 'https://sahyadri.example/hooks', 8, 500, 'Internal Server Error', 30, 'deleted'],
+  const rows: [id: string, merchantId: string, topic: string, path: string, attempts: number, http: number | null, error: string, hoursAgo: number, subscription: WebhookFailure['subscriptionStatus']][] = [
+    ['whd_0f3a', 'mer_001', 'shipment.status.updated', '/hooks/evoc', 8, 503, 'Service Unavailable', 2, 'paused'],
+    ['whd_1b7c', 'mer_003', 'shipment.delivered', '/api/webhooks', 8, null, 'Timed out after 10 seconds', 5, 'active'],
+    ['whd_2c91', 'mer_005', 'cod.remitted', '/evoc/cod', 8, 401, 'Unauthorized: signature rejected', 9, 'active'],
+    ['whd_3d44', 'mer_002', 'shipment.status.updated', '/webhook', 8, 404, 'Not Found', 20, 'active'],
+    ['whd_4e08', 'mer_004', 'shipment.rto_initiated', '/hooks', 8, 500, 'Internal Server Error', 30, 'deleted'],
   ];
-  return rows.map(([id, merchantId, topic, targetUrl, attempts, lastHttpStatus, lastError, hoursAgo, subscriptionStatus]) => ({
-    id,
-    merchantId,
-    merchantName: seedMerchant(merchantId)!.name,
-    topic,
-    targetUrl,
-    attempts,
-    lastHttpStatus,
-    lastError,
-    lastAttemptAt: daysAgo(0, hoursAgo),
-    status: 'failed',
-    subscriptionStatus,
-  }));
+  return rows.map(([id, merchantId, topic, path, attempts, lastHttpStatus, lastError, hoursAgo, subscriptionStatus]) => {
+    const merchant = seedMerchant(merchantId)!;
+    return {
+      id,
+      merchantId,
+      merchantName: merchant.name,
+      topic,
+      // The merchant's own domain, from its seed email, so nothing about the merchant is copied here.
+      targetUrl: `https://${merchant.email.split('@')[1]}${path}`,
+      attempts,
+      lastHttpStatus,
+      lastError,
+      lastAttemptAt: daysAgo(0, hoursAgo),
+      status: 'failed' as const,
+      subscriptionStatus,
+    };
+  });
 }
 
 const conflict = (message: string): DataResult<never> => ({
