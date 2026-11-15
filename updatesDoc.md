@@ -11,6 +11,43 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 | **Next step** | Teammates branch `admin/<section>` from `main` and open PRs into `main`; the moderator reviews and merges |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+## 2026-11-15: Admin System, audit log and recordAudit()
+
+Teammate 2's first piece, on the branch `admin/system-audit`. It unblocks Teammate 1, who can now call `recordAudit()` from merchant and KYC actions.
+
+### Done
+
+- Added `recordAudit({ action, target, detail }): Promise<void>` in `src/lib/admin/data/system/`. It is server-only, tidies and caps its input, and never throws, so a failed audit line cannot undo the change that called it.
+- The sample log keeps new entries, newest first, until the server restarts. It is shared by every page and action in that server.
+- The audit log on `/admin/system` now filters by action and date (`?action=&from=&to=`) and has pages.
+- Unusable filters in the URL are ignored instead of failing. A backwards date range is dropped with a message, and an action not in the log is ignored.
+- Sample entries now take merchant names from `seed.ts`, matching the other admin pages.
+- Gateway mode shows the log as not available, because the backend has no audit store.
+
+### Files
+
+- `src/lib/admin/data/system/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, and new `audit.ts`, `audit-filters.ts`
+- `src/app/admin/system/page.tsx` and new `audit-filters-form.tsx`
+- Tests: `src/lib/admin/data/system/audit.test.ts`, `audit-filters.test.ts`, `e2e/admin-system.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 847 of 847 passed |
+| `e2e/admin.spec.ts` and `e2e/admin-system.spec.ts` | 57 passed, 3 skipped (phone-only checks in the desktop run) |
+| Full `pnpm test:e2e` | 21 failures, all in merchant pages this work does not touch. See below |
+| Under `pnpm dev` | The Action list and both calendars stay open, with no browser errors |
+| Screenshots | Desktop and phone, light and dark, and 320px wide |
+
+The unit tests were seen failing before the code. The browser spec was written with the page, so it was not seen failing first.
+
+**Found on `main`, not caused by this work:** on merchant filter cards (COD, wallet, invoices, rate card, support tickets, weight), a dropdown or calendar opens underneath the next card, so it cannot be clicked. 19 of the 21 failures repeat on a re-run with fewer workers. It needs a fix in the merchant app or the shared fields, which this brief does not allow, so it is for the moderator.
+
+**Not yet verified:** an entry written by a real admin action, because no action calls `recordAudit()` yet.
+
 ## 2026-11-15: Admin panel foundation
 
 Branch `feature/admin`, from `main`. A founder-only admin panel at `/admin`, inside this frontend, built from the merchant app's design system. This is the foundation only: every section has a working page on sample data and a typed data service, so the two developers start from a running page rather than a blank file.
