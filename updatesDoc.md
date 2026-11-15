@@ -11,6 +11,23 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 | **Next step** | Team runs the unit and browser suites (`pnpm test`, then `pnpm build` and `pnpm test:e2e`); merge `feature/redesign` when green |
 | **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
 
+## 2026-11-15: Sidebar opens on hover (user request)
+
+### What changed
+- **Hover:** on desktop with a mouse, resting on the collapsed rail for 200 ms opens it over the page, and leaving closes it after 150 ms. Passing over it quickly does nothing.
+- **Pinning:** the expand button still pins it open.
+- **After a click:** after the button, Escape or a click outside, hover waits until the mouse has left the rail once, so a click-to-collapse is never undone by the hover.
+- **Touch and phones:** these keep the slide-in menu, unchanged.
+- **Files:** `src/components/shell/app-shell.tsx`, `src/components/shell/sidebar.tsx`.
+
+### Verified
+- `pnpm typecheck`, `pnpm lint` and `pnpm build` all pass.
+- A browser check against the production build covered:
+  - widths: 80px at rest, 320px on hover, 80px after leaving, and 80px after a quick pass;
+  - the existing test sequences: Expand then Collapse goes to 80px, Expand then Escape goes to 80px, and a collapsed Billings click goes to 320px with the group open;
+  - layout: the page does not move.
+- Test suites were not run.
+
 ## 2026-11-14: Redesign Phases 3 and 4, every module in the Home design
 
 The user approved the Dashboard once it matched Home and asked for every screen to follow it.

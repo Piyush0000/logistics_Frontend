@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useId, useState, type Ref } from 'react';
+import { useId, useState, type PointerEvent, type Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
 import { BrandMark } from '@/components/brand-mark';
 import { userLabel } from '@/lib/format/user';
@@ -157,6 +157,9 @@ function Submenu({
 export function Sidebar({
   email,
   open,
+  peek = false,
+  onPeekEnter,
+  onPeekLeave,
   panelRef,
   closeButtonRef,
   onToggle,
@@ -164,6 +167,10 @@ export function Sidebar({
 }: {
   email: string;
   open: boolean;
+  /** Desktop only: the rail is shown open because the mouse rests on it (not pinned by a click). */
+  peek?: boolean;
+  onPeekEnter?: (event: PointerEvent<HTMLElement>) => void;
+  onPeekLeave?: () => void;
   panelRef: Ref<HTMLElement>;
   closeButtonRef: Ref<HTMLButtonElement>;
   onToggle: () => void;
@@ -171,8 +178,10 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const { name, initials } = userLabel(email);
+  // The desktop rail is wide when pinned open by a click or while the mouse rests on it.
+  const wide = open || peek;
   // Labels show in the phone menu and the expanded rail, and hide in the collapsed rail.
-  const label = open ? '' : 'lg:hidden';
+  const label = wide ? '' : 'lg:hidden';
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => {
     const current = submenuFor(pathname);
     return new Set(current ? [current] : []);
@@ -187,8 +196,9 @@ export function Sidebar({
   }
 
   const selectGroup = (group: string) => {
-    if (!open) {
+    if (!wide) {
       // A collapsed rail icon opens the menu with that group showing.
+      // (While the rail is peeking, a group just opens in place and the rail still closes on leave.)
       onToggle();
       setExpanded(new Set([...expanded, group]));
       return;
@@ -203,18 +213,20 @@ export function Sidebar({
     <aside
       ref={panelRef}
       data-testid="sidebar"
+      onPointerEnter={onPeekEnter}
+      onPointerLeave={onPeekLeave}
       // Visibility only animates on close, so focus can move into the menu as soon as it opens.
       className={`fixed inset-y-0 left-0 z-40 flex print:hidden w-[min(84vw,320px)] flex-col border-r glass text-on-surface duration-200 lg:visible lg:translate-x-0 ${
         open
-          ? 'transition-[transform,width] lg:w-80'
-          : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full lg:w-20'
-      }`}
+          ? 'transition-[transform,width]'
+          : 'transition-[transform,visibility,width] max-lg:invisible max-lg:-translate-x-full'
+      } ${wide ? 'lg:w-80' : 'lg:w-20'} ${peek && !open ? 'lg:shadow-2xl' : ''}`}
     >
       <div className="flex h-[72px] shrink-0 items-center justify-between px-4">
-        <div className={open ? '' : 'lg:hidden'}>
+        <div className={wide ? '' : 'lg:hidden'}>
           <BrandMark />
         </div>
-        <div className={open ? 'hidden' : 'hidden lg:block'}>
+        <div className={wide ? 'hidden' : 'hidden lg:block'}>
           <BrandMark compact />
         </div>
         <button
@@ -258,7 +270,7 @@ export function Sidebar({
                 {group.dividerBefore ? (
                   <hr
                     aria-hidden="true"
-                    className={`my-1 shrink-0 border-secondary ${open ? 'hidden' : 'hidden lg:block'}`}
+                    className={`my-1 shrink-0 border-secondary ${wide ? 'hidden' : 'hidden lg:block'}`}
                   />
                 ) : null}
               </>
@@ -267,12 +279,12 @@ export function Sidebar({
               <Submenu
                 group={{ ...group, children: group.children }}
                 pathname={pathname}
-                railOpen={open}
+                railOpen={wide}
                 expanded={expanded.has(group.label)}
                 onSelect={() => selectGroup(group.label)}
               />
             ) : group.href ? (
-              <SingleLink group={{ ...group, href: group.href }} pathname={pathname} railOpen={open} />
+              <SingleLink group={{ ...group, href: group.href }} pathname={pathname} railOpen={wide} />
             ) : null}
           </div>
         ))}
@@ -281,7 +293,7 @@ export function Sidebar({
       <div
         data-testid="sidebar-user"
         className={`flex shrink-0 items-center gap-3 border-t border-secondary px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] ${
-          open ? '' : 'lg:justify-center lg:px-0'
+          wide ? '' : 'lg:justify-center lg:px-0'
         }`}
       >
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-sm font-semibold text-primary">

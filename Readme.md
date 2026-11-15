@@ -181,7 +181,7 @@ Further screens are added one at a time, as directed.
 
 ### Sidebar menu
 
-The sidebar is built from `NAV` in [src/components/shell/nav-config.ts](src/components/shell/nav-config.ts): Home, Dashboard, Shipping Management, Operations, Billings, Reconciliation, Tools, Reports, Settings and Help & Support. Groups with sub-pages open and close, and the group holding the current page starts open. Entries marked `planned` show greyed out with "<name> is not available yet".
+The sidebar is built from `NAV` in [src/components/shell/nav-config.ts](src/components/shell/nav-config.ts): Home, Dashboard, Shipping Management, Operations, Billings, Reconciliation, Tools, Reports, Settings and Help & Support. Groups with sub-pages open and close, and the group holding the current page starts open. On desktop the rail also opens while the mouse rests on it (after 200 ms) and closes when the mouse leaves; the expand button pins it open. After a click on that button, Escape or a click outside, hovering waits until the mouse has left the rail once. Entries marked `planned` show greyed out with "<name> is not available yet".
 
 ### Adding a screen
 
