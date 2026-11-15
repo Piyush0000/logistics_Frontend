@@ -1,10 +1,13 @@
 'use client';
 
 import { AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import type { MerchantStatus } from '@/lib/admin/data/merchants';
 import { updateMerchantStatusAction } from './actions';
+
+type TargetAction = 'activate' | 'suspend';
 
 export function MerchantStatusButton({
   merchantId,
@@ -15,15 +18,37 @@ export function MerchantStatusButton({
   merchantName: string;
   currentStatus: MerchantStatus;
 }) {
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const [activeAction, setActiveAction] = useState<TargetAction | null>(null);
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const isSuspended = currentStatus === 'suspended';
-  const targetStatus: MerchantStatus = isSuspended ? 'active' : 'suspended';
-  const buttonLabel = isSuspended ? 'Reactivate merchant' : 'Suspend merchant';
-  const dialogTitle = isSuspended ? `Reactivate ${merchantName}` : `Suspend ${merchantName}`;
+  const isPendingStatus = currentStatus === 'pending';
+
+  const targetStatus: MerchantStatus = activeAction === 'suspend' ? 'suspended' : 'active';
+
+  const dialogTitle =
+    activeAction === 'suspend'
+      ? `Suspend ${merchantName}`
+      : isSuspended
+      ? `Reactivate ${merchantName}`
+      : `Activate ${merchantName}`;
+
+  const dialogDescription =
+    activeAction === 'suspend'
+      ? 'Suspending this merchant will immediately freeze shipping label generation and wallet operations.'
+      : isSuspended
+      ? 'Reactivating this merchant will restore their ability to book shipments and recharge their wallet.'
+      : 'Activating this merchant will approve their account for full platform shipping operations.';
+
+  const confirmButtonText =
+    activeAction === 'suspend'
+      ? 'Confirm Suspension'
+      : isSuspended
+      ? 'Confirm Reactivation'
+      : 'Confirm Activation';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,46 +63,65 @@ export function MerchantStatusButton({
     startTransition(async () => {
       const result = await updateMerchantStatusAction(merchantId, targetStatus, trimmed);
       if (result.ok) {
-        setOpen(false);
+        setActiveAction(null);
         setReason('');
+        router.refresh();
       } else {
         setError(result.message);
       }
     });
   };
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setError(null);
-          setReason('');
-          setOpen(true);
-        }}
-        data-testid="admin-merchant-status-button"
-        className={`inline-flex h-11 items-center justify-center gap-2 rounded-control px-4 text-sm font-semibold transition-colors duration-150 lg:h-control ${
-          isSuspended
-            ? 'bg-success/15 text-success hover:bg-success/25'
-            : 'bg-error/15 text-error hover:bg-error/25'
-        }`}
-      >
-        {isSuspended ? (
-          <CheckCircle aria-hidden="true" className="size-4" />
-        ) : (
-          <ShieldAlert aria-hidden="true" className="size-4" />
-        )}
-        <span>{buttonLabel}</span>
-      </button>
+  const openDialog = (action: TargetAction) => {
+    setError(null);
+    setReason('');
+    setActiveAction(action);
+  };
 
-      {open ? (
-        <Dialog title={dialogTitle} onClose={() => !isPending && setOpen(false)}>
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Activate button: shown for pending or suspended merchants */}
+      {isPendingStatus ? (
+        <button
+          type="button"
+          onClick={() => openDialog('activate')}
+          data-testid="admin-merchant-activate-button"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-success/15 px-4 text-sm font-semibold text-success transition-colors duration-150 hover:bg-success/25 lg:h-control"
+        >
+          <CheckCircle aria-hidden="true" className="size-4" />
+          <span>Activate merchant</span>
+        </button>
+      ) : null}
+
+      {isSuspended ? (
+        <button
+          type="button"
+          onClick={() => openDialog('activate')}
+          data-testid="admin-merchant-status-button"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-success/15 px-4 text-sm font-semibold text-success transition-colors duration-150 hover:bg-success/25 lg:h-control"
+        >
+          <CheckCircle aria-hidden="true" className="size-4" />
+          <span>Reactivate merchant</span>
+        </button>
+      ) : null}
+
+      {/* Suspend button: shown for active or pending merchants */}
+      {!isSuspended ? (
+        <button
+          type="button"
+          onClick={() => openDialog('suspend')}
+          data-testid="admin-merchant-status-button"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-error/15 px-4 text-sm font-semibold text-error transition-colors duration-150 hover:bg-error/25 lg:h-control"
+        >
+          <ShieldAlert aria-hidden="true" className="size-4" />
+          <span>Suspend merchant</span>
+        </button>
+      ) : null}
+
+      {activeAction ? (
+        <Dialog title={dialogTitle} onClose={() => !isPending && setActiveAction(null)}>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            <p className="text-sm text-on-surface/80">
-              {isSuspended
-                ? 'Reactivating this merchant will restore access to bookings and shipping services.'
-                : 'Suspending this merchant will temporarily block label creation and wallet recharges.'}
-            </p>
+            <p className="text-sm text-on-surface/80">{dialogDescription}</p>
 
             {error ? (
               <div
@@ -115,7 +159,7 @@ export function MerchantStatusButton({
               <button
                 type="button"
                 disabled={isPending}
-                onClick={() => setOpen(false)}
+                onClick={() => setActiveAction(null)}
                 className={SECONDARY_BUTTON}
               >
                 Cancel
@@ -125,13 +169,12 @@ export function MerchantStatusButton({
                 disabled={isPending || reason.trim().length < 5 || reason.trim().length > 300}
                 className={PRIMARY_BUTTON}
               >
-                {isPending ? 'Updating...' : `Confirm ${isSuspended ? 'Reactivation' : 'Suspension'}`}
+                {isPending ? 'Updating...' : confirmButtonText}
               </button>
             </div>
           </form>
         </Dialog>
       ) : null}
-    </>
+    </div>
   );
 }
-

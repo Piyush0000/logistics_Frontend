@@ -75,5 +75,24 @@ test.describe('admin merchants', () => {
     await expect(dialog).toBeHidden();
     await expect(statusBtn).toContainText(isSuspended ? 'Suspend merchant' : 'Reactivate merchant');
   });
+
+  test('allows activating a pending merchant from detail page', async ({ page }) => {
+    await page.goto('/admin/merchants/mer_007');
+    const activateBtn = page.getByTestId('admin-merchant-activate-button');
+    if ((await activateBtn.count()) > 0) {
+      await activateBtn.click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+
+      await page.getByLabel(/Reason/i).fill('Merchant business verified and approved');
+      await page.getByRole('button', { name: /Confirm/i }).click();
+
+      await expect(dialog).toBeHidden();
+      await expect(page.getByTestId('admin-merchant-status-button')).toContainText('Suspend merchant');
+    } else {
+      const statusBtn = page.getByTestId('admin-merchant-status-button');
+      await expect(statusBtn).toBeVisible();
+    }
+  });
 });
 

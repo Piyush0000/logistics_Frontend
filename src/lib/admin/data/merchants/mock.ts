@@ -103,7 +103,12 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
       notes: merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : [],
     };
 
-    const actionLabel = status === 'suspended' ? 'Suspended' : status === 'active' ? 'Reactivated' : 'Status set to pending';
+    const actionLabel =
+      status === 'suspended'
+        ? 'Suspended'
+        : current.status === 'pending'
+        ? 'Activated'
+        : 'Reactivated';
     const noteEntry = `${actionLabel}: ${trimmed}`;
 
     store.set(id, {

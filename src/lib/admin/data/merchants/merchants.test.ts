@@ -122,6 +122,20 @@ describe('admin merchants data service', () => {
     expect(reactivateRes.data.notes[0]).toContain('Reactivated: Compliance documents verified');
   });
 
+  it('activates a pending merchant and records activation note', async () => {
+    // mer_008 (Brew & Bean) starts as pending
+    const res = await adminMerchantsService().setMerchantStatus(
+      'mer_008',
+      'active',
+      'Merchant verification complete and approved',
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+
+    expect(res.data.status).toBe('active');
+    expect(res.data.notes[0]).toContain('Activated: Merchant verification complete and approved');
+  });
+
   it('suspending twice is harmless', async () => {
     const first = await adminMerchantsService().setMerchantStatus('mer_004', 'suspended', 'First suspension note');
     expect(first.ok).toBe(true);
