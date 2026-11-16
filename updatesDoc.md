@@ -6,10 +6,41 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Teammate 1 Operations: Shipments complete on `admin/shipments`. Ready for Phase 4: Support. |
-| **Waiting on** | Branch review/merge, then starting `admin/support` |
-| **Next step** | Phase 4: Support (`/admin/support`, `/admin/support/[id]`) |
-| **Testing** | 22 unit tests, 14 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+| **Current stage** | Teammate 1 Operations: Support tickets section complete on `admin/support`. Ready for Phase 5: Overview polish. |
+| **Waiting on** | Branch review/merge, then final Overview polish |
+| **Next step** | Phase 5: Overview (`/admin` polish, last) |
+| **Testing** | 25 unit tests, 19 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+
+## 2026-11-16: Teammate 1 - Support section complete
+
+Branch `admin/support`. Completed the entire Support section (status tabs, priority filter, dynamic search, mobile card layout, ticket thread history, plain text reply box, automatic reopen on reply, and real-time status and priority management).
+
+### What was built
+- **Support Inbox (`/admin/support`):**
+  - Status tabs: `Open` (default and first tab), `Awaiting merchant`, `Resolved`, and `All tickets`, each with real-time count badges.
+  - Priority filter dropdown (`All priorities`, `High`, `Normal`, `Low`).
+  - Search input with instant filtering across ticket ID, subject, merchant name, and category.
+  - Merchant filter support (`?merchant=mer_xxx`) linking directly from merchant profile pages.
+  - Desktop table with linked ticket subjects, merchant profiles, category pills, priority/status chips, and last updated timestamps.
+  - Mobile card layout below 1024px with accessible tap targets (>= 44px) and quick action to open ticket thread.
+  - Pagination with 10 tickets per page, syncing with URL query params.
+  - Removed the `PlannedWork` card upon completion.
+- **Ticket Detail & Thread (`/admin/support/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent ticket IDs without `loading.tsx` conflicts.
+  - Ticket header card displaying ticket ID, category, status chip, priority chip, and last updated timestamp.
+  - Live status and priority switchers with server actions (`updateTicketStatusAction` and `updateTicketPriorityAction`).
+  - Merchant information card with merchant ID, email, city, and direct links to `/admin/merchants/[id]` and merchant-filtered support inbox.
+  - Conversation thread displaying messages in chronological order, with distinct visual badges for merchant versus Operations Support.
+  - Strict plain-text message rendering (never parsed or rendered as HTML) to prevent injection.
+  - Reply box with character count validation (2 to 5,000 characters), submit button, and clear helper notification.
+  - Automatic ticket reopening: replying to a resolved ticket automatically sets its status back to `open`.
+- **Tests & Verification:**
+  - Vitest: 25 tests passing across `support.test.ts` (16 tests) and `actions.test.ts` (9 tests).
+  - Playwright E2E: 19 tests passing across desktop and mobile viewports (`admin-support.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed with static optimization and dynamic route collection.
+
 
 ## 2026-11-16: Teammate 1 - Shipments section complete
 
