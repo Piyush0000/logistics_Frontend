@@ -127,11 +127,11 @@ export function MerchantsView({
   };
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 min-w-0 max-w-full">
       {/* Search and Status Filter Row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
         {/* Search input with dynamic instant filtering */}
-        <div className="relative min-w-[240px] flex-1 sm:max-w-md">
+        <div className="relative min-w-0 flex-1 sm:max-w-md">
           <Search
             aria-hidden="true"
             className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-on-surface/50"
@@ -162,7 +162,7 @@ export function MerchantsView({
         <div
           role="tablist"
           aria-label="Merchant status tabs"
-          className="flex items-center gap-1.5 overflow-x-auto rounded-control border border-secondary bg-surface p-1 [scrollbar-width:none]"
+          className="flex max-w-full items-center gap-1.5 overflow-x-auto rounded-control border border-secondary bg-surface p-1 [scrollbar-width:none]"
         >
           {STATUS_TABS.map((tab) => {
             const isSelected = selectedStatus === tab.value;
@@ -241,7 +241,7 @@ export function MerchantsView({
           </div>
 
           {/* Mobile cards (<1024px) */}
-          <div className="grid gap-3 lg:hidden" data-testid="admin-merchants-mobile">
+          <div className="grid gap-3 lg:hidden min-w-0 max-w-full" data-testid="admin-merchants-mobile">
             {pagedItems.map((merchant) => {
               const [kycLabel, kycTone] = KYC_LABEL[merchant.kyc];
               const initials = merchant.name

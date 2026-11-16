@@ -28,7 +28,7 @@ export default async function AdminMerchantsPage({
   ]);
 
   return (
-    <div className="grid gap-4 lg:gap-5">
+    <div className="grid gap-4 lg:gap-5 min-w-0 max-w-full overflow-hidden">
       <PageHeader title="Merchants" description="Every seller on Evoc Ships." />
 
       <DataCard testId="admin-merchants" title="All merchants" result={result}>

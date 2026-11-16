@@ -54,7 +54,7 @@ export default async function AdminShipmentsPage({
     : [];
 
   return (
-    <div className="grid gap-4 lg:gap-5" data-testid="admin-shipments-page">
+    <div className="grid gap-4 lg:gap-5 min-w-0 max-w-full overflow-hidden" data-testid="admin-shipments-page">
       <PageHeader title="Shipments" description="Shipments from every merchant." />
 
       <DataCard testId="admin-shipments" title="All shipments" result={shipmentsResult}>

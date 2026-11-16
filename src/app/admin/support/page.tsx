@@ -28,7 +28,7 @@ export default async function AdminSupportPage(props: {
   const allTickets = result.ok ? result.data : [];
 
   return (
-    <>
+    <div className="grid gap-4 lg:gap-5 min-w-0 max-w-full overflow-hidden">
       <PageHeader
         title="Support"
         description="Customer support tickets and disputes across all merchants."
@@ -41,6 +41,6 @@ export default async function AdminSupportPage(props: {
         initialQuery={searchParams.q || ''}
         initialMerchant={searchParams.merchant || ''}
       />
-    </>
+    </div>
   );
 }

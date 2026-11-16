@@ -22,7 +22,7 @@ export default async function AdminOnboardingPage({
   const result = await adminOnboardingService().listApplications();
 
   return (
-    <div className="grid gap-4 lg:gap-5" data-testid="admin-onboarding-page">
+    <div className="grid gap-4 lg:gap-5 min-w-0 max-w-full overflow-hidden" data-testid="admin-onboarding-page">
       <PageHeader
         title="Onboarding & KYC"
         description="New merchants waiting for approval, and past decisions."

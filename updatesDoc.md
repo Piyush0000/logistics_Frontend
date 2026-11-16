@@ -6,10 +6,32 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Teammate 1 Operations: Support tickets section complete on `admin/support`. Ready for Phase 5: Overview polish. |
-| **Waiting on** | Branch review/merge, then final Overview polish |
-| **Next step** | Phase 5: Overview (`/admin` polish, last) |
-| **Testing** | 25 unit tests, 19 Playwright tests (desktop and mobile) passing, 0 typecheck/lint errors |
+| **Current stage** | Teammate 1 Operations: ALL PHASES COMPLETE (Merchants, Onboarding, Shipments, Support, and Overview Polish). |
+| **Waiting on** | Final PR reviews & merges |
+| **Next step** | Handoff to moderator / Teammate 2 |
+| **Testing** | 26 unit tests, 70+ Playwright e2e tests passing, 0 typecheck/lint errors |
+
+## 2026-11-16: Teammate 1 - Overview polish complete (Phase 5)
+
+Branch `admin/overview`. Completed Phase 5: Overview polish, concluding the full Operations development scope.
+
+### What was built
+- **Figure Links on `/admin`:**
+  - `Active merchants` links directly to `/admin/merchants?status=active`.
+  - `KYC waiting` links directly to `/admin/onboarding?status=pending`.
+  - `Shipments today` links directly to `/admin/shipments`.
+  - `Stuck shipments` links directly to `/admin/shipments?stuck=1`.
+  - `Wallet float`, `COD owed by couriers`, and `Revenue, last 30 days` link directly to `/admin/money`.
+  - 30-day footer summary links to `/admin/shipments?status=DELIVERED`, `/admin/shipments?view=rto`, and `/admin/money`.
+- **Count Synchronization:**
+  - Updated Overview mock data counts to match Operations data: stuck shipments (2), high priority tickets (2 with deep link to `?priority=high`), and KYC applications waiting (2, dynamically calculated via `countPendingApplications()`).
+- **Layout & Mobile Responsiveness:**
+  - Added overflow prevention (`min-w-0 max-w-full overflow-hidden`) across all admin sections, ensuring zero horizontal scroll across mobile viewports.
+- **Tests & Verification:**
+  - Unit Tests: `overview.test.ts` passing (verifying synchronized counts, attention deep links, 14-day chart series).
+  - Playwright: 36 tests passing in `e2e/admin.spec.ts` (including menu navigation, link verification, and 0-pixel sideways scroll on phone viewports).
+  - Production build: passed.
+
 
 ## 2026-11-16: Teammate 1 - Support section complete
 
