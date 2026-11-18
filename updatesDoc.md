@@ -6,10 +6,37 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Teammate 1 Operations: ALL PHASES COMPLETE (Merchants, Onboarding, Shipments, Support, and Overview Polish). |
-| **Waiting on** | Final PR reviews & merges |
-| **Next step** | Handoff to moderator / Teammate 2 |
-| **Testing** | 26 unit tests, 70+ Playwright e2e tests passing, 0 typecheck/lint errors |
+| **Current stage** | Admin panel integrated: both teammates' sections combined on branch `integration/admin` (local, not pushed) |
+| **Waiting on** | The moderator pushing `integration/admin` and merging it into `main` |
+| **Next step** | Teammate 1 moves the four list screens to server-side filtering and paging before the backend is connected ([docs/admin/integration-report.md](docs/admin/integration-report.md)) |
+| **Testing** | Integration: lint, typecheck, 1,080 unit tests, build, and the admin e2e suite (186 passed, 0 failed, 12 skipped) on desktop and phone |
+
+## 2026-11-18: Admin panel integration (moderator)
+
+Merged on branch `integration/admin`, from `main`:
+- `admin/overview`: toufeeqsk69, Teammate 1; contains merchants, onboarding, shipments and support;
+- `admin/money-wallets`, `admin/pricing-couriers` and `admin/system-health`: SaiManideep-Git, Teammate 2; each contains `admin/system-audit`.
+
+There were no merge conflicts. The full report is [docs/admin/integration-report.md](docs/admin/integration-report.md).
+
+### Fixed during integration
+- Removed tests that saved screenshots to a teammate's personal folder.
+- Wired `recordAudit()` into merchant status, KYC decision and ticket actions.
+- Replaced raw colours with tokens.
+- Pagination now moves past page 1 (Support, Shipments, Merchants), and Support keeps the All tab.
+- Fixed the merchant page links to shipments (`?merchantId=`) and to KYC (applications search).
+- Detail pages show the error instead of crashing or giving a false 404 when the backend is unavailable.
+- Support reads merchant details from the merchants service and shows load errors.
+- The merchants list reads wallet balances from Money.
+- E2e tests no longer depend on running order.
+
+### Verified
+- **CI steps:** `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (111 files, 1,080 tests) and `pnpm build` all pass.
+- **Browser tests:** `pnpm exec playwright test e2e/admin --project=desktop --project=phone` gave 186 passed, 0 failed, 12 skipped.
+- **Manual pass:** all 14 admin pages in light and dark at desktop, phone and 320px answer 200, have no sideways scroll, and show no browser errors.
+
+### Open before connecting the backend
+- Merchants, Shipments, Onboarding and Support filter and page one batch in the browser. They must move to server-side filtering and paging (Teammate 1). Smaller follow-ups are listed in the report.
 
 ## 2026-11-16: Teammate 1 - Overview polish complete (Phase 5)
 

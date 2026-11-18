@@ -33,7 +33,9 @@ export default async function AdminMerchantsPage({
 
       <DataCard testId="admin-merchants" title="All merchants" result={result}>
         {() => (
+          // Keyed by the URL, so a pagination link (a real navigation) rebuilds the view on that page.
           <MerchantsView
+            key={JSON.stringify(params)}
             allMerchants={allResult.ok ? allResult.data.items : []}
             initialQuery={query}
           />

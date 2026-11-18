@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { adminSupportService } from '@/lib/admin/data/support';
 import { requireAdminSession } from '@/lib/admin/session';
+import { parsePage } from '@/lib/url-params';
 import { SupportView, type SupportTab } from './support-view';
 
 export const metadata: Metadata = { title: 'Support' };
@@ -12,6 +14,7 @@ export default async function AdminSupportPage(props: {
     priority?: string;
     q?: string;
     merchant?: string;
+    page?: string;
   }>;
 }) {
   await requireAdminSession();
@@ -25,7 +28,6 @@ export default async function AdminSupportPage(props: {
       : 'open';
 
   const result = await adminSupportService().listTickets();
-  const allTickets = result.ok ? result.data : [];
 
   return (
     <div className="grid gap-4 lg:gap-5 min-w-0 max-w-full overflow-hidden">
@@ -34,13 +36,21 @@ export default async function AdminSupportPage(props: {
         description="Customer support tickets and disputes across all merchants."
       />
 
-      <SupportView
-        allTickets={allTickets}
-        initialTab={initialTab}
-        initialPriority={searchParams.priority || ''}
-        initialQuery={searchParams.q || ''}
-        initialMerchant={searchParams.merchant || ''}
-      />
+      {/* DataCard shows the Sample badge and, in gateway mode, the error instead of an empty inbox.
+          Keyed by the URL, so a pagination link (a real navigation) rebuilds the view on that page. */}
+      <DataCard testId="admin-tickets" title="Tickets" result={result}>
+        {(allTickets) => (
+          <SupportView
+            key={JSON.stringify(searchParams)}
+            allTickets={allTickets}
+            initialTab={initialTab}
+            initialPriority={searchParams.priority || ''}
+            initialQuery={searchParams.q || ''}
+            initialMerchant={searchParams.merchant || ''}
+            initialPage={parsePage(searchParams.page)}
+          />
+        )}
+      </DataCard>
     </div>
   );
 }

@@ -211,7 +211,7 @@ export function ShipmentsView({
           <span>All shipments</span>
           <span
             className={`rounded-full px-1.5 py-0.2 font-mono text-[11px] ${
-              activeTab === 'all' ? 'bg-white/20 text-on-primary' : 'bg-secondary text-on-surface/60'
+              activeTab === 'all' ? 'bg-on-primary/20 text-on-primary' : 'bg-secondary text-on-surface/60'
             }`}
           >
             {counts.all}
@@ -234,7 +234,7 @@ export function ShipmentsView({
           <span>Stuck only</span>
           <span
             className={`rounded-full px-1.5 py-0.2 font-mono text-[11px] ${
-              activeTab === 'stuck' ? 'bg-white/20 text-on-primary' : 'bg-secondary text-on-surface/60'
+              activeTab === 'stuck' ? 'bg-on-primary/20 text-on-primary' : 'bg-secondary text-on-surface/60'
             }`}
           >
             {counts.stuck}
@@ -256,7 +256,7 @@ export function ShipmentsView({
           <span>NDR reports</span>
           <span
             className={`rounded-full px-1.5 py-0.2 font-mono text-[11px] ${
-              activeTab === 'ndr' ? 'bg-white/20 text-on-primary' : 'bg-secondary text-on-surface/60'
+              activeTab === 'ndr' ? 'bg-on-primary/20 text-on-primary' : 'bg-secondary text-on-surface/60'
             }`}
           >
             {counts.ndr}
@@ -279,7 +279,7 @@ export function ShipmentsView({
           <span>RTO</span>
           <span
             className={`rounded-full px-1.5 py-0.2 font-mono text-[11px] ${
-              activeTab === 'rto' ? 'bg-white/20 text-on-primary' : 'bg-secondary text-on-surface/60'
+              activeTab === 'rto' ? 'bg-on-primary/20 text-on-primary' : 'bg-secondary text-on-surface/60'
             }`}
           >
             {counts.rto}

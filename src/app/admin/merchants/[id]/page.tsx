@@ -158,7 +158,7 @@ export default async function AdminMerchantDetailPage({
                   </div>
 
                   <Link
-                    href={`/admin/shipments?merchant=${merchant.id}`}
+                    href={`/admin/shipments?merchantId=${merchant.id}`}
                     className="inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-primary hover:underline lg:min-h-control"
                   >
                     <span>View all shipments</span>
@@ -247,7 +247,7 @@ export default async function AdminMerchantDetailPage({
             {(merchant) => (
               <div className="grid gap-2">
                 <Link
-                  href={`/admin/shipments?merchant=${merchant.id}`}
+                  href={`/admin/shipments?merchantId=${merchant.id}`}
                   className="flex min-h-11 items-center justify-between rounded-control border border-secondary bg-surface p-3 text-sm transition-colors hover:border-primary/40 hover:bg-muted/50 lg:min-h-control"
                 >
                   <div className="flex items-center gap-2.5">
@@ -269,7 +269,7 @@ export default async function AdminMerchantDetailPage({
                 </Link>
 
                 <Link
-                  href={`/admin/onboarding/${merchant.id}`}
+                  href={`/admin/onboarding?status=all&q=${encodeURIComponent(merchant.id)}`}
                   className="flex min-h-11 items-center justify-between rounded-control border border-secondary bg-surface p-3 text-sm transition-colors hover:border-primary/40 hover:bg-muted/50 lg:min-h-control"
                 >
                   <div className="flex items-center gap-2.5">

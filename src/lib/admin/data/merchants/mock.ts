@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { fromMock } from '../../../data/source';
+import { mockAdminMoneyService } from '../money/mock';
 import { matchesQuery, paginate } from '../common';
 import { mockNotFound } from '../not-found';
 import { SEED_MERCHANTS, type SeedMerchant } from '../seed';
@@ -60,16 +61,26 @@ export function setMerchantKycDecision(
   }
 }
 
-function summary(merchant: SeedMerchant): MerchantSummary {
+/**
+ * Live sample balances from the Money mock, so the merchants list, the merchant page and Money all
+ * show the same figure after a wallet adjustment. The Money module owns the balance.
+ */
+async function walletBalances(): Promise<Map<string, number>> {
+  const wallets = await mockAdminMoneyService().listWallets();
+  return new Map(wallets.ok ? wallets.data.map((wallet) => [wallet.merchantId, wallet.balancePaise]) : []);
+}
+
+function summary(merchant: SeedMerchant, balances?: Map<string, number>): MerchantSummary {
   const figures = FIGURES[merchant.id]!;
   const current = store.get(merchant.id);
   const status = current?.status ?? merchant.status;
   const kyc = current?.kyc ?? merchant.kyc;
-  return { ...merchant, status, kyc, shipments30d: figures.shipments30d, walletPaise: figures.walletPaise };
+  const walletPaise = balances?.get(merchant.id) ?? figures.walletPaise;
+  return { ...merchant, status, kyc, shipments30d: figures.shipments30d, walletPaise };
 }
 
-function detail(merchant: SeedMerchant): MerchantDetail {
-  const base = summary(merchant);
+function detail(merchant: SeedMerchant, balances?: Map<string, number>): MerchantDetail {
+  const base = summary(merchant, balances);
   const figures = FIGURES[merchant.id]!;
   const current = store.get(merchant.id);
   const notes = current?.notes ?? (merchant.status === 'suspended' ? ['Suspended: wallet below zero for 14 days.'] : []);
@@ -93,6 +104,7 @@ function detail(merchant: SeedMerchant): MerchantDetail {
 
 export const mockAdminMerchantsService: AdminMerchantsService = {
   async listMerchants({ q, status, page }) {
+    const balances = await walletBalances();
     const rows = SEED_MERCHANTS.map((m) => {
       const current = store.get(m.id);
       return current ? { ...m, status: current.status } : m;
@@ -101,14 +113,14 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
         (merchant) =>
           (!status || merchant.status === status) && matchesQuery(q, merchant.name, merchant.email, merchant.city, merchant.id),
       )
-      .map(summary)
+      .map((merchant) => summary(merchant, balances))
       .sort((a, b) => b.joinedAt.localeCompare(a.joinedAt));
     return fromMock(paginate(rows, page));
   },
 
   async getMerchant(id) {
     const merchant = SEED_MERCHANTS.find((entry) => entry.id === id);
-    return merchant ? fromMock(detail(merchant)) : mockNotFound('Merchant');
+    return merchant ? fromMock(detail(merchant, await walletBalances())) : mockNotFound('Merchant');
   },
 
   async setMerchantStatus(id, status, reason) {
@@ -143,6 +155,6 @@ export const mockAdminMerchantsService: AdminMerchantsService = {
       notes: [noteEntry, ...current.notes],
     });
 
-    return fromMock(detail(merchant));
+    return fromMock(detail(merchant, await walletBalances()));
   },
 };

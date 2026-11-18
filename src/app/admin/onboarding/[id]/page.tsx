@@ -1,6 +1,7 @@
 import { ArrowLeft, CheckCircle2, ExternalLink, FileCheck, FileText, MapPin, XCircle } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminLoadError } from '@/components/admin/load-error';
 import { notFound } from 'next/navigation';
 import { StatusChip, type ChipTone } from '@/components/admin/status-chip';
 import { DataCard } from '@/components/ui/data-card';
@@ -55,7 +56,8 @@ export default async function AdminOnboardingDetailPage({
     if (appResult.error.kind === 'not_found') {
       notFound();
     }
-    throw new Error(appResult.error.message);
+    // Backend unavailable or another error: show it on the page instead of crashing to the global error page.
+    return <AdminLoadError title={`Application ${id}`} testId="admin-application-error" result={appResult} />;
   }
 
   const application = appResult.data;

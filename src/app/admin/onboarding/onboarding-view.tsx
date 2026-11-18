@@ -34,9 +34,12 @@ const TABS: StatusTabConfig[] = [
 export function OnboardingView({
   allApplications,
   initialStatus = 'pending',
+  initialQuery = '',
 }: {
   allApplications: OnboardingApplication[];
   initialStatus?: string;
+  /** Pre-filled search, from ?q= (the merchant page links here with the merchant id). */
+  initialQuery?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -46,7 +49,7 @@ export function OnboardingView({
     : 'pending') as FilterStatus;
 
   const [selectedStatus, setSelectedStatus] = useState<FilterStatus>(validInitial);
-  const [searchVal, setSearchVal] = useState('');
+  const [searchVal, setSearchVal] = useState(initialQuery);
 
   // Counts for tabs
   const counts = useMemo(() => {
@@ -139,7 +142,7 @@ export function OnboardingView({
                 <span
                   className={`rounded-full px-1.5 py-0.2 font-mono text-[11px] ${
                     isSelected
-                      ? 'bg-white/20 text-on-primary'
+                      ? 'bg-on-primary/20 text-on-primary'
                       : 'bg-secondary text-on-surface/60'
                   }`}
                 >

@@ -104,20 +104,6 @@ test.describe('admin sections', () => {
     );
   });
 
-  test('captures overview screenshots', async ({ page }, testInfo) => {
-    await page.goto('/admin');
-    if (testInfo.project.name === 'desktop') {
-      await page.screenshot({
-        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_overview_desktop.png',
-      });
-    }
-    if (testInfo.project.name === 'phone') {
-      await page.screenshot({
-        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_overview_mobile.png',
-      });
-    }
-  });
-
   test('does not scroll sideways', async ({ page }) => {
     for (const item of ADMIN_NAV) {
       await page.goto(item.href);

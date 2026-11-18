@@ -74,8 +74,11 @@ test.describe('admin shipments', () => {
     }
 
     // Merchant filter
+    // Reset the status, then pick a merchant that has shipments in the sample data (mer_001 is
+    // active). Picking by position broke once the list included new merchants with no shipments.
+    if (await statusSelect.isVisible()) await statusSelect.selectOption('');
     const merchantSelect = page.getByTestId('admin-shipments-merchant-filter');
-    await merchantSelect.selectOption({ index: 1 });
+    await merchantSelect.selectOption('mer_001');
     await expect(page.getByTestId(cardOrRow).first()).toBeVisible();
   });
 

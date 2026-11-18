@@ -9,6 +9,7 @@ import {
   type AdminTicketPriority,
   type AdminTicketStatus,
 } from '@/lib/admin/data/support';
+import { recordAudit } from '@/lib/admin/data/system';
 import { requireAdminSession } from '@/lib/admin/session';
 
 export type SupportActionResult =
@@ -40,7 +41,7 @@ export async function replyTicketAction(
       return { ok: false, message: result.error.message };
     }
 
-    // TODO(audit): recordAudit({ action: 'support_reply', target: ticketId, detail: trimmed.slice(0, 50) })
+    await recordAudit({ action: 'Support reply', target: ticketId.trim(), detail: trimmed.slice(0, 80) });
 
     revalidatePath('/admin');
     revalidatePath('/admin/support');
@@ -79,7 +80,7 @@ export async function updateTicketStatusAction(
       return { ok: false, message: result.error.message };
     }
 
-    // TODO(audit): recordAudit({ action: 'support_status_change', target: ticketId, detail: status })
+    await recordAudit({ action: 'Ticket status changed', target: ticketId.trim(), detail: `Status set to ${status}.` });
 
     revalidatePath('/admin');
     revalidatePath('/admin/support');
@@ -118,7 +119,7 @@ export async function updateTicketPriorityAction(
       return { ok: false, message: result.error.message };
     }
 
-    // TODO(audit): recordAudit({ action: 'support_priority_change', target: ticketId, detail: priority })
+    await recordAudit({ action: 'Ticket priority changed', target: ticketId.trim(), detail: `Priority set to ${priority}.` });
 
     revalidatePath('/admin');
     revalidatePath('/admin/support');

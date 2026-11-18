@@ -3,7 +3,7 @@ import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { adminOnboardingService, APPLICATION_STATUSES } from '@/lib/admin/data/onboarding';
 import { requireAdminSession } from '@/lib/admin/session';
-import { parseEnum } from '@/lib/url-params';
+import { parseEnum, parseText } from '@/lib/url-params';
 import { OnboardingView } from './onboarding-view';
 
 export const metadata: Metadata = { title: 'Onboarding & KYC' };
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Onboarding & KYC' };
 export default async function AdminOnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
   await requireAdminSession();
   const params = await searchParams;
@@ -33,6 +33,7 @@ export default async function AdminOnboardingPage({
           <OnboardingView
             allApplications={applications}
             initialStatus={statusParam || 'pending'}
+            initialQuery={parseText(params.q, 100)}
           />
         )}
       </DataCard>

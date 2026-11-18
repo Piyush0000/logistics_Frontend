@@ -59,7 +59,9 @@ export default async function AdminShipmentsPage({
 
       <DataCard testId="admin-shipments" title="All shipments" result={shipmentsResult}>
         {(data) => (
+          // Keyed by the URL, so a pagination link (a real navigation) rebuilds the view on that page.
           <ShipmentsView
+            key={JSON.stringify(params)}
             allShipments={data.items}
             allNdrShipments={ndrResult.ok ? ndrResult.data.items : []}
             allRtoShipments={rtoResult.ok ? rtoResult.data.items : []}

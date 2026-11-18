@@ -43,12 +43,14 @@ export function SupportView({
   initialPriority = '',
   initialQuery = '',
   initialMerchant = '',
+  initialPage = 1,
 }: {
   allTickets: AdminTicket[];
   initialTab?: SupportTab;
   initialPriority?: string;
   initialQuery?: string;
   initialMerchant?: string;
+  initialPage?: number;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,7 +59,7 @@ export function SupportView({
   const [priorityFilter, setPriorityFilter] = useState<string>(initialPriority);
   const [searchVal, setSearchVal] = useState<string>(initialQuery);
   const [merchantFilter, setMerchantFilter] = useState<string>(initialMerchant);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(initialPage);
 
   // Tab counts
   const tabCounts = useMemo(() => {
@@ -78,9 +80,8 @@ export function SupportView({
     page: number,
   ) => {
     const params = new URLSearchParams();
-    if (tab !== 'all') {
-      params.set('status', tab);
-    }
+    // Always written, including 'all': the page defaults to Open when status is missing.
+    params.set('status', tab);
     if (prio) {
       params.set('priority', prio);
     }
@@ -163,11 +164,7 @@ export function SupportView({
 
   const buildHref = (pageNumber: number) => {
     const params = new URLSearchParams(searchParams?.toString() || '');
-    if (activeTab !== 'all') {
-      params.set('status', activeTab);
-    } else {
-      params.delete('status');
-    }
+    params.set('status', activeTab);
     if (priorityFilter) params.set('priority', priorityFilter);
     if (searchVal.trim()) params.set('q', searchVal.trim());
     if (merchantFilter) params.set('merchant', merchantFilter);

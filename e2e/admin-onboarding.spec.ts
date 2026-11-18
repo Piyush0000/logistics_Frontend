@@ -20,6 +20,8 @@ test.describe('admin onboarding and kyc', () => {
     await expect(pendingTab).toBeVisible();
     await expect(pendingTab).toHaveAttribute('aria-selected', 'true');
 
+    // The list itself is checked on the All tab: the decision test may empty Pending at any moment.
+    await page.getByTestId('admin-onboarding-tab-all').click();
     if (testInfo.project.name === 'phone') {
       await expect(page.getByTestId('admin-onboarding-mobile')).toBeVisible();
       await expect(page.getByTestId('admin-application-card').first()).toBeVisible();
@@ -85,45 +87,41 @@ test.describe('admin onboarding and kyc', () => {
     await expect(page.getByTestId('admin-application-approved-banner')).toBeVisible();
   });
 
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
   test('handles decision flows on pending applications', async ({ page }, testInfo) => {
-    const appId = testInfo.project.name === 'phone' ? 'app_mer_007' : 'app_mer_006';
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
+    const appId = 'app_mer_006';
     await page.goto(`/admin/onboarding/${appId}`);
 
     const approveBtn = page.getByTestId('admin-application-approve-button');
-    if (await approveBtn.isVisible()) {
-      await approveBtn.click();
-      const confirmBtn = page.getByRole('dialog').getByRole('button', { name: 'Confirm approval' });
-      await expect(confirmBtn).toBeVisible();
-      await confirmBtn.click();
-      await expect(page).toHaveURL(/status=approved/);
-    } else {
-      await expect(page.locator('[role="status"]')).toBeVisible();
-    }
+    await approveBtn.click();
+    const confirmBtn = page.getByRole('dialog').getByRole('button', { name: 'Confirm approval' });
+    await expect(confirmBtn).toBeVisible();
+    await confirmBtn.click();
+    await expect(page).toHaveURL(/status=approved/);
   });
 
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
   test('validates rejection reason in dialog', async ({ page }, testInfo) => {
-    const appId = testInfo.project.name === 'phone' ? 'app_mer_006' : 'app_mer_007';
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
+    const appId = 'app_mer_007';
     await page.goto(`/admin/onboarding/${appId}`);
 
     const rejectBtn = page.getByTestId('admin-application-reject-button');
-    if (await rejectBtn.isVisible()) {
-      await rejectBtn.click();
+    await rejectBtn.click();
 
-      const dialog = page.getByRole('dialog');
-      const submitBtn = dialog.getByRole('button', { name: 'Reject application' });
-      await expect(submitBtn).toBeDisabled();
+    const dialog = page.getByRole('dialog');
+    const submitBtn = dialog.getByRole('button', { name: 'Reject application' });
+    await expect(submitBtn).toBeDisabled();
 
-      const textarea = dialog.locator('#rejection-reason');
-      await textarea.fill('Short');
-      await expect(submitBtn).toBeDisabled();
+    const textarea = dialog.locator('#rejection-reason');
+    await textarea.fill('Short');
+    await expect(submitBtn).toBeDisabled();
 
-      await textarea.fill('GSTIN certificate is blurry and cannot verify registration.');
-      await expect(submitBtn).toBeEnabled();
-      await submitBtn.click();
+    await textarea.fill('GSTIN certificate is blurry and cannot verify registration.');
+    await expect(submitBtn).toBeEnabled();
+    await submitBtn.click();
 
-      await expect(page).toHaveURL(/status=rejected/);
-    } else {
-      await expect(page.locator('[role="status"]')).toBeVisible();
-    }
+    await expect(page).toHaveURL(/status=rejected/);
   });
 });

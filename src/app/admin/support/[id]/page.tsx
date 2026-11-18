@@ -14,7 +14,8 @@ import {
   User,
 } from 'lucide-react';
 import { StatusChip, type ChipTone } from '@/components/admin/status-chip';
-import { seedMerchant } from '@/lib/admin/data/seed';
+import { AdminLoadError } from '@/components/admin/load-error';
+import { adminMerchantsService } from '@/lib/admin/data/merchants';
 import {
   adminSupportService,
   type AdminTicketPriority,
@@ -50,12 +51,15 @@ export default async function AdminTicketDetailPage(props: {
   const { id } = await props.params;
 
   const result = await adminSupportService().getTicket(id);
-  if (!result.ok || !result.data) {
-    notFound();
-  }
+  // Only a real "not found" is a 404; any other failure (e.g. backend unavailable) shows its error.
+  if (!result.ok && result.error.kind === 'not_found') notFound();
+  if (!result.ok) return <AdminLoadError title={`Ticket ${id}`} testId="admin-ticket-error" result={result} />;
+  if (!result.data) notFound();
 
   const ticket = result.data;
-  const merchant = seedMerchant(ticket.merchantId);
+  // Merchant contact details come from the merchants service, not the sample seed, so gateway mode works.
+  const merchantResult = await adminMerchantsService().getMerchant(ticket.merchantId);
+  const merchant = merchantResult.ok ? merchantResult.data : null;
   const statusConf = STATUS_CONFIG[ticket.status] || {
     label: ticket.status,
     tone: 'neutral' as ChipTone,

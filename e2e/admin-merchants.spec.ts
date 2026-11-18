@@ -48,7 +48,9 @@ test.describe('admin merchants', () => {
     expect(res?.status()).toBe(404);
   });
 
-  test('opens merchant detail page, displays wallet tile, and can suspend/reactivate', async ({ page }) => {
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
+  test('opens merchant detail page, displays wallet tile, and can suspend/reactivate', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
     await page.goto('/admin/merchants/mer_001');
     expect(page.url()).toContain('/admin/merchants/mer_001');
 
@@ -76,7 +78,9 @@ test.describe('admin merchants', () => {
     await expect(statusBtn).toContainText(isSuspended ? 'Suspend merchant' : 'Reactivate merchant');
   });
 
-  test('allows activating a pending merchant from detail page', async ({ page }) => {
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
+  test('allows activating a pending merchant from detail page', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
     await page.goto('/admin/merchants/mer_007');
     const activateBtn = page.getByTestId('admin-merchant-activate-button');
     if ((await activateBtn.count()) > 0) {

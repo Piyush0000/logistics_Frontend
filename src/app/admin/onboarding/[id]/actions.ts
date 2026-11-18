@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { adminOnboardingService, type ApplicationStatus } from '@/lib/admin/data/onboarding';
+import { recordAudit } from '@/lib/admin/data/system';
 import { requireAdminSession } from '@/lib/admin/session';
 
 export type OnboardingActionResult =
@@ -40,7 +41,11 @@ export async function decideApplicationAction(
     return { ok: false, message: result.error.message };
   }
 
-  // TODO(audit): recordAudit({ action: `kyc_${decision}`, target: id, detail: trimmedReason }) once published by Teammate 2
+  await recordAudit({
+    action: decision === 'approved' ? 'Approved KYC' : 'Rejected KYC',
+    target: `${result.data.merchantId || id.trim()} · ${result.data.businessName}`,
+    detail: decision === 'approved' ? 'Application approved.' : (trimmedReason ?? 'Application rejected.'),
+  });
 
   revalidatePath('/admin');
   revalidatePath('/admin/onboarding');

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { adminMerchantsService, MERCHANT_STATUSES, type MerchantStatus } from '@/lib/admin/data/merchants';
+import { recordAudit } from '@/lib/admin/data/system';
 import { requireAdminSession } from '@/lib/admin/session';
 
 export type MerchantStatusActionResult =
@@ -42,7 +43,16 @@ export async function updateMerchantStatusAction(
     return { ok: false, message: result.error.message };
   }
 
-  // TODO(audit): recordAudit({ action: `merchant_${status}`, target: id, detail: trimmedReason }) once published by Teammate 2
+  const STATUS_ACTION: Record<MerchantStatus, string> = {
+    active: 'Reactivated merchant',
+    suspended: 'Suspended merchant',
+    pending: 'Merchant set to pending',
+  };
+  await recordAudit({
+    action: STATUS_ACTION[status as MerchantStatus],
+    target: `${result.data.id} · ${result.data.name}`,
+    detail: trimmedReason,
+  });
 
   revalidatePath('/admin/merchants');
   revalidatePath(`/admin/merchants/${id}`);

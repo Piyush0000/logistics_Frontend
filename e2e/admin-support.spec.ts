@@ -97,7 +97,9 @@ test.describe('admin support', () => {
     await expect(page.getByText('Hi team, our COD remittance for deliveries completed on 3 Nov')).toBeVisible();
   });
 
-  test('posts a reply and displays it in thread', async ({ page }) => {
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
+  test('posts a reply and displays it in thread', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
     await page.goto('/admin/support/TK-2039');
     await expect(page.getByTestId('ticket-thread')).toBeVisible();
 
@@ -112,7 +114,9 @@ test.describe('admin support', () => {
     await expect(page.getByTestId('ticket-thread').getByText(testReply)).toBeVisible();
   });
 
-  test('reopens a resolved ticket upon reply', async ({ page }) => {
+  // Changes shared sample data on the one e2e server, so it runs once (desktop), not in parallel on phone too.
+  test('reopens a resolved ticket upon reply', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'phone', 'Changes shared sample data; runs once, on desktop');
     await page.goto('/admin/support/TK-2011');
     
     // Ensure ticket is in resolved status via controls
@@ -133,26 +137,5 @@ test.describe('admin support', () => {
     const res = await page.goto('/admin/support/TK-9999');
     expect(res?.status()).toBe(404);
     await expect(page.getByText(/could not find the requested ticket|not found/i)).toBeVisible();
-  });
-
-  test('captures screenshots for documentation', async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'desktop') {
-      await page.goto('/admin/support');
-      await page.screenshot({
-        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_support_inbox.png',
-      });
-
-      await page.goto('/admin/support/TK-2041');
-      await page.screenshot({
-        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_support_detail.png',
-      });
-    }
-
-    if (testInfo.project.name === 'phone') {
-      await page.goto('/admin/support');
-      await page.screenshot({
-        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_support_mobile.png',
-      });
-    }
   });
 });

@@ -160,7 +160,7 @@ export function ApplicationDecisionButtons({
                 }
                 className={
                   activeDecision === 'rejected'
-                    ? 'inline-flex h-11 items-center justify-center rounded-control bg-error px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 lg:h-control'
+                    ? 'inline-flex h-11 items-center justify-center rounded-control bg-error px-4 text-sm font-semibold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 lg:h-control'
                     : PRIMARY_BUTTON
                 }
               >

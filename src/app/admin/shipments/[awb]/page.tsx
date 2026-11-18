@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AdminLoadError } from '@/components/admin/load-error';
 import { notFound } from 'next/navigation';
 import { StatusChip } from '@/components/admin/status-chip';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
@@ -45,7 +46,8 @@ export default async function AdminShipmentDetailPage({
     if (result.error.kind === 'not_found') {
       notFound();
     }
-    throw new Error(result.error.message);
+    // Backend unavailable or another error: show it on the page instead of crashing to the global error page.
+    return <AdminLoadError title={`Shipment ${awb}`} testId="admin-shipment-error" result={result} />;
   }
 
   const shipment = result.data;
