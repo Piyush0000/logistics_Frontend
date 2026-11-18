@@ -235,6 +235,39 @@ The tests were written after the code, so they were not seen failing first. The 
 
 **Not done here:** the reference panel's Adjust popup and Transactions view were not available, so the layout follows the brief and the existing admin pages.
 
+## 2026-11-15: Admin Pricing & couriers
+
+Teammate 2, on the branch `admin/pricing-couriers` (built on `admin/system-audit`, because every change calls `recordAudit()`).
+
+### Done
+
+- Courier on and off with a switch (`SwitchTrack` copied into `src/app/admin/pricing/`, not imported from the merchant app). Turning off asks first; turning on does not. At least one courier must stay on: the server refuses the last one with a clear message.
+- Edit a rate card row in a popup: first 500 g and each extra 500 g in rupees (above ₹0, at most ₹10,000), COD percent 0 to 10 with up to 2 decimals, and a COD minimum (₹0 to ₹10,000). Paise are worked out on the server. A review step shows old and new before saving.
+- Filters `?carrier=&zone=`; unknown values are ignored. On phones the rate card is grouped by courier.
+- A zone reference card for A to E, matching order-engine `resolveZone`. The backend has no zone E yet (it prices those as rest of India), and the card says so.
+- Custom prices: a percent off (up to 50%) for one merchant, for one courier or all, with a reason. Add and remove. One per merchant and courier.
+- Every change is audited: "Courier enabled", "Courier disabled", "Rate card updated" (only what changed, old → new), "Price override added" and "Price override removed".
+
+### Files
+
+- `src/lib/admin/data/pricing/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, new `pricing-rules.ts`
+- `src/app/admin/pricing/page.tsx`, new `actions.ts`, `pricing-dialogs.tsx`, `switch-track.tsx`
+- Tests: `src/lib/admin/data/pricing/pricing.test.ts`, `src/app/admin/pricing/actions.test.ts`, `e2e/admin-pricing.spec.ts`
+- No shared files were changed. The page reads merchant names through `adminMerchantsService().listMerchants()` (read only).
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 891 of 891 passed (44 new) |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-pricing.spec.ts` | 79 passed, 5 skipped. A 404 check was added later; `admin.spec.ts` + `admin-pricing.spec.ts` then gave 58 passed, 4 skipped |
+| Under `pnpm dev` | The courier, edit and custom-price popups stay open, desktop and phone, no browser errors |
+
+The tests were written after the code. Turning couriers off changes what every other test sees, so that browser test runs once, on desktop; the last-courier rule is also covered by unit and action tests. After Remove, the row and its popup disappear together, so no "Removed" message is shown; the row going is the confirmation.
+
+**Not done:** the reference panel's Pricing tab and edit popup were not available, so the layout follows the brief and the existing admin pages.
+
 ## 2026-11-15: Admin System, audit log and recordAudit()
 
 Teammate 2's first piece, on the branch `admin/system-audit`. It unblocks Teammate 1, who can now call `recordAudit()` from merchant and KYC actions.

@@ -9,5 +9,5 @@ export * from './types';
 
 /** Sample data by default; DATA_SOURCE_ADMIN_PRICING=gateway switches to the backend. */
 export function adminPricingService(): AdminPricingService {
-  return resolveDataSource('admin_pricing') === 'gateway' ? gatewayAdminPricingService : mockAdminPricingService;
+  return resolveDataSource('admin_pricing') === 'gateway' ? gatewayAdminPricingService : mockAdminPricingService();
 }
