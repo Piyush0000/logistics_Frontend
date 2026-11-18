@@ -1,13 +1,13 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { overviewService } from './overview';
 import { fetchShipmentSummary } from './shipments/gateway';
 import { mockShipmentService } from './shipments/mock';
 import { toShipmentSummary } from './shipments/summary';
 import { fetchTracking } from './tracking/gateway';
 import { mockTrackingService } from './tracking/mock';
-import { walletService } from './wallet';
+import { fetchWalletBalance } from './wallet/gateway';
 
 let handler: (req: IncomingMessage, res: ServerResponse) => void;
 let server: Server;
@@ -182,13 +182,30 @@ describe('features with no gateway route yet', () => {
     });
   });
 
-  it('reports the wallet as unavailable', async () => {
+  it('reads the wallet balance from the ledger through the gateway', async () => {
     process.env.DATA_SOURCE_WALLET = 'gateway';
-
-    expect(await walletService().getBalance()).toMatchObject({
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable' },
-    });
+    process.env.GATEWAY_URL = 'http://gateway.test';
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ available: 1_000_000, reserved: 7_200, pendingCod: 0 }), {
+          status: 200,
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      expect(await fetchWalletBalance('evs_sess_test-token-value')).toEqual({
+        ok: true,
+        source: 'gateway',
+        data: { availablePaise: 1_000_000 },
+      });
+      expect(fetchMock.mock.calls[0]![0]).toBe('http://gateway.test/api/v1/wallet');
+      expect(fetchMock.mock.calls[0]![1].headers.authorization).toBe(
+        'Bearer evs_sess_test-token-value',
+      );
+    } finally {
+      vi.unstubAllGlobals();
+      delete process.env.GATEWAY_URL;
+    }
   });
 });

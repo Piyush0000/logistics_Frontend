@@ -98,10 +98,17 @@ describe('listTransactions', () => {
 });
 
 describe('gateway wallet service', () => {
-  it('never passes off missing routes as data', async () => {
+  it('labels transactions as sample data, since no service lists ledger entries yet', async () => {
     const result = await gatewayWalletService.listTransactions(DEFAULT_FILTERS);
 
-    expect(result).toMatchObject({ ok: false, source: 'gateway' });
+    expect(result).toMatchObject({ ok: true, source: 'mock' });
+  });
+
+  it('never fakes a recharge', async () => {
+    expect(await gatewayWalletService.startRecharge(10_000)).toMatchObject({
+      ok: false,
+      source: 'gateway',
+    });
   });
 });
 

@@ -2,6 +2,10 @@ import type { DataResult } from '../source';
 
 export interface SignedInUser {
   email: string;
+  /** Set by the real sign-in: the session token the gateway accepts. Absent in demo mode. */
+  token?: string;
+  /** When the session token stops working (ISO time). */
+  expiresAt?: string;
 }
 
 export interface OtpRequest {

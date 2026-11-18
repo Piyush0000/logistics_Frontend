@@ -53,7 +53,8 @@ export default async function PublicTrackingPage({ params }: Props) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={view.status} size="md" />
-          <CarrierBadge carrier={view.carrier} />
+          {/* The live tracking API keeps the courier partner private, so there may be none. */}
+          {view.carrier ? <CarrierBadge carrier={view.carrier} /> : null}
         </div>
       </div>
 

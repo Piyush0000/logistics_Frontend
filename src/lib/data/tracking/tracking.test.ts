@@ -86,26 +86,30 @@ describe('fetchTimeline (gateway)', () => {
 });
 
 describe('fetchTimelinePublic (gateway)', () => {
-  it('asks for the timeline without an Authorization header', async () => {
+  it('uses the public tracking route, without an Authorization header', async () => {
     let auth: string | undefined = 'unset';
     let url = '';
     handler = (req, res) => {
       auth = req.headers.authorization;
       url = req.url ?? '';
       json(res, 200, {
-        shipment_id: '10000000-0000-4000-8000-000000000001',
-        awb: 'LIVE123',
-        carrier: 'ekart',
+        awb: 'EVS1234567890',
         status: 'DELIVERED',
-        raw_status: 'Delivered',
         last_event_at: '2026-10-23T10:00:00.000Z',
-        stuck: false,
-        timeline: [],
+        timeline: [
+          { status: 'IN_TRANSIT', location: 'Mumbai', occurred_at: '2026-10-22T10:00:00.000Z' },
+          { status: 'DELIVERED', location: 'Pune', occurred_at: '2026-10-23T10:00:00.000Z' },
+        ],
       });
     };
-    const result = await fetchTimelinePublic('LIVE 123');
-    expect(result.ok).toBe(true);
+    const result = await fetchTimelinePublic(' EVS1234567890 ');
     expect(auth).toBeUndefined();
-    expect(url).toBe('/api/v1/shipments/LIVE%20123/tracking');
+    expect(url).toBe('/api/v1/track/EVS1234567890');
+    expect(result).toMatchObject({
+      ok: true,
+      data: { awb: 'EVS1234567890', status: 'DELIVERED', location: 'Pune', carrier: '' },
+    });
+    // Newest first, as the page shows it.
+    if (result.ok) expect(result.data.timeline[0]!.status).toBe('DELIVERED');
   });
 });

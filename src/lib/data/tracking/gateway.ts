@@ -2,7 +2,11 @@ import 'server-only';
 
 import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
-import { TrackingDetailSchema, TrackingSchema } from '../../gateway/schemas/shipments';
+import {
+  PublicTrackingSchema,
+  TrackingDetailSchema,
+  TrackingSchema,
+} from '../../gateway/schemas/shipments';
 import type { DataResult } from '../source';
 import { AWB_NOT_FOUND, type TrackingDetail, type TrackingSummary } from './types';
 
@@ -87,9 +91,44 @@ export async function fetchTimeline(
   };
 }
 
-/** The timeline for the public tracking page. The gateway route has no auth, so no token is sent. */
-export function fetchTimelinePublic(awb: string): Promise<DataResult<TrackingDetail>> {
-  return fetchTimeline(awb, null);
+/**
+ * The timeline for the public tracking page, from the gateway's unauthenticated /api/v1/track
+ * route. No token is sent, and the answer never names the courier partner.
+ */
+export async function fetchTimelinePublic(awb: string): Promise<DataResult<TrackingDetail>> {
+  const result = await gatewayFetch(`/api/v1/track/${encodeURIComponent(awb.trim())}`, {
+    schema: PublicTrackingSchema,
+  });
+  if (!result.ok) {
+    const { error } = result;
+    return {
+      ok: false,
+      source: 'gateway',
+      error: error.kind === 'not_found' ? { ...error, message: AWB_NOT_FOUND } : error,
+    };
+  }
+  const { data } = result;
+  const located = data.timeline.findLast(({ location }) => location);
+  return {
+    ok: true,
+    source: 'gateway',
+    data: {
+      awb: data.awb,
+      carrier: '',
+      status: data.status,
+      rawStatus: null,
+      location: located?.location ?? null,
+      lastEventAt: data.last_event_at,
+      timeline: data.timeline
+        .map((event) => ({
+          status: event.status,
+          rawStatus: null,
+          location: event.location,
+          occurredAt: event.occurred_at,
+        }))
+        .reverse(),
+    },
+  };
 }
 
 export const gatewayTrackingService = {

@@ -74,9 +74,10 @@ export function normaliseOrdersPage(raw: unknown): ShipmentListResponse {
 }
 
 
-/** POST /api/v1/shipments answers 202 once the request is stored. The AWB comes later. */
+/** POST /api/v1/shipments answers 202 once the request is stored, with the Evoc AWB assigned. */
 export const CreateShipmentResponseSchema = z.object({
   shipment_id: z.string().uuid(),
+  awb: z.string().nullish(),
   carrier: z.string(),
   status: z.string(),
   duplicate: z.boolean().optional(),

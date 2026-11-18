@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { emailSchema, otpSchema, passwordSchema } from '@/lib/auth/login-schema';
-import { createDemoSession, endDemoSession } from '@/lib/auth/session';
+import { endSession, startSession } from '@/lib/auth/session';
 import { sessionService } from '@/lib/data/session';
 import type { LoginState } from './login-state';
 
@@ -37,7 +37,7 @@ export async function verifyOtpAction(_state: LoginState, formData: FormData): P
   const result = await sessionService().verifyOtp(email.data, code.data);
   if (!result.ok) return failure(result.error.message);
 
-  await createDemoSession(result.data.email);
+  await startSession(result.data);
   redirect('/dashboard');
 }
 
@@ -54,11 +54,11 @@ export async function passwordSignInAction(
   const result = await sessionService().signInWithPassword(email.data, password.data);
   if (!result.ok) return failure(result.error.message);
 
-  await createDemoSession(result.data.email);
+  await startSession(result.data);
   redirect('/dashboard');
 }
 
 export async function signOutAction(): Promise<void> {
-  await endDemoSession();
+  await endSession();
   redirect('/login');
 }

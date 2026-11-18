@@ -1,5 +1,25 @@
 # Frontend ↔ backend: what blocks the live connection
 
+## Status, 17 Nov 2026: sections 1–5 are resolved
+
+The backend now has a real sign-in (a new `identity` service), and the gateway authenticates every merchant route itself. In production these features use live data:
+
+| Feature | Gateway route |
+|---|---|
+| Sign-up, password sign-in, sign-out | `POST /api/v1/auth/signup`, `/login`, `/logout`, `GET /api/v1/auth/me` |
+| Email code sign-in, password reset | `POST /api/v1/auth/otp/*`, `/password-reset/*`. These answer 503 until SMTP is configured on the server |
+| Shipment list, counts, search (`q`), `to` date | `GET /api/v1/shipments`, `/stats` |
+| Booking | `POST /api/v1/shipments`. Answers 202 with the AWB already assigned |
+| Shipment detail and timeline | `GET /api/v1/shipments/:awb`, `/:awb/tracking` |
+| Public tracking page | `GET /api/v1/track/:awb`. No auth. Status, place and time only |
+| Wallet balance | `GET /api/v1/wallet` |
+| Webhooks | Unchanged routes, which now also accept the session token |
+| API keys | `GET/POST/DELETE /api/v1/auth/api-keys` (no screen yet) |
+
+**One AWB for every courier.** Every shipment gets an Evoc AWB such as `EVS4829105736` at booking. The courier's own AWB is never sent to the frontend. Merchants and customers only ever see the Evoc AWB. The last digit is a check digit, so a typed AWB with a wrong digit is rejected.
+
+Still sample data, because no backend exists yet: everything in section 7, wallet transactions and recharge, and the admin panel. The sections below are kept for history.
+
 For the Evoc Ships backend team. Every item was checked against the backend code (`Evoc_ships` at `aace603`). The frontend changes no backend code.
 
 The frontend only talks to the gateway (`services/gateway`, port 8080). Three areas connect today: tracking, webhooks, and the shipment list and counts. The list and counts only work in demo mode (`DASHBOARD_MOCK_MODE=true`). Everything else shows labelled sample data, because the gateway has no route for it.

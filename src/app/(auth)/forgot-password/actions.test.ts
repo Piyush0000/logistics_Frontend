@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { requestPasswordResetAction } from './actions';
 import { IDLE } from './forgot-state';
 
@@ -33,12 +33,22 @@ describe('requestPasswordResetAction', () => {
     expect(await requestPasswordResetAction(IDLE, form(''))).toMatchObject({ status: 'error' });
   });
 
-  it('shows the unavailable message in gateway mode', async () => {
+  it("shows the server's message when email is not set up yet", async () => {
     process.env.DATA_SOURCE_SESSION = 'gateway';
-
-    expect(await requestPasswordResetAction(IDLE, form('ops@example.com'))).toEqual({
-      status: 'error',
-      message: 'Password reset is not available yet.',
-    });
+    process.env.GATEWAY_URL = 'http://gateway.test';
+    const message = 'Email sign-in is not available yet. Sign in with your password.';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message }), { status: 503 })),
+    );
+    try {
+      expect(await requestPasswordResetAction(IDLE, form('ops@example.com'))).toEqual({
+        status: 'error',
+        message,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+      delete process.env.GATEWAY_URL;
+    }
   });
 });

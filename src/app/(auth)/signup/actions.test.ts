@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const created = vi.hoisted(() => vi.fn());
 const current = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/auth/session', () => ({ createDemoSession: created, getDemoSession: current }));
+vi.mock('@/lib/auth/session', () => ({ startSession: created, getDemoSession: current }));
 vi.mock('next/navigation', () => ({
   redirect: (to: string) => {
     throw new Error(`REDIRECT:${to}`);
@@ -43,7 +43,7 @@ describe('signUpAction', () => {
 
   it('creates the session and redirects to Home', async () => {
     await expect(signUpAction(IDLE, form())).rejects.toThrow('REDIRECT:/home');
-    expect(created).toHaveBeenCalledWith('asha@example.com');
+    expect(created).toHaveBeenCalledWith({ email: 'asha@example.com' });
   });
 
   it('requires the terms', async () => {
@@ -65,13 +65,45 @@ describe('signUpAction', () => {
     expect(created).not.toHaveBeenCalled();
   });
 
-  it('refuses signup when the session service is set to gateway', async () => {
+  it('signs up through the gateway and keeps the real session token', async () => {
     process.env.DATA_SOURCE_SESSION = 'gateway';
+    process.env.GATEWAY_URL = 'http://gateway.test';
+    const session = {
+      token: 'evs_sess_abcdefghijklmnopqrstuvwxyz',
+      expires_at: '2026-11-24T10:00:00.000Z',
+      user: { email: 'asha@example.com' },
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(session), { status: 201 })),
+    );
+    try {
+      await expect(signUpAction(IDLE, form())).rejects.toThrow('REDIRECT:/home');
+      expect(created).toHaveBeenCalledWith({
+        email: 'asha@example.com',
+        token: session.token,
+        expiresAt: session.expires_at,
+      });
+    } finally {
+      vi.unstubAllGlobals();
+      delete process.env.GATEWAY_URL;
+    }
+  });
 
-    expect(await signUpAction(IDLE, form())).toEqual({
-      status: 'error',
-      message: 'Sign-in is not available yet.',
-    });
-    expect(created).not.toHaveBeenCalled();
+  it('shows the gateway error and starts no session when sign-up fails', async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+    process.env.GATEWAY_URL = 'http://gateway.test';
+    const message = 'An account with this email already exists. Sign in instead.';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message }), { status: 409 })),
+    );
+    try {
+      expect(await signUpAction(IDLE, form())).toEqual({ status: 'error', message });
+      expect(created).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+      delete process.env.GATEWAY_URL;
+    }
   });
 });

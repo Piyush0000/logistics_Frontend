@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gatewaySessionService } from './gateway';
 import { sessionService } from './index';
 import { DEMO_OTP_CODE, mockSessionService } from './mock';
@@ -39,15 +39,40 @@ describe('sessionService', () => {
     expect(sessionService()).toBe(mockSessionService);
   });
 
-  it('reports that the gateway has no sign-in route yet', async () => {
+  it('signs in through the gateway and returns the session token', async () => {
     process.env.DATA_SOURCE_SESSION = 'gateway';
+    const fetchMock = stubGateway(200, {
+      token: 'evs_sess_abcdefghijklmnopqrstuvwxyz',
+      expires_at: '2026-11-24T10:00:00.000Z',
+      user: { email: 'ops@example.com' },
+    });
 
-    const result = await sessionService().verifyOtp('ops@example.com', DEMO_OTP_CODE);
+    const result = await sessionService().signInWithPassword('ops@example.com', 'long-enough-1');
 
-    expect(result).toMatchObject({
+    expect(fetchMock.mock.calls[0]![0]).toBe('http://gateway.test/api/v1/auth/login');
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body)).toEqual({
+      email: 'ops@example.com',
+      password: 'long-enough-1',
+    });
+    expect(result).toEqual({
+      ok: true,
+      source: 'gateway',
+      data: {
+        email: 'ops@example.com',
+        token: 'evs_sess_abcdefghijklmnopqrstuvwxyz',
+        expiresAt: '2026-11-24T10:00:00.000Z',
+      },
+    });
+  });
+
+  it("passes the gateway's sign-in error to the screen", async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+    stubGateway(401, { message: 'Email or password is incorrect.' });
+
+    expect(await sessionService().verifyOtp('ops@example.com', DEMO_OTP_CODE)).toMatchObject({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', message: 'Sign-in is not available yet.' },
+      error: { kind: 'unauthorized', message: 'Email or password is incorrect.' },
     });
   });
 
@@ -78,15 +103,25 @@ describe('requestPasswordReset', () => {
     expect(second).toEqual(first);
   });
 
-  it('reports that the gateway has no reset route yet', async () => {
+  it('asks the gateway to email a reset code', async () => {
     process.env.DATA_SOURCE_SESSION = 'gateway';
+    const fetchMock = stubGateway(202, { sent: true });
 
     const result = await sessionService().requestPasswordReset('ops@example.com');
 
-    expect(result).toMatchObject({
+    expect(fetchMock.mock.calls[0]![0]).toBe(
+      'http://gateway.test/api/v1/auth/password-reset/request',
+    );
+    expect(result).toEqual({ ok: true, source: 'gateway', data: { demo: false } });
+  });
+
+  it('reports when email is not set up on the server yet', async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+    stubGateway(503, { message: 'Email sign-in is not available yet. Sign in with your password.' });
+
+    expect(await sessionService().requestPasswordReset('ops@example.com')).toMatchObject({
       ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', message: 'Password reset is not available yet.' },
+      error: { kind: 'unavailable' },
     });
   });
 });
@@ -111,13 +146,46 @@ describe('signUp', () => {
     expect(JSON.stringify(result)).not.toContain(input.password);
   });
 
-  it('reports that the gateway has no sign-up route yet', async () => {
+  it('creates the account through the gateway and signs straight in', async () => {
     process.env.DATA_SOURCE_SESSION = 'gateway';
+    const fetchMock = stubGateway(201, {
+      token: 'evs_sess_abcdefghijklmnopqrstuvwxyz',
+      expires_at: '2026-11-24T10:00:00.000Z',
+      user: { email: 'asha@example.com' },
+    });
+
+    const result = await sessionService().signUp(input);
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('http://gateway.test/api/v1/auth/signup');
+    expect(result).toMatchObject({
+      ok: true,
+      data: { email: 'asha@example.com', token: 'evs_sess_abcdefghijklmnopqrstuvwxyz' },
+    });
+  });
+
+  it('shows a taken email as the gateway words it', async () => {
+    process.env.DATA_SOURCE_SESSION = 'gateway';
+    stubGateway(409, { message: 'An account with this email already exists. Sign in instead.' });
 
     expect(await sessionService().signUp(input)).toMatchObject({
       ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', message: 'Sign-in is not available yet.' },
+      error: { kind: 'conflict', message: 'An account with this email already exists. Sign in instead.' },
     });
   });
+});
+
+function stubGateway(status: number, body: unknown) {
+  process.env.GATEWAY_URL = 'http://gateway.test';
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValue(
+      new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }),
+    );
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  delete process.env.GATEWAY_URL;
 });

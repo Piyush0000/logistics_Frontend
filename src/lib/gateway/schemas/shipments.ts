@@ -19,12 +19,18 @@ export const ShipmentStatsSchema = z.object({
 
 export type ShipmentStats = z.output<typeof ShipmentStatsSchema>;
 
-/** GET /api/v1/shipments/:id/tracking. The timeline runs oldest to newest. */
+/** The gateway leaves out carrier-specific status text, so it reads as null when absent. */
+const rawStatus = z
+  .string()
+  .nullish()
+  .transform((value) => value ?? null);
+
+/** GET /api/v1/shipments/:awb/tracking. The timeline runs oldest to newest. */
 export const TrackingSchema = z.object({
   awb: z.string(),
   carrier: z.string(),
   status: z.string(),
-  raw_status: z.string().nullable(),
+  raw_status: rawStatus,
   last_event_at: z.string().nullable(),
   timeline: z.array(z.object({ location: z.string().nullable() })),
 });
@@ -34,9 +40,22 @@ export const TrackingDetailSchema = TrackingSchema.extend({
   timeline: z.array(
     z.object({
       status: z.string(),
-      raw_status: z.string().nullable(),
+      raw_status: rawStatus,
       location: z.string().nullable(),
       occurred_at: z.string(),
     }),
+  ),
+});
+
+/**
+ * GET /api/v1/track/:awb: the public route. Status, place and time only; it never names the
+ * merchant, the customer or the courier partner.
+ */
+export const PublicTrackingSchema = z.object({
+  awb: z.string(),
+  status: z.string(),
+  last_event_at: z.string().nullable(),
+  timeline: z.array(
+    z.object({ status: z.string(), location: z.string().nullable(), occurred_at: z.string() }),
   ),
 });

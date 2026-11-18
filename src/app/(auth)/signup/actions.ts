@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { createDemoSession, getDemoSession } from '@/lib/auth/session';
+import { getDemoSession, startSession } from '@/lib/auth/session';
 import { signupSchema } from '@/lib/auth/signup-schema';
 import { sessionService } from '@/lib/data/session';
 import type { SignupState } from './signup-state';
@@ -36,6 +36,6 @@ export async function signUpAction(_state: SignupState, formData: FormData): Pro
   const result = await sessionService().signUp(parsed.data);
   if (!result.ok) return { status: 'error', message: result.error.message };
 
-  await createDemoSession(result.data.email);
+  await startSession(result.data);
   redirect('/home');
 }
