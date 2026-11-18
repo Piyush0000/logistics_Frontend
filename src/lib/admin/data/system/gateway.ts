@@ -1,11 +1,37 @@
 import 'server-only';
 
+import { z } from 'zod';
 import { notAvailable } from '../../../data/not-available';
+import { fromGateway } from '../../../data/source';
+import { gatewayFetch } from '../../../gateway/client';
 import type { AdminSystemService } from './types';
 
-// Each service has a /health route, but the gateway does not aggregate them; there is no audit log store.
-// Until a route exists, gateway mode shows this module as unavailable instead of passing sample data off as real.
+/** Health answers should be quick; a slower gateway counts as not answering. */
+export const HEALTH_TIMEOUT_MS = 3000;
+
+// The shape asked for in docs/admin/backend-needs.md: one entry per service, null latency when a
+// service did not answer the gateway in time.
+const healthSchema = z.object({
+  services: z.array(
+    z.object({
+      service: z.string(),
+      status: z.enum(['up', 'degraded', 'down']),
+      latencyMs: z.number().nonnegative().nullable(),
+      checkedAt: z.string(),
+    }),
+  ),
+});
+
+// Health calls the future GET /api/v1/admin/health. It needs the admin credential from
+// backend-needs.md section 1 before it can succeed; until then it shows the gateway's error.
+// Webhook failures and the audit log have no admin route yet, so they show as not available.
 export const gatewayAdminSystemService: AdminSystemService = {
-  getHealth: notAvailable,
+  async getHealth() {
+    const result = await gatewayFetch('/api/v1/admin/health', { schema: healthSchema, timeoutMs: HEALTH_TIMEOUT_MS });
+    return fromGateway(result.ok ? { ...result, data: result.data.services } : result);
+  },
   listAuditLog: notAvailable,
+  recordAudit: notAvailable,
+  listWebhookFailures: notAvailable,
+  retryWebhookDelivery: notAvailable,
 };

@@ -37,10 +37,35 @@ const ATTENTION: Record<AttentionTone, { icon: LucideIcon; chip: string }> = {
   info: { icon: Info, chip: 'bg-muted text-primary' },
 };
 
-function Figure({ label, value, icon, tone }: { label: string; value: string; icon: LucideIcon; tone: StatTone }) {
+function Figure({
+  label,
+  value,
+  icon,
+  tone,
+  href,
+}: {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  tone: StatTone;
+  href?: string;
+}) {
+  const content = <StatTile label={label} value={value} icon={icon} tone={tone} />;
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="lift block min-w-0 rounded-card border border-secondary bg-surface p-3 transition-colors hover:border-primary/60 lg:p-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[44px]"
+      >
+        {content}
+      </Link>
+    );
+  }
+
   return (
     <div className="lift min-w-0 rounded-card border border-secondary bg-surface p-3 lg:p-card">
-      <StatTile label={label} value={value} icon={icon} tone={tone} />
+      {content}
     </div>
   );
 }
@@ -59,15 +84,57 @@ export default async function AdminOverviewPage() {
       {result.ok ? (
         <>
           <section aria-label="Platform figures" className="motion-stagger grid grid-cols-2 gap-3 lg:gap-4 xl:grid-cols-4">
-            <Figure label="Active merchants" value={`${result.data.merchants.active} of ${result.data.merchants.total}`} icon={Building2} tone="primary" />
-            <Figure label="KYC waiting" value={String(result.data.merchants.pendingKyc)} icon={ShieldCheck} tone="warning" />
-            <Figure label="Shipments today" value={result.data.shipments.today.toLocaleString('en-IN')} icon={Package} tone="success" />
-            <Figure label="Stuck shipments" value={String(result.data.shipments.stuck)} icon={Clock} tone="error" />
+            <Figure
+              label="Active merchants"
+              value={`${result.data.merchants.active} of ${result.data.merchants.total}`}
+              icon={Building2}
+              tone="primary"
+              href="/admin/merchants?status=active"
+            />
+            <Figure
+              label="KYC waiting"
+              value={String(result.data.merchants.pendingKyc)}
+              icon={ShieldCheck}
+              tone="warning"
+              href="/admin/onboarding?status=pending"
+            />
+            <Figure
+              label="Shipments today"
+              value={result.data.shipments.today.toLocaleString('en-IN')}
+              icon={Package}
+              tone="success"
+              href="/admin/shipments"
+            />
+            <Figure
+              label="Stuck shipments"
+              value={String(result.data.shipments.stuck)}
+              icon={Clock}
+              tone="error"
+              href="/admin/shipments?stuck=1"
+            />
           </section>
           <section aria-label="Money" className="motion-stagger grid gap-3 sm:grid-cols-3 lg:gap-4">
-            <Figure label="Wallet float" value={formatPaise(result.data.money.walletFloatPaise)} icon={Wallet} tone="primary" />
-            <Figure label="COD owed by couriers" value={formatPaise(result.data.money.codOutstandingPaise)} icon={Wallet} tone="warning" />
-            <Figure label="Revenue, last 30 days" value={formatPaise(result.data.money.revenue30dPaise)} icon={Wallet} tone="success" />
+            <Figure
+              label="Wallet float"
+              value={formatPaise(result.data.money.walletFloatPaise)}
+              icon={Wallet}
+              tone="primary"
+              href="/admin/money"
+            />
+            <Figure
+              label="COD owed by couriers"
+              value={formatPaise(result.data.money.codOutstandingPaise)}
+              icon={Wallet}
+              tone="warning"
+              href="/admin/money"
+            />
+            <Figure
+              label="Revenue, last 30 days"
+              value={formatPaise(result.data.money.revenue30dPaise)}
+              icon={Wallet}
+              tone="success"
+              href="/admin/money"
+            />
           </section>
         </>
       ) : null}
@@ -131,9 +198,19 @@ export default async function AdminOverviewPage() {
 
       {result.ok ? (
         <p className="text-xs text-on-surface/55">
-          30-day totals: {result.data.shipments.delivered30d.toLocaleString('en-IN')} delivered,{' '}
-          {result.data.shipments.rto30d.toLocaleString('en-IN')} returned, revenue{' '}
-          {formatPaiseCompact(result.data.money.revenue30dPaise)}.
+          30-day totals:{' '}
+          <Link href="/admin/shipments?status=DELIVERED" className="hover:text-primary underline-offset-2 hover:underline">
+            {result.data.shipments.delivered30d.toLocaleString('en-IN')} delivered
+          </Link>
+          ,{' '}
+          <Link href="/admin/shipments?view=rto" className="hover:text-primary underline-offset-2 hover:underline">
+            {result.data.shipments.rto30d.toLocaleString('en-IN')} returned
+          </Link>
+          , revenue{' '}
+          <Link href="/admin/money" className="hover:text-primary underline-offset-2 hover:underline">
+            {formatPaiseCompact(result.data.money.revenue30dPaise)}
+          </Link>
+          .
         </p>
       ) : null}
     </>

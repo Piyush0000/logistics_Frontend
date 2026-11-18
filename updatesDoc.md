@@ -6,10 +6,368 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Admin panel foundation on branch `feature/admin` (from `main`, after the redesign merged in PR #4) |
-| **Waiting on** | The moderator merging `feature/admin` into `main`, then handing the sections to the two teammates ([docs/admin/team-split.md](docs/admin/team-split.md)) |
-| **Next step** | Teammates branch `admin/<section>` from `main` and open PRs into `main`; the moderator reviews and merges |
-| **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
+| **Current stage** | Admin panel integrated: both teammates' sections combined on branch `integration/admin` (local, not pushed) |
+| **Waiting on** | The moderator pushing `integration/admin` and merging it into `main` |
+| **Next step** | Teammate 1 moves the four list screens to server-side filtering and paging before the backend is connected ([docs/admin/integration-report.md](docs/admin/integration-report.md)) |
+| **Testing** | Integration: lint, typecheck, 1,080 unit tests, build, and the admin e2e suite (186 passed, 0 failed, 12 skipped) on desktop and phone |
+
+## 2026-11-18: Admin panel integration (moderator)
+
+Merged on branch `integration/admin`, from `main`:
+- `admin/overview`: toufeeqsk69, Teammate 1; contains merchants, onboarding, shipments and support;
+- `admin/money-wallets`, `admin/pricing-couriers` and `admin/system-health`: SaiManideep-Git, Teammate 2; each contains `admin/system-audit`.
+
+There were no merge conflicts. The full report is [docs/admin/integration-report.md](docs/admin/integration-report.md).
+
+### Fixed during integration
+- Removed tests that saved screenshots to a teammate's personal folder.
+- Wired `recordAudit()` into merchant status, KYC decision and ticket actions.
+- Replaced raw colours with tokens.
+- Pagination now moves past page 1 (Support, Shipments, Merchants), and Support keeps the All tab.
+- Fixed the merchant page links to shipments (`?merchantId=`) and to KYC (applications search).
+- Detail pages show the error instead of crashing or giving a false 404 when the backend is unavailable.
+- Support reads merchant details from the merchants service and shows load errors.
+- The merchants list reads wallet balances from Money.
+- E2e tests no longer depend on running order.
+
+### Verified
+- **CI steps:** `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (111 files, 1,080 tests) and `pnpm build` all pass.
+- **Browser tests:** `pnpm exec playwright test e2e/admin --project=desktop --project=phone` gave 186 passed, 0 failed, 12 skipped.
+- **Manual pass:** all 14 admin pages in light and dark at desktop, phone and 320px answer 200, have no sideways scroll, and show no browser errors.
+
+### Open before connecting the backend
+- Merchants, Shipments, Onboarding and Support filter and page one batch in the browser. They must move to server-side filtering and paging (Teammate 1). Smaller follow-ups are listed in the report.
+
+## 2026-11-16: Teammate 1 - Overview polish complete (Phase 5)
+
+Branch `admin/overview`. Completed Phase 5: Overview polish, concluding the full Operations development scope.
+
+### What was built
+- **Figure Links on `/admin`:**
+  - `Active merchants` links directly to `/admin/merchants?status=active`.
+  - `KYC waiting` links directly to `/admin/onboarding?status=pending`.
+  - `Shipments today` links directly to `/admin/shipments`.
+  - `Stuck shipments` links directly to `/admin/shipments?stuck=1`.
+  - `Wallet float`, `COD owed by couriers`, and `Revenue, last 30 days` link directly to `/admin/money`.
+  - 30-day footer summary links to `/admin/shipments?status=DELIVERED`, `/admin/shipments?view=rto`, and `/admin/money`.
+- **Count Synchronization:**
+  - Updated Overview mock data counts to match Operations data: stuck shipments (2), high priority tickets (2 with deep link to `?priority=high`), and KYC applications waiting (2, dynamically calculated via `countPendingApplications()`).
+- **Layout & Mobile Responsiveness:**
+  - Added overflow prevention (`min-w-0 max-w-full overflow-hidden`) across all admin sections, ensuring zero horizontal scroll across mobile viewports.
+- **Tests & Verification:**
+  - Unit Tests: `overview.test.ts` passing (verifying synchronized counts, attention deep links, 14-day chart series).
+  - Playwright: 36 tests passing in `e2e/admin.spec.ts` (including menu navigation, link verification, and 0-pixel sideways scroll on phone viewports).
+  - Production build: passed.
+
+
+## 2026-11-16: Teammate 1 - Support section complete
+
+Branch `admin/support`. Completed the entire Support section (status tabs, priority filter, dynamic search, mobile card layout, ticket thread history, plain text reply box, automatic reopen on reply, and real-time status and priority management).
+
+### What was built
+- **Support Inbox (`/admin/support`):**
+  - Status tabs: `Open` (default and first tab), `Awaiting merchant`, `Resolved`, and `All tickets`, each with real-time count badges.
+  - Priority filter dropdown (`All priorities`, `High`, `Normal`, `Low`).
+  - Search input with instant filtering across ticket ID, subject, merchant name, and category.
+  - Merchant filter support (`?merchant=mer_xxx`) linking directly from merchant profile pages.
+  - Desktop table with linked ticket subjects, merchant profiles, category pills, priority/status chips, and last updated timestamps.
+  - Mobile card layout below 1024px with accessible tap targets (>= 44px) and quick action to open ticket thread.
+  - Pagination with 10 tickets per page, syncing with URL query params.
+  - Removed the `PlannedWork` card upon completion.
+- **Ticket Detail & Thread (`/admin/support/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent ticket IDs without `loading.tsx` conflicts.
+  - Ticket header card displaying ticket ID, category, status chip, priority chip, and last updated timestamp.
+  - Live status and priority switchers with server actions (`updateTicketStatusAction` and `updateTicketPriorityAction`).
+  - Merchant information card with merchant ID, email, city, and direct links to `/admin/merchants/[id]` and merchant-filtered support inbox.
+  - Conversation thread displaying messages in chronological order, with distinct visual badges for merchant versus Operations Support.
+  - Strict plain-text message rendering (never parsed or rendered as HTML) to prevent injection.
+  - Reply box with character count validation (2 to 5,000 characters), submit button, and clear helper notification.
+  - Automatic ticket reopening: replying to a resolved ticket automatically sets its status back to `open`.
+- **Tests & Verification:**
+  - Vitest: 25 tests passing across `support.test.ts` (16 tests) and `actions.test.ts` (9 tests).
+  - Playwright E2E: 19 tests passing across desktop and mobile viewports (`admin-support.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed with static optimization and dynamic route collection.
+
+
+## 2026-11-16: Teammate 1 - Shipments section complete
+
+Branch `admin/shipments`. Completed the entire Shipments section (category tabs for All, Stuck, NDR, and RTO, instant dynamic search, multi-filter dropdowns, pagination, phone cards, and shipment detail with vertical tracking timeline).
+
+### What was built
+- **Shipments List (`/admin/shipments`):**
+  - Category tabs: `All shipments`, `Stuck only` (`?stuck=1`), `NDR reports` (`?view=ndr`), and `RTO` (`?view=rto`) with live count badges.
+  - Search input with instant filtering across AWB, merchant name, carrier, and destination city.
+  - Dropdown filters for shipment status and merchant account.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Desktop table and mobile card layout below 1024px with AWB link, CarrierBadge, StatusBadge, Stuck chip, and route details.
+  - Removed the `PlannedWork` card upon completion.
+- **Shipment Detail (`/admin/shipments/[awb]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent AWBs.
+  - Merchant info card linking to merchant profile (`/admin/merchants/[id]`) and merchant-filtered shipments list.
+  - Package & Route details card: origin → destination route, recipient contact, package weight, and COD amount / Prepaid payment type.
+  - Tracking timeline card: vertical timeline displaying status badges, location, raw courier description, and timestamps in chronological order (newest first).
+- **NDR and RTO Views:**
+  - Dedicated service methods `listNdrShipments()` and `listRtoShipments()`.
+  - NDR view displays failure reasons, attempt counts, and required merchant action.
+  - RTO view displays return reasons and initiation dates.
+- **Tests & Verification:**
+  - Vitest: 9 tests passing in `shipments.test.ts` (861 total repository tests pass).
+  - Playwright E2E: 14 tests passing across desktop and mobile viewports (`admin-shipments.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
+
+## 2026-11-16: Teammate 1 - Onboarding & KYC section complete
+
+Branch `admin/onboarding`. Completed the entire Onboarding & KYC section (status tabs, instant search, review detail page, approve and reject decision dialogs, shared mock updates).
+
+### What was built
+- **Onboarding List (`/admin/onboarding`):**
+  - Status tabs: `Pending` (default), `Approved`, `Rejected`, and `All`, with live count badges on every tab.
+  - Search input with dynamic filtering across business name, email, city, PAN, and GSTIN.
+  - Desktop table with links to `/admin/onboarding/[id]` review pages.
+  - Mobile card layout below 1024px with company initials avatar, status chip, city pin, submitted date, and document count pill.
+  - Removed the `PlannedWork` card upon completion.
+- **Review Page (`/admin/onboarding/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent IDs (handles both application ID and merchant ID lookups).
+  - Business details card (name, email, city, merchant ID, GSTIN, PAN, and link to merchant profile).
+  - Submitted documents card displaying document kind (GST Certificate, PAN Card, Cancelled Cheque), file name, and file size (never exposes file contents).
+  - Decision status banners with timestamp and reason for approved/rejected applications.
+- **Approve and Reject Decisions:**
+  - Added `decide(id, 'approved' | 'rejected', reason?)` to `AdminOnboardingService` (types, mock, gateway).
+  - Server actions in `actions.ts` with server-side validation.
+  - Approve action marks application approved, and updates merchant KYC to `approved` and status to `active` in the shared store.
+  - Reject action validates audit reason (10 to 500 characters) and marks application rejected.
+  - Double decision prevention (returns clear message: `This application has already been decided.`).
+  - Overview "KYC waiting" count matches the pending tab dynamically.
+- **Tests & Verification:**
+  - Vitest: 13 tests passing across `onboarding.test.ts` and `actions.test.ts` (852 total project tests pass).
+  - Playwright E2E: 16 tests passing across desktop and mobile viewports (`admin-onboarding.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
+
+## 2026-11-15: Teammate 1 - Merchants section complete
+
+Branch `admin/merchants`. Completed the entire Merchants section (list, dynamic search, mobile card design, detail page, activate & suspend actions).
+
+### What was built
+- **Merchants List (`/admin/merchants`):**
+  - Instant real-time in-memory search across merchant name, email, city, and ID on every keystroke with URL sync.
+  - Status tabs (`All`, `Active`, `Pending`, `Suspended`) syncing with URL `?status=`.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Mobile cards below 1024px with merchant avatar initials, live chips, city pin, KYC pill, and 30-day shipment & wallet metrics.
+  - Linked rows and cards navigating to `/admin/merchants/[id]`.
+- **Merchant Detail (`/admin/merchants/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for unknown merchant IDs.
+  - Merchant profile (email, phone, city, GSTIN, joined date).
+  - Merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+  - Shipments breakdown bar by status (`DELIVERED`, `IN_TRANSIT`, `RTO_INITIATED`, `FAILED`).
+  - Related records quick links to `/admin/shipments?merchant=<id>`, `/admin/support?merchant=<id>`, `/admin/onboarding/<id>`.
+  - Notes block showing audit timeline of actions.
+- **Activate & Suspend Actions:**
+  - Added `setMerchantStatus(id, status, reason)` to `AdminMerchantsService` (types, mock, gateway).
+  - Mutable mock store preserving status transitions and audit notes during runtime.
+  - Action dialog requiring audit reason (5 to 300 characters) validated on the server.
+  - Pending merchants show both **Activate merchant** and **Suspend merchant** buttons.
+  - Live page refresh on successful submission.
+- **Tests & Verification:**
+  - Vitest: 16 tests passing across `merchants.test.ts` and `actions.test.ts`.
+  - Playwright E2E: 12 tests passing across desktop and mobile viewports (`admin-merchants.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
+
+## 2026-11-15: Admin Money, COD remittances
+
+Teammate 2, same branch as the wallet work (`admin/money-wallets`). Mirrors the reconciliation service in `Evoc_ships/services/reconciliation` (reconcile, verify-bank, exceptions, resolve, overdue, and its payout days: Delhivery 7, Ekart 7, Shadowfax 5, others 7).
+
+### Done
+
+- Batch page `/admin/money/cod/[id]`: expected, received, the difference (red when short), status, payout due date, and every line (AWB, merchant, expected, received, difference, match) in pages. An unknown batch answers 404.
+- Reconcile: matches every line and opens an exception for each mismatch. A paid-short batch becomes Short. A reconciled batch cannot be reconciled again: the button goes, and the server refuses it too. An unpaid batch cannot be reconciled.
+- Verify bank: the bank credit (₹0.01 to ₹1 crore, checked on the server) and an optional UTR are compared with the lines total, giving verified, short or surplus.
+- Exceptions on the Money page and each batch page, open first, with Resolve: Resolved or Written off, and a reason of 5 to 300 characters.
+- Overdue payouts: unpaid batches past their due date, most overdue first.
+- The Money page's remittance list links to each batch and shows the difference in red when short. Phone cards everywhere.
+- Every action calls `recordAudit()`: "COD reconciled", "COD bank verified", "COD exception resolved" or "COD exception written off".
+- The sample services (money and system) now start fresh when their methods change during `pnpm dev`. Before, a running dev server kept the old service and the page failed with "… is not a function" until a restart.
+
+### Files
+
+- `src/lib/admin/data/money/`: `types.ts`, `mock.ts`, `gateway.ts`, `wallet-adjustment.ts`, new `cod-mock.ts`, `cod-rules.ts`; `src/lib/admin/data/system/mock.ts`
+- `src/app/admin/money/page.tsx`, new `src/app/admin/money/cod/` (`actions.ts`, `cod-dialogs.tsx`, `cod-display.tsx`, `exceptions-list.tsx`, `[id]/page.tsx`)
+- Tests: `cod-rules.test.ts`, `cod-mock.test.ts`, `src/app/admin/money/cod/actions.test.ts`, more in `e2e/admin-money.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 959 of 959 passed |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-money.spec.ts` | 96 passed, 4 skipped |
+| Under `pnpm dev` | Reconcile, Verify bank and Resolve popups stay open, desktop and phone, no browser errors |
+
+The tests were written after the code. The browser tests caught a real bug: after Reconcile or Resolve, the button disappeared and took its popup with it, so the result message was never seen. Fixed by keeping the popup mounted.
+
+**Test timing:** in a full parallel run, page loads slow down a lot (a 404 check took 17s instead of under 1s). The four long save flows are marked `test.slow()`. With 2 workers every test passes in under 10s.
+
+## 2026-11-15: Admin Money, wallet adjustments and ledger
+
+Teammate 2's second piece, on the branch `admin/money-wallets` (built on `admin/system-audit`, because it calls `recordAudit()`).
+
+### Done
+
+- Summary figures at the top of `/admin/money`: wallet float (wallets above zero), wallets below zero, COD owed by couriers (batches not yet reconciled) and short payments.
+- `adjustWallet({ merchantId, amountPaise, direction, reason })` in the money service. The Adjust popup on every wallet takes rupees, a direction and a reason of 5 to 300 characters. A Review step on the server shows the current and new balance before anything is saved, and warns in red when a debit takes the wallet below zero.
+- The server converts rupees to paise and rejects zero, negative, over ₹5,00,000 and 3-decimal amounts, short or long reasons and unknown merchants. The service refuses them as well, so no caller can skip the rules.
+- After saving: the balance changes everywhere (`listWallets`, `getMerchantWallet`, the ledger), and `recordAudit()` writes "Wallet credit" or "Wallet debit" with the merchant, amount and reason.
+- New page `/admin/money/wallets/[merchantId]`: balance, hold, last recharge, Adjust, and the transactions newest first with the balance after each line, in pages. An unknown merchant answers 404.
+- Phone cards below 1024px for the wallets, remittances and ledger.
+- The sample money service now keeps its state on `globalThis`, like the audit log, so pages and actions see the same wallets until the server restarts. Sample ledgers add up to each wallet's balance.
+
+### For Teammate 1
+
+- The merchant detail page should read the wallet with `adminMoneyService().getMerchantWallet(id)`, which includes adjustments. `walletPaise` in the merchants sample list is fixed, so it will not change after an adjustment.
+
+### Files
+
+- `src/lib/admin/data/money/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, and new `wallet-adjustment.ts`
+- `src/app/admin/money/page.tsx`, new `actions.ts`, `adjust-wallet-button.tsx` and `wallets/[merchantId]/page.tsx`
+- Tests: `src/lib/admin/data/money/wallet-adjustment.test.ts`, `mock.test.ts`, `src/app/admin/money/actions.test.ts`, `e2e/admin-money.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 916 of 916 passed (69 new) |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-money.spec.ts` | 80 passed, 4 skipped (phone-only or desktop-only checks) |
+| Under `pnpm dev` | The Adjust popup stays open. Review, save, ledger and audit entry all work, with no browser errors |
+| Screenshots | Money, ledger and the Adjust popup at desktop and phone, light and dark, and Money at 320px |
+
+The tests were written after the code, so they were not seen failing first. The browser spec did catch one bug in itself (signing in twice), which was fixed.
+
+**Found while checking:** the phone Ledger link showed as plain text, because a server page imported `SECONDARY_BUTTON` from `dialog.tsx`, a client file, and got a placeholder instead of the classes. Fixed here, and a browser check now looks for the border. The same mistake is on `main` in merchant files this brief does not allow changing: `channel-integrations/page.tsx`, `channel-integrations/delivery-history.tsx` and `tools/tracking/tracking-form.tsx`. Those buttons are likely missing their styles too, so this is for the moderator.
+
+**Not done here:** the reference panel's Adjust popup and Transactions view were not available, so the layout follows the brief and the existing admin pages.
+
+## 2026-11-15: Admin Pricing & couriers
+
+Teammate 2, on the branch `admin/pricing-couriers` (built on `admin/system-audit`, because every change calls `recordAudit()`).
+
+### Done
+
+- Courier on and off with a switch (`SwitchTrack` copied into `src/app/admin/pricing/`, not imported from the merchant app). Turning off asks first; turning on does not. At least one courier must stay on: the server refuses the last one with a clear message.
+- Edit a rate card row in a popup: first 500 g and each extra 500 g in rupees (above ₹0, at most ₹10,000), COD percent 0 to 10 with up to 2 decimals, and a COD minimum (₹0 to ₹10,000). Paise are worked out on the server. A review step shows old and new before saving.
+- Filters `?carrier=&zone=`; unknown values are ignored. On phones the rate card is grouped by courier.
+- A zone reference card for A to E, matching order-engine `resolveZone`. The backend has no zone E yet (it prices those as rest of India), and the card says so.
+- Custom prices: a percent off (up to 50%) for one merchant, for one courier or all, with a reason. Add and remove. One per merchant and courier.
+- Every change is audited: "Courier enabled", "Courier disabled", "Rate card updated" (only what changed, old → new), "Price override added" and "Price override removed".
+
+### Files
+
+- `src/lib/admin/data/pricing/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, new `pricing-rules.ts`
+- `src/app/admin/pricing/page.tsx`, new `actions.ts`, `pricing-dialogs.tsx`, `switch-track.tsx`
+- Tests: `src/lib/admin/data/pricing/pricing.test.ts`, `src/app/admin/pricing/actions.test.ts`, `e2e/admin-pricing.spec.ts`
+- No shared files were changed. The page reads merchant names through `adminMerchantsService().listMerchants()` (read only).
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 891 of 891 passed (44 new) |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-pricing.spec.ts` | 79 passed, 5 skipped. A 404 check was added later; `admin.spec.ts` + `admin-pricing.spec.ts` then gave 58 passed, 4 skipped |
+| Under `pnpm dev` | The courier, edit and custom-price popups stay open, desktop and phone, no browser errors |
+
+The tests were written after the code. Turning couriers off changes what every other test sees, so that browser test runs once, on desktop; the last-courier rule is also covered by unit and action tests. After Remove, the row and its popup disappear together, so no "Removed" message is shown; the row going is the confirmation.
+
+**Not done:** the reference panel's Pricing tab and edit popup were not available, so the layout follows the brief and the existing admin pages.
+
+## 2026-11-15: Admin System, health and failed webhooks
+
+Teammate 2, on the branch `admin/system-health` (built on `admin/system-audit`).
+
+### Done
+
+- Service health: a Refresh button checks again and shows the new time. A service that did not answer shows "No answer" in red. Sample data is checked fresh on every load and includes one such service (adapters).
+- Gateway health: calls the future `GET /api/v1/admin/health` with a 3-second timeout and checks the answer's shape. A timeout, a server error or a wrong shape shows as an error in the health card only; the webhook and audit cards keep working, because each loads on its own.
+- Failed webhooks across all merchants: merchant, target URL, event, attempts, last error (HTTP status and message), time, status, and Retry. Mirrors the webhooks service's `POST /deliveries/:id/retry`: a queued delivery cannot be retried again, and one whose webhook the merchant deleted has no Retry.
+- A retry turns the row to "Retry queued", shows "Queued. It goes out with the next send." and records "Webhook retried" in the audit log.
+- Sample webhook rows take the merchant name and the webhook domain (from the merchant's email) from `seed.ts`, so no merchant details are copied into the module. A unit test checks this.
+- Phone cards for the webhook list. Tap targets of at least 44px.
+- The System section is complete, so its "Still to build here" card is removed. What it listed is Teammate 1's `recordAudit()` calls and the backend routes, which are already in `docs/admin/backend-needs.md`.
+- The sample system service now starts fresh when its methods change during `pnpm dev`. This is the same fix as on the Money branch, since this branch starts from the audit commit.
+
+### Files
+
+- `src/lib/admin/data/system/`: `types.ts`, `mock.ts`, `gateway.ts`
+- `src/app/admin/system/page.tsx`, new `actions.ts`, `system-controls.tsx`
+- Tests: new `src/lib/admin/data/system/health-webhooks.test.ts`, `src/app/admin/system/actions.test.ts`, more in `e2e/admin-system.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 860 of 860 passed |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts` | 67 passed, 3 skipped (now with a 404 check) |
+| Under `pnpm dev` (after a restart) | Works, desktop and phone, no browser errors |
+
+The tests were written after the code. A failing health call is tested at the unit level, with the network faked to time out, return 503 or return the wrong shape. No browser test makes the health card fail, because the e2e servers run sample data.
+
+**Under `pnpm dev`:** after the branch switch, the running dev server kept the old system code and the page failed with "listWebhookFailures is not a function" until `pnpm dev` was restarted. After the restart, Refresh changes the checked time, "No answer" shows, all five failed webhooks list on desktop and phone, a retry shows "Retry queued" with its audit entry, and there are no browser errors.
+
+**Still needs the backend:** an admin credential and the admin health and webhook routes (`docs/admin/backend-needs.md`).
+
+## 2026-11-15: Admin System, audit log and recordAudit()
+
+Teammate 2's first piece, on the branch `admin/system-audit`. It unblocks Teammate 1, who can now call `recordAudit()` from merchant and KYC actions.
+
+### Done
+
+- Added `recordAudit({ action, target, detail }): Promise<void>` in `src/lib/admin/data/system/`. It is server-only, tidies and caps its input, and never throws, so a failed audit line cannot undo the change that called it.
+- The sample log keeps new entries, newest first, until the server restarts. It is shared by every page and action in that server.
+- The audit log on `/admin/system` now filters by action and date (`?action=&from=&to=`) and has pages.
+- Unusable filters in the URL are ignored instead of failing. A backwards date range is dropped with a message, and an action not in the log is ignored.
+- Sample entries now take merchant names from `seed.ts`, matching the other admin pages.
+- Gateway mode shows the log as not available, because the backend has no audit store.
+
+### Files
+
+- `src/lib/admin/data/system/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, and new `audit.ts`, `audit-filters.ts`
+- `src/app/admin/system/page.tsx` and new `audit-filters-form.tsx`
+- Tests: `src/lib/admin/data/system/audit.test.ts`, `audit-filters.test.ts`, `e2e/admin-system.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 847 of 847 passed |
+| `e2e/admin.spec.ts` and `e2e/admin-system.spec.ts` | 57 passed, 3 skipped (phone-only checks in the desktop run) |
+| Full `pnpm test:e2e` | 21 failures, all in merchant pages this work does not touch. See below |
+| Under `pnpm dev` | The Action list and both calendars stay open, with no browser errors |
+| Screenshots | Desktop and phone, light and dark, and 320px wide |
+
+The unit tests were seen failing before the code. The browser spec was written with the page, so it was not seen failing first.
+
+**Found on `main`, not caused by this work:** on merchant filter cards (COD, wallet, invoices, rate card, support tickets, weight), a dropdown or calendar opens underneath the next card, so it cannot be clicked. 19 of the 21 failures repeat on a re-run with fewer workers. It needs a fix in the merchant app or the shared fields, which this brief does not allow, so it is for the moderator.
+
+**Not yet verified:** an entry written by a real admin action, because no action calls `recordAudit()` yet.
 
 ## 2026-11-15: Admin panel foundation
 
@@ -2017,3 +2375,14 @@ The full route list and the gaps to raise with the backend team are in the [desi
   - Tech choices are Tailwind, pnpm and port 3100.
 - Final product name and logo.
 - Docker Desktop, which isn't installed on this machine. The gateway needs it to run.
+
+## 2026-11-15 - Admin Panel: Merchants Section (Teammate 1)
+
+### Changes
+- Implemented full `/admin/merchants` list view with search filter (`?q=`), status tabs (`?status=active|pending|suspended`), and pagination preserving active query filters.
+- Added responsive phone card layout below 1024px with accessible tap targets (>= 44px) and linked merchant names.
+- Built merchant detail page at `/admin/merchants/[id]` with real 404 response on missing merchant, merchant profile data, shipment stage breakdown using `SegmentBar`, operational notes, and cross-contract merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+- Added suspend and reactivate functionality with server action (`updateMerchantStatusAction`), `setMerchantStatus` in merchants data service, server-side validation (5 to 300 character reasons), and status dialog.
+- Added unit tests for service filters, status transitions, and server action validation (15 unit tests).
+- Added full Playwright test suite in `e2e/admin-merchants.spec.ts` covering list filtering, search empty states, responsive layouts, 404 handling, and suspend/reactivate workflows.
+

@@ -80,6 +80,30 @@ test.describe('admin sections', () => {
     await expect(page.getByTestId('admin-attention').getByText('Sample data')).toBeVisible();
   });
 
+  test('links platform overview figures to their sections', async ({ page }) => {
+    await page.goto('/admin');
+    await expect(page.getByRole('link', { name: /Active merchants/i })).toHaveAttribute(
+      'href',
+      '/admin/merchants?status=active',
+    );
+    await expect(page.getByRole('link', { name: /KYC waiting/i })).toHaveAttribute(
+      'href',
+      '/admin/onboarding?status=pending',
+    );
+    await expect(page.getByRole('link', { name: /Shipments today/i })).toHaveAttribute(
+      'href',
+      '/admin/shipments',
+    );
+    await expect(page.getByRole('link', { name: /Stuck shipments/i })).toHaveAttribute(
+      'href',
+      '/admin/shipments?stuck=1',
+    );
+    await expect(page.getByRole('link', { name: /Wallet float/i })).toHaveAttribute(
+      'href',
+      '/admin/money',
+    );
+  });
+
   test('does not scroll sideways', async ({ page }) => {
     for (const item of ADMIN_NAV) {
       await page.goto(item.href);

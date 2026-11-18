@@ -9,5 +9,5 @@ export * from './types';
 
 /** Sample data by default; DATA_SOURCE_ADMIN_MONEY=gateway switches to the backend. */
 export function adminMoneyService(): AdminMoneyService {
-  return resolveDataSource('admin_money') === 'gateway' ? gatewayAdminMoneyService : mockAdminMoneyService;
+  return resolveDataSource('admin_money') === 'gateway' ? gatewayAdminMoneyService : mockAdminMoneyService();
 }

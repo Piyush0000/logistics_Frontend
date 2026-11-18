@@ -8,4 +8,9 @@ import type { AdminPricingService } from './types';
 export const gatewayAdminPricingService: AdminPricingService = {
   listRateCard: notAvailable,
   listCouriers: notAvailable,
+  setCourierEnabled: notAvailable,
+  updateRate: notAvailable,
+  listOverrides: notAvailable,
+  addOverride: notAvailable,
+  removeOverride: notAvailable,
 };

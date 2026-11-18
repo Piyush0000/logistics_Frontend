@@ -6,6 +6,7 @@ import { mockAdminMerchantsService } from './mock';
 import type { AdminMerchantsService } from './types';
 
 export * from './types';
+export { resetMockMerchants, setMerchantKycDecision } from './mock';
 
 /** Sample data by default; DATA_SOURCE_ADMIN_MERCHANTS=gateway switches to the backend. */
 export function adminMerchantsService(): AdminMerchantsService {

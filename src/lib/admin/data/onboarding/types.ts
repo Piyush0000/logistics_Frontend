@@ -32,5 +32,9 @@ export interface OnboardingApplication {
 export interface AdminOnboardingService {
   listApplications(status?: ApplicationStatus): Promise<DataResult<OnboardingApplication[]>>;
   getApplication(id: string): Promise<DataResult<OnboardingApplication>>;
-  // Planned (Teammate 1): decide(id, 'approved' | 'rejected', reason?). Rejecting needs a reason.
+  decide(
+    id: string,
+    decision: 'approved' | 'rejected',
+    reason?: string,
+  ): Promise<DataResult<OnboardingApplication>>;
 }
