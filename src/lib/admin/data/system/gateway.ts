@@ -8,4 +8,5 @@ import type { AdminSystemService } from './types';
 export const gatewayAdminSystemService: AdminSystemService = {
   getHealth: notAvailable,
   listAuditLog: notAvailable,
+  recordAudit: notAvailable,
 };

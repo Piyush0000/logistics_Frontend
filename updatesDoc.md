@@ -159,6 +159,119 @@ Branch `admin/merchants`. Completed the entire Merchants section (list, dynamic 
 
 
 
+## 2026-11-15: Admin Money, COD remittances
+
+Teammate 2, same branch as the wallet work (`admin/money-wallets`). Mirrors the reconciliation service in `Evoc_ships/services/reconciliation` (reconcile, verify-bank, exceptions, resolve, overdue, and its payout days: Delhivery 7, Ekart 7, Shadowfax 5, others 7).
+
+### Done
+
+- Batch page `/admin/money/cod/[id]`: expected, received, the difference (red when short), status, payout due date, and every line (AWB, merchant, expected, received, difference, match) in pages. An unknown batch answers 404.
+- Reconcile: matches every line and opens an exception for each mismatch. A paid-short batch becomes Short. A reconciled batch cannot be reconciled again: the button goes, and the server refuses it too. An unpaid batch cannot be reconciled.
+- Verify bank: the bank credit (₹0.01 to ₹1 crore, checked on the server) and an optional UTR are compared with the lines total, giving verified, short or surplus.
+- Exceptions on the Money page and each batch page, open first, with Resolve: Resolved or Written off, and a reason of 5 to 300 characters.
+- Overdue payouts: unpaid batches past their due date, most overdue first.
+- The Money page's remittance list links to each batch and shows the difference in red when short. Phone cards everywhere.
+- Every action calls `recordAudit()`: "COD reconciled", "COD bank verified", "COD exception resolved" or "COD exception written off".
+- The sample services (money and system) now start fresh when their methods change during `pnpm dev`. Before, a running dev server kept the old service and the page failed with "… is not a function" until a restart.
+
+### Files
+
+- `src/lib/admin/data/money/`: `types.ts`, `mock.ts`, `gateway.ts`, `wallet-adjustment.ts`, new `cod-mock.ts`, `cod-rules.ts`; `src/lib/admin/data/system/mock.ts`
+- `src/app/admin/money/page.tsx`, new `src/app/admin/money/cod/` (`actions.ts`, `cod-dialogs.tsx`, `cod-display.tsx`, `exceptions-list.tsx`, `[id]/page.tsx`)
+- Tests: `cod-rules.test.ts`, `cod-mock.test.ts`, `src/app/admin/money/cod/actions.test.ts`, more in `e2e/admin-money.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 959 of 959 passed |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-money.spec.ts` | 96 passed, 4 skipped |
+| Under `pnpm dev` | Reconcile, Verify bank and Resolve popups stay open, desktop and phone, no browser errors |
+
+The tests were written after the code. The browser tests caught a real bug: after Reconcile or Resolve, the button disappeared and took its popup with it, so the result message was never seen. Fixed by keeping the popup mounted.
+
+**Test timing:** in a full parallel run, page loads slow down a lot (a 404 check took 17s instead of under 1s). The four long save flows are marked `test.slow()`. With 2 workers every test passes in under 10s.
+
+## 2026-11-15: Admin Money, wallet adjustments and ledger
+
+Teammate 2's second piece, on the branch `admin/money-wallets` (built on `admin/system-audit`, because it calls `recordAudit()`).
+
+### Done
+
+- Summary figures at the top of `/admin/money`: wallet float (wallets above zero), wallets below zero, COD owed by couriers (batches not yet reconciled) and short payments.
+- `adjustWallet({ merchantId, amountPaise, direction, reason })` in the money service. The Adjust popup on every wallet takes rupees, a direction and a reason of 5 to 300 characters. A Review step on the server shows the current and new balance before anything is saved, and warns in red when a debit takes the wallet below zero.
+- The server converts rupees to paise and rejects zero, negative, over ₹5,00,000 and 3-decimal amounts, short or long reasons and unknown merchants. The service refuses them as well, so no caller can skip the rules.
+- After saving: the balance changes everywhere (`listWallets`, `getMerchantWallet`, the ledger), and `recordAudit()` writes "Wallet credit" or "Wallet debit" with the merchant, amount and reason.
+- New page `/admin/money/wallets/[merchantId]`: balance, hold, last recharge, Adjust, and the transactions newest first with the balance after each line, in pages. An unknown merchant answers 404.
+- Phone cards below 1024px for the wallets, remittances and ledger.
+- The sample money service now keeps its state on `globalThis`, like the audit log, so pages and actions see the same wallets until the server restarts. Sample ledgers add up to each wallet's balance.
+
+### For Teammate 1
+
+- The merchant detail page should read the wallet with `adminMoneyService().getMerchantWallet(id)`, which includes adjustments. `walletPaise` in the merchants sample list is fixed, so it will not change after an adjustment.
+
+### Files
+
+- `src/lib/admin/data/money/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, and new `wallet-adjustment.ts`
+- `src/app/admin/money/page.tsx`, new `actions.ts`, `adjust-wallet-button.tsx` and `wallets/[merchantId]/page.tsx`
+- Tests: `src/lib/admin/data/money/wallet-adjustment.test.ts`, `mock.test.ts`, `src/app/admin/money/actions.test.ts`, `e2e/admin-money.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 916 of 916 passed (69 new) |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts`, `e2e/admin-money.spec.ts` | 80 passed, 4 skipped (phone-only or desktop-only checks) |
+| Under `pnpm dev` | The Adjust popup stays open. Review, save, ledger and audit entry all work, with no browser errors |
+| Screenshots | Money, ledger and the Adjust popup at desktop and phone, light and dark, and Money at 320px |
+
+The tests were written after the code, so they were not seen failing first. The browser spec did catch one bug in itself (signing in twice), which was fixed.
+
+**Found while checking:** the phone Ledger link showed as plain text, because a server page imported `SECONDARY_BUTTON` from `dialog.tsx`, a client file, and got a placeholder instead of the classes. Fixed here, and a browser check now looks for the border. The same mistake is on `main` in merchant files this brief does not allow changing: `channel-integrations/page.tsx`, `channel-integrations/delivery-history.tsx` and `tools/tracking/tracking-form.tsx`. Those buttons are likely missing their styles too, so this is for the moderator.
+
+**Not done here:** the reference panel's Adjust popup and Transactions view were not available, so the layout follows the brief and the existing admin pages.
+
+## 2026-11-15: Admin System, audit log and recordAudit()
+
+Teammate 2's first piece, on the branch `admin/system-audit`. It unblocks Teammate 1, who can now call `recordAudit()` from merchant and KYC actions.
+
+### Done
+
+- Added `recordAudit({ action, target, detail }): Promise<void>` in `src/lib/admin/data/system/`. It is server-only, tidies and caps its input, and never throws, so a failed audit line cannot undo the change that called it.
+- The sample log keeps new entries, newest first, until the server restarts. It is shared by every page and action in that server.
+- The audit log on `/admin/system` now filters by action and date (`?action=&from=&to=`) and has pages.
+- Unusable filters in the URL are ignored instead of failing. A backwards date range is dropped with a message, and an action not in the log is ignored.
+- Sample entries now take merchant names from `seed.ts`, matching the other admin pages.
+- Gateway mode shows the log as not available, because the backend has no audit store.
+
+### Files
+
+- `src/lib/admin/data/system/`: `types.ts`, `mock.ts`, `gateway.ts`, `index.ts`, and new `audit.ts`, `audit-filters.ts`
+- `src/app/admin/system/page.tsx` and new `audit-filters-form.tsx`
+- Tests: `src/lib/admin/data/system/audit.test.ts`, `audit-filters.test.ts`, `e2e/admin-system.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 847 of 847 passed |
+| `e2e/admin.spec.ts` and `e2e/admin-system.spec.ts` | 57 passed, 3 skipped (phone-only checks in the desktop run) |
+| Full `pnpm test:e2e` | 21 failures, all in merchant pages this work does not touch. See below |
+| Under `pnpm dev` | The Action list and both calendars stay open, with no browser errors |
+| Screenshots | Desktop and phone, light and dark, and 320px wide |
+
+The unit tests were seen failing before the code. The browser spec was written with the page, so it was not seen failing first.
+
+**Found on `main`, not caused by this work:** on merchant filter cards (COD, wallet, invoices, rate card, support tickets, weight), a dropdown or calendar opens underneath the next card, so it cannot be clicked. 19 of the 21 failures repeat on a re-run with fewer workers. It needs a fix in the merchant app or the shared fields, which this brief does not allow, so it is for the moderator.
+
+**Not yet verified:** an entry written by a real admin action, because no action calls `recordAudit()` yet.
+
 ## 2026-11-15: Admin panel foundation
 
 Branch `feature/admin`, from `main`. A founder-only admin panel at `/admin`, inside this frontend, built from the merchant app's design system. This is the foundation only: every section has a working page on sample data and a typed data service, so the two developers start from a running page rather than a blank file.

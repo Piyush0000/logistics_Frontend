@@ -1,7 +1,8 @@
 import 'server-only';
 
 import { fromMock } from '../../../data/source';
-import { daysAgo } from '../seed';
+import { daysAgo, SEED_MERCHANTS } from '../seed';
+import { cleanAuditEntry, filterAuditLog } from './audit';
 import type { AdminSystemService, AuditEntry, ServiceHealth } from './types';
 
 // The backend's services (Evoc_ships/services), as the system page will check them.
@@ -14,19 +15,75 @@ const HEALTH: ServiceHealth[] = [
   { service: 'webhooks', status: 'up', latencyMs: 43 },
 ].map((entry) => ({ ...entry, status: entry.status as ServiceHealth['status'], checkedAt: daysAgo(0) }));
 
-const AUDIT: AuditEntry[] = [
-  { id: 'aud_06', at: daysAgo(0, 1), action: 'Approved KYC', target: 'mer_005 · Pixel Gadgets', detail: 'All three documents verified.' },
-  { id: 'aud_05', at: daysAgo(0, 6), action: 'Wallet credit', target: 'mer_002 · Neelgiri Teas', detail: '₹1,200.00 goodwill credit for a lost parcel.' },
-  { id: 'aud_04', at: daysAgo(1, 2), action: 'Suspended merchant', target: 'mer_004 · Sahyadri Organics', detail: 'Wallet below zero for 14 days.' },
-  { id: 'aud_03', at: daysAgo(2, 4), action: 'Courier disabled', target: 'dhl', detail: 'Paused new bookings during the rate review.' },
-  { id: 'aud_02', at: daysAgo(4, 0), action: 'Rate card updated', target: 'ekart · zone C', detail: 'Base ₹42.00 → ₹43.00.' },
-];
-
-export const mockAdminSystemService: AdminSystemService = {
-  async getHealth() {
-    return fromMock(HEALTH);
-  },
-  async listAuditLog() {
-    return fromMock(AUDIT);
-  },
+// Names come from the shared sample merchants, so they match every other admin page.
+const merchant = (index: number) => {
+  const { id, name } = SEED_MERCHANTS[index % SEED_MERCHANTS.length] ?? SEED_MERCHANTS[0]!;
+  return `${id} · ${name}`;
 };
+
+/** Invented history, newest first. */
+function sampleAudit(): AuditEntry[] {
+  const rows: [number, number, string, string, string][] = [
+    [0, 1, 'Approved KYC', merchant(4), 'All three documents verified.'],
+    [0, 6, 'Wallet credit', merchant(1), '₹1,200.00 goodwill credit for a lost parcel.'],
+    [1, 2, 'Suspended merchant', merchant(3), 'Wallet below zero for 14 days.'],
+    [1, 9, 'Sent KYC reminder', merchant(7), 'Signed up five days ago with no documents yet.'],
+    [2, 4, 'Courier disabled', 'dhl', 'Paused new bookings during the rate review.'],
+    [2, 8, 'Wallet debit', merchant(0), '₹350.00 weight discrepancy recovery.'],
+    [3, 3, 'COD reconciled', 'delhivery · batch 41', '58 orders matched, no difference.'],
+    [3, 11, 'Rate card updated', 'bluedart · zone D', 'Each extra 500 g ₹28.00 → ₹30.00.'],
+    [4, 0, 'Rate card updated', 'ekart · zone C', 'Base ₹42.00 → ₹43.00.'],
+    [5, 5, 'Courier enabled', 'shadowfax', 'Rate review finished.'],
+    [6, 2, 'Reactivated merchant', merchant(2), 'Wallet back above zero.'],
+    [7, 7, 'Wallet credit', merchant(5), '₹500.00 first-month welcome credit.'],
+    [9, 1, 'Approved KYC', merchant(1), 'Documents verified on a video call.'],
+    [12, 4, 'Webhook retried', merchant(0), 'shipment.status.updated delivery sent again.'],
+  ];
+  return rows.map(([days, hours, action, target, detail], index) => ({
+    id: `aud_${String(rows.length - index).padStart(3, '0')}`,
+    at: daysAgo(days, hours),
+    action,
+    target,
+    detail,
+  }));
+}
+
+/** A fresh sample service. Its log keeps new entries until the server restarts. */
+export function createMockAdminSystemService(): AdminSystemService {
+  const audit = sampleAudit();
+  let nextId = audit.length + 1;
+
+  return {
+    async getHealth() {
+      return fromMock(HEALTH);
+    },
+    async listAuditLog(filters) {
+      return fromMock(filterAuditLog(audit, filters));
+    },
+    async recordAudit(entry) {
+      audit.unshift({
+        ...cleanAuditEntry(entry),
+        id: `aud_${String(nextId++).padStart(3, '0')}`,
+        at: new Date().toISOString(),
+      });
+      return fromMock(undefined);
+    },
+  };
+}
+
+// Kept on globalThis so every page and server action in this server sees the same log.
+const shared = globalThis as typeof globalThis & { evocMockAdminSystem?: AdminSystemService };
+
+// The kept service outlives hot reloads in `pnpm dev`. When the code gains or loses a method, start a
+// fresh one instead of serving the old shape ("… is not a function" until the server restarts).
+let methods: string | undefined;
+const methodsOf = (service: object) => Object.keys(service).sort().join();
+
+export function mockAdminSystemService(): AdminSystemService {
+  if (shared.evocMockAdminSystem) {
+    methods ??= methodsOf(createMockAdminSystemService());
+    if (methodsOf(shared.evocMockAdminSystem) === methods) return shared.evocMockAdminSystem;
+  }
+  shared.evocMockAdminSystem = createMockAdminSystemService();
+  return shared.evocMockAdminSystem;
+}
