@@ -268,6 +268,43 @@ The tests were written after the code. Turning couriers off changes what every o
 
 **Not done:** the reference panel's Pricing tab and edit popup were not available, so the layout follows the brief and the existing admin pages.
 
+## 2026-11-15: Admin System, health and failed webhooks
+
+Teammate 2, on the branch `admin/system-health` (built on `admin/system-audit`).
+
+### Done
+
+- Service health: a Refresh button checks again and shows the new time. A service that did not answer shows "No answer" in red. Sample data is checked fresh on every load and includes one such service (adapters).
+- Gateway health: calls the future `GET /api/v1/admin/health` with a 3-second timeout and checks the answer's shape. A timeout, a server error or a wrong shape shows as an error in the health card only; the webhook and audit cards keep working, because each loads on its own.
+- Failed webhooks across all merchants: merchant, target URL, event, attempts, last error (HTTP status and message), time, status, and Retry. Mirrors the webhooks service's `POST /deliveries/:id/retry`: a queued delivery cannot be retried again, and one whose webhook the merchant deleted has no Retry.
+- A retry turns the row to "Retry queued", shows "Queued. It goes out with the next send." and records "Webhook retried" in the audit log.
+- Sample webhook rows take the merchant name and the webhook domain (from the merchant's email) from `seed.ts`, so no merchant details are copied into the module. A unit test checks this.
+- Phone cards for the webhook list. Tap targets of at least 44px.
+- The System section is complete, so its "Still to build here" card is removed. What it listed is Teammate 1's `recordAudit()` calls and the backend routes, which are already in `docs/admin/backend-needs.md`.
+- The sample system service now starts fresh when its methods change during `pnpm dev`. This is the same fix as on the Money branch, since this branch starts from the audit commit.
+
+### Files
+
+- `src/lib/admin/data/system/`: `types.ts`, `mock.ts`, `gateway.ts`
+- `src/app/admin/system/page.tsx`, new `actions.ts`, `system-controls.tsx`
+- Tests: new `src/lib/admin/data/system/health-webhooks.test.ts`, `src/app/admin/system/actions.test.ts`, more in `e2e/admin-system.spec.ts`
+- No shared files were changed.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `pnpm lint`, `pnpm typecheck`, `pnpm build` | Passed |
+| `pnpm test` | 860 of 860 passed |
+| `e2e/admin.spec.ts`, `e2e/admin-system.spec.ts` | 67 passed, 3 skipped (now with a 404 check) |
+| Under `pnpm dev` (after a restart) | Works, desktop and phone, no browser errors |
+
+The tests were written after the code. A failing health call is tested at the unit level, with the network faked to time out, return 503 or return the wrong shape. No browser test makes the health card fail, because the e2e servers run sample data.
+
+**Under `pnpm dev`:** after the branch switch, the running dev server kept the old system code and the page failed with "listWebhookFailures is not a function" until `pnpm dev` was restarted. After the restart, Refresh changes the checked time, "No answer" shows, all five failed webhooks list on desktop and phone, a retry shows "Retry queued" with its audit entry, and there are no browser errors.
+
+**Still needs the backend:** an admin credential and the admin health and webhook routes (`docs/admin/backend-needs.md`).
+
 ## 2026-11-15: Admin System, audit log and recordAudit()
 
 Teammate 2's first piece, on the branch `admin/system-audit`. It unblocks Teammate 1, who can now call `recordAudit()` from merchant and KYC actions.
