@@ -7,4 +7,7 @@ import type { AdminShipmentsService } from './types';
 // Until a route exists, gateway mode shows this module as unavailable instead of passing sample data off as real.
 export const gatewayAdminShipmentsService: AdminShipmentsService = {
   listShipments: notAvailable,
+  getShipment: notAvailable,
+  listNdrShipments: notAvailable,
+  listRtoShipments: notAvailable,
 };

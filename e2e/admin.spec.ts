@@ -80,6 +80,44 @@ test.describe('admin sections', () => {
     await expect(page.getByTestId('admin-attention').getByText('Sample data')).toBeVisible();
   });
 
+  test('links platform overview figures to their sections', async ({ page }) => {
+    await page.goto('/admin');
+    await expect(page.getByRole('link', { name: /Active merchants/i })).toHaveAttribute(
+      'href',
+      '/admin/merchants?status=active',
+    );
+    await expect(page.getByRole('link', { name: /KYC waiting/i })).toHaveAttribute(
+      'href',
+      '/admin/onboarding?status=pending',
+    );
+    await expect(page.getByRole('link', { name: /Shipments today/i })).toHaveAttribute(
+      'href',
+      '/admin/shipments',
+    );
+    await expect(page.getByRole('link', { name: /Stuck shipments/i })).toHaveAttribute(
+      'href',
+      '/admin/shipments?stuck=1',
+    );
+    await expect(page.getByRole('link', { name: /Wallet float/i })).toHaveAttribute(
+      'href',
+      '/admin/money',
+    );
+  });
+
+  test('captures overview screenshots', async ({ page }, testInfo) => {
+    await page.goto('/admin');
+    if (testInfo.project.name === 'desktop') {
+      await page.screenshot({
+        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_overview_desktop.png',
+      });
+    }
+    if (testInfo.project.name === 'phone') {
+      await page.screenshot({
+        path: 'C:/Users/toufe/.gemini/antigravity/brain/5ff952c9-83c2-4b52-99ad-f9b68153f333/verified_overview_mobile.png',
+      });
+    }
+  });
+
   test('does not scroll sideways', async ({ page }) => {
     for (const item of ADMIN_NAV) {
       await page.goto(item.href);

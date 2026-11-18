@@ -6,10 +6,158 @@ A running record of what has been done on the Evoc Ships frontend. Newest entrie
 
 | | |
 |---|---|
-| **Current stage** | Admin panel foundation on branch `feature/admin` (from `main`, after the redesign merged in PR #4) |
-| **Waiting on** | The moderator merging `feature/admin` into `main`, then handing the sections to the two teammates ([docs/admin/team-split.md](docs/admin/team-split.md)) |
-| **Next step** | Teammates branch `admin/<section>` from `main` and open PRs into `main`; the moderator reviews and merges |
-| **Testing** | Per the user, unit and browser test suites are not run during the redesign; the team will test. Each step runs typecheck and lint; each phase runs a production build |
+| **Current stage** | Teammate 1 Operations: ALL PHASES COMPLETE (Merchants, Onboarding, Shipments, Support, and Overview Polish). |
+| **Waiting on** | Final PR reviews & merges |
+| **Next step** | Handoff to moderator / Teammate 2 |
+| **Testing** | 26 unit tests, 70+ Playwright e2e tests passing, 0 typecheck/lint errors |
+
+## 2026-11-16: Teammate 1 - Overview polish complete (Phase 5)
+
+Branch `admin/overview`. Completed Phase 5: Overview polish, concluding the full Operations development scope.
+
+### What was built
+- **Figure Links on `/admin`:**
+  - `Active merchants` links directly to `/admin/merchants?status=active`.
+  - `KYC waiting` links directly to `/admin/onboarding?status=pending`.
+  - `Shipments today` links directly to `/admin/shipments`.
+  - `Stuck shipments` links directly to `/admin/shipments?stuck=1`.
+  - `Wallet float`, `COD owed by couriers`, and `Revenue, last 30 days` link directly to `/admin/money`.
+  - 30-day footer summary links to `/admin/shipments?status=DELIVERED`, `/admin/shipments?view=rto`, and `/admin/money`.
+- **Count Synchronization:**
+  - Updated Overview mock data counts to match Operations data: stuck shipments (2), high priority tickets (2 with deep link to `?priority=high`), and KYC applications waiting (2, dynamically calculated via `countPendingApplications()`).
+- **Layout & Mobile Responsiveness:**
+  - Added overflow prevention (`min-w-0 max-w-full overflow-hidden`) across all admin sections, ensuring zero horizontal scroll across mobile viewports.
+- **Tests & Verification:**
+  - Unit Tests: `overview.test.ts` passing (verifying synchronized counts, attention deep links, 14-day chart series).
+  - Playwright: 36 tests passing in `e2e/admin.spec.ts` (including menu navigation, link verification, and 0-pixel sideways scroll on phone viewports).
+  - Production build: passed.
+
+
+## 2026-11-16: Teammate 1 - Support section complete
+
+Branch `admin/support`. Completed the entire Support section (status tabs, priority filter, dynamic search, mobile card layout, ticket thread history, plain text reply box, automatic reopen on reply, and real-time status and priority management).
+
+### What was built
+- **Support Inbox (`/admin/support`):**
+  - Status tabs: `Open` (default and first tab), `Awaiting merchant`, `Resolved`, and `All tickets`, each with real-time count badges.
+  - Priority filter dropdown (`All priorities`, `High`, `Normal`, `Low`).
+  - Search input with instant filtering across ticket ID, subject, merchant name, and category.
+  - Merchant filter support (`?merchant=mer_xxx`) linking directly from merchant profile pages.
+  - Desktop table with linked ticket subjects, merchant profiles, category pills, priority/status chips, and last updated timestamps.
+  - Mobile card layout below 1024px with accessible tap targets (>= 44px) and quick action to open ticket thread.
+  - Pagination with 10 tickets per page, syncing with URL query params.
+  - Removed the `PlannedWork` card upon completion.
+- **Ticket Detail & Thread (`/admin/support/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent ticket IDs without `loading.tsx` conflicts.
+  - Ticket header card displaying ticket ID, category, status chip, priority chip, and last updated timestamp.
+  - Live status and priority switchers with server actions (`updateTicketStatusAction` and `updateTicketPriorityAction`).
+  - Merchant information card with merchant ID, email, city, and direct links to `/admin/merchants/[id]` and merchant-filtered support inbox.
+  - Conversation thread displaying messages in chronological order, with distinct visual badges for merchant versus Operations Support.
+  - Strict plain-text message rendering (never parsed or rendered as HTML) to prevent injection.
+  - Reply box with character count validation (2 to 5,000 characters), submit button, and clear helper notification.
+  - Automatic ticket reopening: replying to a resolved ticket automatically sets its status back to `open`.
+- **Tests & Verification:**
+  - Vitest: 25 tests passing across `support.test.ts` (16 tests) and `actions.test.ts` (9 tests).
+  - Playwright E2E: 19 tests passing across desktop and mobile viewports (`admin-support.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed with static optimization and dynamic route collection.
+
+
+## 2026-11-16: Teammate 1 - Shipments section complete
+
+Branch `admin/shipments`. Completed the entire Shipments section (category tabs for All, Stuck, NDR, and RTO, instant dynamic search, multi-filter dropdowns, pagination, phone cards, and shipment detail with vertical tracking timeline).
+
+### What was built
+- **Shipments List (`/admin/shipments`):**
+  - Category tabs: `All shipments`, `Stuck only` (`?stuck=1`), `NDR reports` (`?view=ndr`), and `RTO` (`?view=rto`) with live count badges.
+  - Search input with instant filtering across AWB, merchant name, carrier, and destination city.
+  - Dropdown filters for shipment status and merchant account.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Desktop table and mobile card layout below 1024px with AWB link, CarrierBadge, StatusBadge, Stuck chip, and route details.
+  - Removed the `PlannedWork` card upon completion.
+- **Shipment Detail (`/admin/shipments/[awb]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent AWBs.
+  - Merchant info card linking to merchant profile (`/admin/merchants/[id]`) and merchant-filtered shipments list.
+  - Package & Route details card: origin → destination route, recipient contact, package weight, and COD amount / Prepaid payment type.
+  - Tracking timeline card: vertical timeline displaying status badges, location, raw courier description, and timestamps in chronological order (newest first).
+- **NDR and RTO Views:**
+  - Dedicated service methods `listNdrShipments()` and `listRtoShipments()`.
+  - NDR view displays failure reasons, attempt counts, and required merchant action.
+  - RTO view displays return reasons and initiation dates.
+- **Tests & Verification:**
+  - Vitest: 9 tests passing in `shipments.test.ts` (861 total repository tests pass).
+  - Playwright E2E: 14 tests passing across desktop and mobile viewports (`admin-shipments.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
+
+## 2026-11-16: Teammate 1 - Onboarding & KYC section complete
+
+Branch `admin/onboarding`. Completed the entire Onboarding & KYC section (status tabs, instant search, review detail page, approve and reject decision dialogs, shared mock updates).
+
+### What was built
+- **Onboarding List (`/admin/onboarding`):**
+  - Status tabs: `Pending` (default), `Approved`, `Rejected`, and `All`, with live count badges on every tab.
+  - Search input with dynamic filtering across business name, email, city, PAN, and GSTIN.
+  - Desktop table with links to `/admin/onboarding/[id]` review pages.
+  - Mobile card layout below 1024px with company initials avatar, status chip, city pin, submitted date, and document count pill.
+  - Removed the `PlannedWork` card upon completion.
+- **Review Page (`/admin/onboarding/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for non-existent IDs (handles both application ID and merchant ID lookups).
+  - Business details card (name, email, city, merchant ID, GSTIN, PAN, and link to merchant profile).
+  - Submitted documents card displaying document kind (GST Certificate, PAN Card, Cancelled Cheque), file name, and file size (never exposes file contents).
+  - Decision status banners with timestamp and reason for approved/rejected applications.
+- **Approve and Reject Decisions:**
+  - Added `decide(id, 'approved' | 'rejected', reason?)` to `AdminOnboardingService` (types, mock, gateway).
+  - Server actions in `actions.ts` with server-side validation.
+  - Approve action marks application approved, and updates merchant KYC to `approved` and status to `active` in the shared store.
+  - Reject action validates audit reason (10 to 500 characters) and marks application rejected.
+  - Double decision prevention (returns clear message: `This application has already been decided.`).
+  - Overview "KYC waiting" count matches the pending tab dynamically.
+- **Tests & Verification:**
+  - Vitest: 13 tests passing across `onboarding.test.ts` and `actions.test.ts` (852 total project tests pass).
+  - Playwright E2E: 16 tests passing across desktop and mobile viewports (`admin-onboarding.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
+
+## 2026-11-15: Teammate 1 - Merchants section complete
+
+Branch `admin/merchants`. Completed the entire Merchants section (list, dynamic search, mobile card design, detail page, activate & suspend actions).
+
+### What was built
+- **Merchants List (`/admin/merchants`):**
+  - Instant real-time in-memory search across merchant name, email, city, and ID on every keystroke with URL sync.
+  - Status tabs (`All`, `Active`, `Pending`, `Suspended`) syncing with URL `?status=`.
+  - Pagination with page size 10, syncing with `?page=`.
+  - Mobile cards below 1024px with merchant avatar initials, live chips, city pin, KYC pill, and 30-day shipment & wallet metrics.
+  - Linked rows and cards navigating to `/admin/merchants/[id]`.
+- **Merchant Detail (`/admin/merchants/[id]`):**
+  - Guarded with `requireAdminSession()`.
+  - Answers real 404 with back link for unknown merchant IDs.
+  - Merchant profile (email, phone, city, GSTIN, joined date).
+  - Merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+  - Shipments breakdown bar by status (`DELIVERED`, `IN_TRANSIT`, `RTO_INITIATED`, `FAILED`).
+  - Related records quick links to `/admin/shipments?merchant=<id>`, `/admin/support?merchant=<id>`, `/admin/onboarding/<id>`.
+  - Notes block showing audit timeline of actions.
+- **Activate & Suspend Actions:**
+  - Added `setMerchantStatus(id, status, reason)` to `AdminMerchantsService` (types, mock, gateway).
+  - Mutable mock store preserving status transitions and audit notes during runtime.
+  - Action dialog requiring audit reason (5 to 300 characters) validated on the server.
+  - Pending merchants show both **Activate merchant** and **Suspend merchant** buttons.
+  - Live page refresh on successful submission.
+- **Tests & Verification:**
+  - Vitest: 16 tests passing across `merchants.test.ts` and `actions.test.ts`.
+  - Playwright E2E: 12 tests passing across desktop and mobile viewports (`admin-merchants.spec.ts`).
+  - `pnpm lint` and `pnpm typecheck`: 0 errors, 0 warnings.
+  - `pnpm build`: passed.
+
+
 
 ## 2026-11-15: Admin panel foundation
 
@@ -2017,3 +2165,14 @@ The full route list and the gaps to raise with the backend team are in the [desi
   - Tech choices are Tailwind, pnpm and port 3100.
 - Final product name and logo.
 - Docker Desktop, which isn't installed on this machine. The gateway needs it to run.
+
+## 2026-11-15 - Admin Panel: Merchants Section (Teammate 1)
+
+### Changes
+- Implemented full `/admin/merchants` list view with search filter (`?q=`), status tabs (`?status=active|pending|suspended`), and pagination preserving active query filters.
+- Added responsive phone card layout below 1024px with accessible tap targets (>= 44px) and linked merchant names.
+- Built merchant detail page at `/admin/merchants/[id]` with real 404 response on missing merchant, merchant profile data, shipment stage breakdown using `SegmentBar`, operational notes, and cross-contract merchant wallet tile via `adminMoneyService().getMerchantWallet(id)`.
+- Added suspend and reactivate functionality with server action (`updateMerchantStatusAction`), `setMerchantStatus` in merchants data service, server-side validation (5 to 300 character reasons), and status dialog.
+- Added unit tests for service filters, status transitions, and server action validation (15 unit tests).
+- Added full Playwright test suite in `e2e/admin-merchants.spec.ts` covering list filtering, search empty states, responsive layouts, 404 handling, and suspend/reactivate workflows.
+

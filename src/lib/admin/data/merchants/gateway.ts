@@ -8,4 +8,5 @@ import type { AdminMerchantsService } from './types';
 export const gatewayAdminMerchantsService: AdminMerchantsService = {
   listMerchants: notAvailable,
   getMerchant: notAvailable,
+  setMerchantStatus: notAvailable,
 };
