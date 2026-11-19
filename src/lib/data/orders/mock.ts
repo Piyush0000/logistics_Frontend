@@ -4,6 +4,7 @@ import type { NormalizedStatus } from '@logicore/contracts';
 import { fromMock, type DataResult } from '../source';
 import type {
   CreateShipmentInput,
+  CancelShipmentResult,
   CreateShipmentResult,
   OrderDetail,
   OrderListQuery,
@@ -491,6 +492,30 @@ export const mockOrdersService: OrdersService = {
       };
     }
     return fromMock(found);
+  },
+
+  async cancelShipment(idOrAwb: string): Promise<DataResult<CancelShipmentResult>> {
+    const found = store.find((d) => d.shipment_id === idOrAwb || d.awb === idOrAwb);
+    if (!found) {
+      return {
+        ok: false,
+        source: 'mock',
+        error: { kind: 'not_found', status: 404, message: `Shipment "${idOrAwb}" not found` },
+      };
+    }
+    if (!['MANIFESTED', 'PICKUP_SCHEDULED', 'CANCELLED'].includes(found.status)) {
+      return {
+        ok: false,
+        source: 'mock',
+        error: {
+          kind: 'conflict',
+          status: 409,
+          message: 'This shipment can no longer be cancelled.',
+        },
+      };
+    }
+    found.status = 'CANCELLED';
+    return fromMock({ status: 'CANCELLED' });
   },
 
   async createShipment(input: CreateShipmentInput): Promise<DataResult<CreateShipmentResult>> {

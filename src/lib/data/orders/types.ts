@@ -55,6 +55,16 @@ export interface OrderDetail extends OrderSummary {
   cod_amount: number;
   total_amount_paise: number;
   timeline: TimelineEvent[];
+  /** The courier's label can be downloaded (live data only). */
+  label_available?: boolean;
+  /** The courier is processing a cancellation. */
+  cancel_requested?: boolean;
+  /** Why the courier refused the last cancellation. */
+  cancel_error?: string | null;
+}
+
+export interface CancelShipmentResult {
+  status: 'CANCEL_REQUESTED' | 'CANCELLED';
 }
 
 export type CreateShipmentInput = StandardShipmentRequestInput;
@@ -73,5 +83,7 @@ export interface OrdersService {
   listOrders(query: OrderListQuery): Promise<DataResult<OrderListResult>>;
   getOrderDetail(idOrAwb: string): Promise<DataResult<OrderDetail>>;
   createShipment(input: CreateShipmentInput): Promise<DataResult<CreateShipmentResult>>;
+  /** Asks the courier to cancel; it confirms asynchronously. */
+  cancelShipment(idOrAwb: string, reason?: string): Promise<DataResult<CancelShipmentResult>>;
 }
 

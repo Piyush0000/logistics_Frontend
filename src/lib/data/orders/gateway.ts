@@ -7,6 +7,7 @@ import { gatewayFetch } from '../../gateway/client';
 import { CreateShipmentResponseSchema, OrdersPageSchema } from '../../gateway/schemas/orders';
 import { fromGateway, type DataResult } from '../source';
 import type {
+  CancelShipmentResult,
   CreateShipmentInput,
   CreateShipmentResult,
   OrderDetail,
@@ -86,6 +87,9 @@ const DetailSchema = z.object({
   dimensions: z.record(z.unknown()).nullable(),
   items: z.array(z.record(z.unknown())),
   cod_amount: z.number(),
+  label_available: z.boolean().optional(),
+  cancel_requested: z.boolean().optional(),
+  cancel_error: z.string().nullish(),
 });
 
 const TimelineSchema = z.object({
@@ -145,8 +149,28 @@ export async function fetchOrderDetail(
         0,
       ),
       timeline,
+      label_available: d.label_available ?? false,
+      cancel_requested: d.cancel_requested ?? false,
+      cancel_error: d.cancel_error ?? null,
     },
   };
+}
+
+const CancelResponseSchema = z.object({ status: z.enum(['CANCEL_REQUESTED', 'CANCELLED']) });
+
+/** Asks the courier to cancel; the gateway answers 202 while the courier processes it. */
+export async function postCancel(
+  ref: string,
+  reason: string | undefined,
+  token: string | null,
+): Promise<DataResult<CancelShipmentResult>> {
+  const result = await gatewayFetch(`/api/v1/shipments/${encodeURIComponent(ref)}/cancel`, {
+    method: 'POST',
+    body: { reason },
+    schema: CancelResponseSchema,
+    token,
+  });
+  return fromGateway(result.ok ? { ...result, data: { status: result.data.status } } : result);
 }
 
 export const gatewayOrdersService: OrdersService = {
@@ -160,5 +184,9 @@ export const gatewayOrdersService: OrdersService = {
 
   async createShipment(input: CreateShipmentInput) {
     return postShipment(input, await merchantCredential('shipments'));
+  },
+
+  async cancelShipment(idOrAwb: string, reason?: string) {
+    return postCancel(idOrAwb, reason, await merchantCredential('shipments'));
   },
 };

@@ -19,6 +19,7 @@ import { trackingService } from '@/lib/data/tracking';
 import { formatDate, formatDateTime } from '@/lib/format/date';
 import { statusLabel } from '@/lib/format/status';
 import { formatPaise } from '@/lib/format/money';
+import { ShipmentActions } from './shipment-actions';
 
 export const metadata: Metadata = { title: 'Shipment Detail | Evoc Ships' };
 
@@ -158,8 +159,17 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center justify-end gap-3">
                 <CarrierBadge carrier={order.carrier} />
+                {detailResult.source === 'gateway' ? (
+                  <ShipmentActions
+                    id={order.shipment_id}
+                    status={order.status}
+                    labelAvailable={order.label_available ?? false}
+                    cancelRequested={order.cancel_requested ?? false}
+                    cancelError={order.cancel_error ?? null}
+                  />
+                ) : null}
               </div>
             </div>
 
