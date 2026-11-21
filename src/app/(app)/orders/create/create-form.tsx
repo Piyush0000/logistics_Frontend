@@ -508,19 +508,19 @@ export function CreateShipmentForm({
 
             <div>
               <label htmlFor="preferred_carrier" className="block text-xs font-medium text-on-surface/70">
-                Preferred Carrier (Optional)
+                Courier
               </label>
+              {/* Empty = the platform picks the best available courier (allocation). */}
               <select
                 id="preferred_carrier"
                 name="preferred_carrier"
-                defaultValue={v("preferred_carrier", "delhivery")}
+                defaultValue={v("preferred_carrier", "")}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               >
+                <option value="">Best available (recommended)</option>
                 <option value="delhivery">Delhivery</option>
-                <option value="ekart">Ekart</option>
                 <option value="shadowfax">Shadowfax</option>
-                <option value="bluedart">Blue Dart</option>
-                <option value="dhl">DHL</option>
+                <option value="ekart">Ekart</option>
               </select>
             </div>
 
