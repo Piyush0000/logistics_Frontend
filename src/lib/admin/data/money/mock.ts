@@ -170,6 +170,7 @@ export function createMockAdminMoneyService(): AdminMoneyService {
     },
 
     listRemittances: cod.listRemittances,
+    recordCodPayment: cod.recordCodPayment,
     getRemittance: cod.getRemittance,
     reconcileRemittance: cod.reconcileRemittance,
     verifyBankTransfer: cod.verifyBankTransfer,

@@ -124,6 +124,7 @@ const invalid = (message: string): DataResult<never> => ({
 type CodMethods = Pick<
   AdminMoneyService,
   | 'listRemittances'
+  | 'recordCodPayment'
   | 'getRemittance'
   | 'reconcileRemittance'
   | 'verifyBankTransfer'
@@ -180,6 +181,35 @@ export function createMockCod(): CodMethods & { remittances(): CodRemittance[] }
       return fromMock(
         [...batches.values()].map((batch) => copy(batch.remittance)).sort((a, b) => b.periodEnd.localeCompare(a.periodEnd)),
       );
+    },
+
+    async recordCodPayment({ carrier, utr, lines }) {
+      const all = [...batches.values()].filter((batch) => batch.remittance.carrier === carrier);
+      if (all.length === 0) return invalid(`No COD deliveries are recorded for ${carrier} yet`);
+      const touched = new Set<string>();
+      let paidLines = 0;
+      let unknown = 0;
+      let duplicates = 0;
+      for (const { awb, amountPaise } of lines) {
+        const batch = all.find((candidate) => candidate.lines.some((line) => line.awb === awb));
+        const line = batch?.lines.find((candidate) => candidate.awb === awb);
+        if (!batch || !line) {
+          unknown += 1;
+          continue;
+        }
+        if (line.receivedPaise !== null) {
+          duplicates += 1;
+          continue;
+        }
+        line.receivedPaise = amountPaise;
+        line.match = 'unchecked';
+        batch.remittance.receivedPaise += amountPaise;
+        if (batch.remittance.status === 'expected') batch.remittance.status = 'received';
+        if (utr) batch.remittance.utr = utr;
+        touched.add(batch.remittance.id);
+        paidLines += 1;
+      }
+      return fromMock({ paidLines, unknown, duplicates, batches: [...touched].sort() });
     },
 
     async getRemittance(id, page) {

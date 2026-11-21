@@ -3,7 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import type { ApiError } from '@/lib/gateway/errors';
 import { adminMoneyService } from '@/lib/admin/data/money';
-import { parseBankCredit, parseUtr, validateResolution } from '@/lib/admin/data/money/cod-rules';
+import {
+  COD_CARRIERS,
+  parseBankCredit,
+  parseRemittanceCsv,
+  parseUtr,
+  validateResolution,
+} from '@/lib/admin/data/money/cod-rules';
 import { recordAudit } from '@/lib/admin/data/system';
 import { requireAdminSession } from '@/lib/admin/session';
 import { formatPaise } from '@/lib/format/money';
@@ -99,4 +105,54 @@ export async function resolveExceptionAction(_previous: CodActionState, form: Fo
   });
   refresh();
   return { status: 'saved', message: written ? 'Written off.' : 'Resolved.' };
+}
+
+/** The most a remittance file can be: about 5,000 rows. */
+const MAX_FILE_BYTES = 1024 * 1024;
+
+/**
+ * Records a courier's COD payment from its remittance file (CSV of AWB and amount). Lines are
+ * marked paid; reconciling the batch afterwards pays the merchants.
+ */
+export async function recordCodPaymentAction(_previous: CodActionState, form: FormData): Promise<CodActionState> {
+  await requireAdminSession();
+  const errors: Record<string, string> = {};
+  const carrier = field(form, 'carrier');
+  if (!COD_CARRIERS.some((c) => c.value === carrier)) errors.carrier = 'Choose the courier.';
+  const utr = parseUtr(field(form, 'utr'));
+  if (!utr.ok) errors.utr = utr.message;
+  const file = form.get('file');
+  let lines: { awb: string; amountPaise: number }[] = [];
+  if (!(file instanceof File) || file.size === 0) {
+    errors.file = 'Choose the courier\'s remittance file (CSV).';
+  } else if (file.size > MAX_FILE_BYTES) {
+    errors.file = 'The file is larger than 1 MB.';
+  } else {
+    const parsed = parseRemittanceCsv(await file.text());
+    if (parsed.ok) lines = parsed.lines;
+    else errors.file = parsed.message;
+  }
+  if (Object.keys(errors).length > 0 || !utr.ok) return { status: 'invalid', errors, message: null };
+
+  const result = await adminMoneyService().recordCodPayment({ carrier, utr: utr.utr, lines });
+  if (!result.ok) return failed(result.error, 'courier');
+
+  const { paidLines, unknown, duplicates, batches } = result.data;
+  const total = lines.reduce((sum, line) => sum + line.amountPaise, 0);
+  await recordAudit({
+    action: 'COD payment recorded',
+    target: `${carrier}${utr.utr ? ` · UTR ${utr.utr}` : ''}`,
+    detail: `${lines.length} rows, ${formatPaise(total)}: ${paidLines} paid, ${unknown} unknown, ${duplicates} already paid.`,
+  });
+  refresh();
+  const flagged = unknown + duplicates;
+  return {
+    status: 'saved',
+    message:
+      `Recorded ${paidLines} paid ${paidLines === 1 ? 'line' : 'lines'}` +
+      (batches.length ? ` in ${batches.join(', ')}` : '') +
+      '.' +
+      (flagged ? ` ${flagged} ${flagged === 1 ? 'row was' : 'rows were'} flagged as exceptions.` : '') +
+      (paidLines ? ' Reconcile the batch to pay the merchants.' : ''),
+  };
 }

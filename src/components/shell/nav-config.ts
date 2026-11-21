@@ -90,7 +90,7 @@ export const NAV: NavGroup[] = [
     dividerBefore: true,
     children: [
       { label: 'Wallet Transactions', href: '/finances/wallet', status: 'live', icon: Wallet },
-      { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins, soon: true },
+      { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins },
       { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText, soon: true },
     ],
   },

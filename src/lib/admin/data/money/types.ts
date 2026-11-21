@@ -143,6 +143,18 @@ export interface ReconcileResult {
   mismatched: number;
 }
 
+/** What recording a courier's COD payment did. */
+export interface CodPaymentResult {
+  /** Lines matched to a delivered COD order and marked paid. */
+  paidLines: number;
+  /** AWBs not found among delivered COD orders: each opened an exception. */
+  unknown: number;
+  /** AWBs already paid before: each opened an exception. */
+  duplicates: number;
+  /** The batches that received money. */
+  batches: string[];
+}
+
 export interface AdminMoneyService {
   getSummary(): Promise<DataResult<MoneySummary>>;
   listWallets(): Promise<DataResult<MerchantWallet[]>>;
@@ -157,6 +169,15 @@ export interface AdminMoneyService {
    */
   adjustWallet(adjustment: WalletAdjustment): Promise<DataResult<MerchantWallet>>;
   listRemittances(): Promise<DataResult<CodRemittance[]>>;
+  /**
+   * Records what a courier paid, from its remittance file: each AWB's line is marked paid, and an
+   * unknown or already-paid AWB opens an exception. A validation error when nothing can be matched.
+   */
+  recordCodPayment(payment: {
+    carrier: string;
+    utr: string | null;
+    lines: { awb: string; amountPaise: number }[];
+  }): Promise<DataResult<CodPaymentResult>>;
   /** A not_found error for an unknown batch. */
   getRemittance(id: string, page: number): Promise<DataResult<CodRemittanceDetail>>;
   /**

@@ -1,13 +1,15 @@
 'use client';
 
-import { CheckCheck, Landmark, ListChecks } from 'lucide-react';
+import { CheckCheck, Landmark, ListChecks, Upload } from 'lucide-react';
 import { useActionState, useId, useState, type ReactNode } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
+import { COD_CARRIERS } from '@/lib/admin/data/money/cod-rules';
 import { cleanReason, REASON_MAX } from '@/lib/admin/data/money/wallet-adjustment';
 import { formatPaise } from '@/lib/format/money';
 import {
   reconcileRemittanceAction,
+  recordCodPaymentAction,
   resolveExceptionAction,
   verifyBankAction,
   type CodActionState,
@@ -330,6 +332,87 @@ export function ResolveExceptionButton({
               <FieldError id={`${id}-note-error`} message={errors.note} />
             </div>
             <Buttons pending={pending} close={close} submit="Save" />
+          </>
+        );
+      }}
+    </ActionDialog>
+  );
+}
+
+/** Upload a courier's COD remittance file: marks each AWB's line paid, ready to reconcile. */
+export function RecordPaymentButton() {
+  const id = useId();
+  return (
+    <ActionDialog
+      label="Record courier payment"
+      ariaLabel="Record a courier COD payment"
+      title="Record courier payment"
+      icon={<Upload aria-hidden="true" className="size-4" />}
+      primary
+      action={recordCodPaymentAction}
+    >
+      {(state, pending, close) => {
+        const errors = errorsOf(state);
+        return (
+          <>
+            <p className="text-sm text-on-surface/70">
+              Upload the courier&apos;s COD remittance file as CSV. It needs an AWB column and an amount column in
+              rupees; the courier&apos;s own export usually works as is.
+            </p>
+            <div>
+              <label htmlFor={`${id}-carrier`} className={FIELD_LABEL}>
+                Courier
+              </label>
+              <select
+                id={`${id}-carrier`}
+                name="carrier"
+                defaultValue=""
+                aria-invalid={errors.carrier ? true : undefined}
+                aria-describedby={errors.carrier ? `${id}-carrier-error` : undefined}
+                className={`${FIELD} h-11 lg:h-control`}
+              >
+                <option value="" disabled>
+                  Choose
+                </option>
+                {COD_CARRIERS.map((carrier) => (
+                  <option key={carrier.value} value={carrier.value}>
+                    {carrier.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError id={`${id}-carrier-error`} message={errors.carrier} />
+            </div>
+            <div>
+              <label htmlFor={`${id}-file`} className={FIELD_LABEL}>
+                Remittance file (CSV)
+              </label>
+              <input
+                id={`${id}-file`}
+                name="file"
+                type="file"
+                accept=".csv,text/csv"
+                aria-invalid={errors.file ? true : undefined}
+                aria-describedby={errors.file ? `${id}-file-error` : undefined}
+                className={`${FIELD} py-2`}
+              />
+              <FieldError id={`${id}-file-error`} message={errors.file} />
+            </div>
+            <div>
+              <label htmlFor={`${id}-utr`} className={FIELD_LABEL}>
+                UTR (optional)
+              </label>
+              <input
+                id={`${id}-utr`}
+                name="utr"
+                autoComplete="off"
+                placeholder="From the bank statement"
+                aria-invalid={errors.utr ? true : undefined}
+                aria-describedby={errors.utr ? `${id}-utr-error` : undefined}
+                className={`${FIELD} h-11 font-mono uppercase lg:h-control`}
+              />
+              <FieldError id={`${id}-utr-error`} message={errors.utr} />
+            </div>
+            <Buttons pending={pending} close={close} submit="Record payment" />
           </>
         );
       }}

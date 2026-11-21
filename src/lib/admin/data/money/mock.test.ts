@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { gatewayAdminMoneyService } from './gateway';
 import { createMockAdminMoneyService } from './mock';
 import type { DataResult } from '../../../data/source';
 import { MAX_ADJUSTMENT_PAISE } from './wallet-adjustment';
@@ -129,13 +128,3 @@ describe('mock money summary', () => {
   });
 });
 
-describe('gateway money service', () => {
-  it('says COD reconciliation is not available yet', async () => {
-    for (const result of [
-      await gatewayAdminMoneyService.listRemittances(),
-      await gatewayAdminMoneyService.listCodExceptions(),
-    ]) {
-      expect(result.ok ? null : result.error.kind).toBe('unavailable');
-    }
-  });
-});

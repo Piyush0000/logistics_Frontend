@@ -13,6 +13,7 @@ import { requireAdminSession } from '@/lib/admin/session';
 import { formatDate } from '@/lib/format/date';
 import { formatPaise } from '@/lib/format/money';
 import { AdjustWalletButton } from './adjust-wallet-button';
+import { RecordPaymentButton } from './cod/cod-dialogs';
 import { codBatchHref, Difference, LINK_BUTTON, REMITTANCE_STATUS } from './cod/cod-display';
 import { ExceptionsList } from './cod/exceptions-list';
 
@@ -172,7 +173,7 @@ export default async function AdminMoneyPage() {
         }
       </DataCard>
 
-      <DataCard testId="admin-remittances" title="COD remittances" result={remittances}>
+      <DataCard testId="admin-remittances" title="COD remittances" result={remittances} actions={<RecordPaymentButton />}>
         {(rows) =>
           rows.length === 0 ? (
             <EmptyState message="No remittances yet." />

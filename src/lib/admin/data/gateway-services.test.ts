@@ -178,3 +178,47 @@ describe('admin wallet adjustment (gateway)', () => {
     expect(JSON.parse(String(call(1).init.body)).idempotency_key).not.toBe(body.idempotency_key);
   });
 });
+
+describe('admin COD (gateway)', () => {
+  const batch = {
+    id: 'COD-DEL-20261122',
+    carrier: 'delhivery',
+    period_end: '2026-11-22',
+    due_date: '2026-11-29',
+    expected_paise: 149_800,
+    received_paise: 144_800,
+    status: 'short',
+    utr: 'UTIB0011020045',
+    line_count: 2,
+    reconciled_at: '2026-11-30T10:00:00.000Z',
+    bank_verification: null,
+  };
+
+  it('maps batches, and owes only what is not reconciled', async () => {
+    answer({ items: [batch, { ...batch, id: 'COD-DEL-20261129', status: 'expected', received_paise: 0, reconciled_at: null }] });
+    const list = await gatewayAdminMoneyService.listRemittances();
+    expect(list).toMatchObject({ ok: true, data: [{ id: 'COD-DEL-20261122', status: 'short', periodEnd: '2026-11-22' }, {}] });
+  });
+
+  it('records a courier payment with a fresh key', async () => {
+    answer({ paid_lines: 2, unknown: 1, duplicates: 0, batches: ['COD-DEL-20261122'] });
+    const result = await gatewayAdminMoneyService.recordCodPayment({
+      carrier: 'delhivery',
+      utr: null,
+      lines: [{ awb: '71705910000055', amountPaise: 99_800 }],
+    });
+    const { url, init } = call();
+    expect(url.pathname).toBe('/api/v1/admin/cod/payments');
+    const body = JSON.parse(String(init.body));
+    expect(body).toMatchObject({ carrier: 'delhivery', lines: [{ awb: '71705910000055', amount_paise: 99_800 }] });
+    expect(body.idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
+    expect(result).toMatchObject({ ok: true, data: { paidLines: 2, unknown: 1, batches: ['COD-DEL-20261122'] } });
+  });
+
+  it('reconciles a batch', async () => {
+    answer({ batch, matched: 1, mismatched: 1 });
+    const result = await gatewayAdminMoneyService.reconcileRemittance('COD-DEL-20261122');
+    expect(call().url.pathname).toBe('/api/v1/admin/cod/batches/COD-DEL-20261122/reconcile');
+    expect(result).toMatchObject({ ok: true, data: { matched: 1, mismatched: 1, remittance: { status: 'short' } } });
+  });
+});

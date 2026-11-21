@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { DataResult } from '../../../data/source';
-import { gatewayAdminMoneyService } from './gateway';
 import { createMockAdminMoneyService } from './mock';
 
 function data<T>(result: DataResult<T>): T {
@@ -150,17 +149,3 @@ describe('mock overdue remittances', () => {
   });
 });
 
-describe('gateway COD service', () => {
-  it('says every COD call is not available yet', async () => {
-    for (const result of [
-      await gatewayAdminMoneyService.getRemittance('rem_dl_1102', 1),
-      await gatewayAdminMoneyService.reconcileRemittance('rem_dl_1102'),
-      await gatewayAdminMoneyService.verifyBankTransfer('rem_dl_1102', 100, null),
-      await gatewayAdminMoneyService.listCodExceptions(),
-      await gatewayAdminMoneyService.resolveCodException('exc_001', 'resolved', 'Long enough'),
-      await gatewayAdminMoneyService.listOverdueRemittances(),
-    ]) {
-      expect(errorKind(result)).toBe('unavailable');
-    }
-  });
-});

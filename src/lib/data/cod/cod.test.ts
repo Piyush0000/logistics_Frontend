@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { codService } from '.';
 import { remittancesToCsv, SAMPLE_CSV_NOTICE } from './csv';
 import { DEFAULT_COD_FILTERS, type CodFilters } from './filters';
-import { gatewayCodService } from './gateway';
 import { mockCodService, NEXT_BATCH_SIZE, SAMPLE_REMITTANCES } from './mock';
 import type { CodRemittance } from './types';
 
@@ -169,18 +168,6 @@ describe('remittancesToCsv', () => {
       expect(csv.split('\r\n')[1]?.replace(/^"/, '').startsWith(`'${orderNumber.slice(0, 1)}`)).toBe(
         true,
       );
-    }
-  });
-});
-
-describe('gateway COD service', () => {
-  it('never passes off missing routes as data', async () => {
-    for (const result of [
-      await gatewayCodService.getSummary(),
-      await gatewayCodService.listRemittances(DEFAULT_COD_FILTERS),
-      await gatewayCodService.exportRemittances(DEFAULT_COD_FILTERS),
-    ]) {
-      expect(result).toMatchObject({ ok: false, source: 'gateway' });
     }
   });
 });
