@@ -68,7 +68,7 @@ export type DashboardTab =
 const ALL_TABS: { id: DashboardTab; label: string; enabled: boolean; soon?: boolean }[] = [
   { id: "overview", label: "Overview", enabled: true },
   { id: "pickups", label: "Pickups", enabled: true, soon: true },
-  { id: "ndr", label: "NDR", enabled: true, soon: true },
+  { id: "ndr", label: "NDR", enabled: true },
   { id: "rto", label: "RTO", enabled: true },
   { id: "delivered", label: "Delivered", enabled: true },
   { id: "revenue", label: "Revenue", enabled: true, soon: true },

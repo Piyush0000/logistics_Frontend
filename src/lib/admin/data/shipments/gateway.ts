@@ -1,11 +1,12 @@
 import 'server-only';
 
 import { z } from 'zod';
-import { notAvailable } from '../../../data/not-available';
+import { ndrCaseSchema } from '../../../data/ndr/gateway';
 import { gatewayFetch } from '../../../gateway/client';
 import { adminToken, gatewayError, mapResult } from '../admin-fetch';
 import { ADMIN_PAGE_SIZE, paginate } from '../common';
 import type {
+  AdminNdrShipment,
   AdminRtoShipment,
   AdminShipment,
   AdminShipmentDetail,
@@ -93,6 +94,20 @@ function toDetail(s: z.infer<typeof detailSchema>): AdminShipmentDetail {
   };
 }
 
+const ACTION_REQUIRED: Record<string, string> = {
+  ACTION_REQUIRED: 'Merchant to decide',
+  REATTEMPT_REQUESTED: 'Re-attempt requested',
+  RTO_REQUESTED: 'Return requested',
+  DELIVERED: 'Delivered',
+  RETURNED: 'Returned',
+};
+
+const adminNdrSchema = z.object({
+  items: z.array(
+    ndrCaseSchema.extend({ merchant_id: z.string().nullable(), merchant_name: z.string().nullable() }),
+  ),
+});
+
 function list(query: Record<string, string | number | boolean | undefined>) {
   return gatewayFetch('/api/v1/admin/shipments', {
     schema: listSchema,
@@ -128,7 +143,32 @@ export const gatewayAdminShipmentsService: AdminShipmentsService = {
   },
 
   // Carriers' NDR (failed delivery attempt) events are not tracked as their own status yet.
-  listNdrShipments: notAvailable,
+  async listNdrShipments({ q, page = 1 } = {}) {
+    const result = await gatewayFetch('/api/v1/admin/ndr', {
+      schema: adminNdrSchema,
+      token: adminToken(),
+      timeoutMs: 10_000,
+    });
+    if (!result.ok) return gatewayError(result.error);
+    const needle = q?.trim().toLowerCase();
+    const rows: AdminNdrShipment[] = result.data.items
+      .map((c) => ({
+        awb: c.evoc_awb ?? c.awb,
+        merchantId: c.merchant_id ?? '',
+        merchantName: c.merchant_name ?? '—',
+        carrier: c.carrier,
+        status: c.status,
+        createdAt: c.history[0]?.at ?? c.last_attempt_at,
+        lastEventAt: c.last_attempt_at,
+        stuck: false,
+        ndrReason: c.action_error ? `${c.last_reason} (courier refused: ${c.action_error})` : c.last_reason,
+        attemptsCount: c.attempt_count,
+        lastAttemptAt: c.last_attempt_at,
+        actionRequired: ACTION_REQUIRED[c.status] ?? c.status,
+      }))
+      .filter((row) => !needle || `${row.awb} ${row.merchantName}`.toLowerCase().includes(needle));
+    return { ok: true, source: 'gateway', data: paginate(rows, page) };
+  },
 
   /** Returns in progress and returned to origin, newest first. */
   async listRtoShipments({ q, page = 1 } = {}) {

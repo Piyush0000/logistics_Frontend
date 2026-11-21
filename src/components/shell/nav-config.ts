@@ -79,7 +79,7 @@ export const NAV: NavGroup[] = [
     label: 'Operations',
     icon: ArrowLeftRight,
     children: [
-      { label: 'NDR', href: '/ndr', status: 'live', icon: TriangleAlert, soon: true },
+      { label: 'NDR', href: '/ndr', status: 'live', icon: TriangleAlert },
       { label: 'RTO', href: '/rto', status: 'live', icon: Undo2 },
     ],
   },

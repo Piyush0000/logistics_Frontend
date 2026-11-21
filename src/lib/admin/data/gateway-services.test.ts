@@ -139,10 +139,34 @@ describe('admin shipments (gateway)', () => {
     });
   });
 
-  it('says NDR is not available yet instead of showing sample rows', async () => {
-    expect(await gatewayAdminShipmentsService.listNdrShipments()).toMatchObject({
-      ok: false,
-      error: { kind: 'unavailable' },
+  it('lists every merchant’s NDRs with what is needed next', async () => {
+    answer({
+      items: [
+        {
+          id: 'n1',
+          shipment_id: 's1',
+          awb: '71705910000055',
+          carrier: 'delhivery',
+          merchant_id: M1,
+          merchant_name: 'Evoc Labs',
+          status: 'ACTION_REQUIRED',
+          attempt_count: 2,
+          last_reason: 'Consignee unavailable',
+          last_attempt_at: '2026-11-21T12:30:00.000Z',
+          action_error: null,
+          history: [],
+          evoc_awb: 'EVS0000000018',
+        },
+      ],
+    });
+    const result = await gatewayAdminShipmentsService.listNdrShipments({ q: 'evoc' });
+    expect(call().url.pathname).toBe('/api/v1/admin/ndr');
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        total: 1,
+        items: [{ awb: 'EVS0000000018', merchantName: 'Evoc Labs', attemptsCount: 2, actionRequired: 'Merchant to decide' }],
+      },
     });
   });
 });

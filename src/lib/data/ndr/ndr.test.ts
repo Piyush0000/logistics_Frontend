@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gatewayNdrService } from './gateway';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 import { ndrService } from './index';
 import { mockNdrService } from './mock';
 
@@ -61,15 +63,74 @@ describe('mockNdrService', () => {
 });
 
 describe('gatewayNdrService', () => {
-  const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-
-  it('reports the dashboard as unavailable', async () => {
-    expect(await gatewayNdrService.getNdrDashboard()).toMatchObject(unavailable);
+  const ndrCase = (status: string, over: Record<string, unknown> = {}) => ({
+    id: `n-${status}`,
+    shipment_id: 's1',
+    awb: '71705910000055',
+    carrier: 'delhivery',
+    status,
+    attempt_count: 2,
+    last_reason: 'Consignee unavailable',
+    last_attempt_at: '2026-11-21T12:30:00.000Z',
+    action_error: null,
+    history: [{ kind: 'ATTEMPT_FAILED', note: 'Consignee unavailable', at: '2026-11-21T12:30:00.000Z' }],
+    evoc_awb: 'EVS0000000018',
+    reference_id: 'ORD-1',
+    recipient_name: 'Asha',
+    recipient_phone: '9876543210',
+    destination_city: 'Bengaluru',
+    ...over,
   });
 
-  it('refuses to take an action', async () => {
-    const result = await gatewayNdrService.takeNdrAction({ ndr_id: 'x', action: 'RTO' });
-    expect(result).toMatchObject(unavailable);
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('builds the dashboard from the live cases, counting returns', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          items: [
+            ndrCase('ACTION_REQUIRED', { action_error: 'NDR_REATTEMPT_REFUSED: too late' }),
+            ndrCase('RETURNED'),
+            ndrCase('DELIVERED'),
+          ],
+        }),
+      ),
+    );
+    const result = await gatewayNdrService.getNdrDashboard();
+    expect(result).toMatchObject({
+      ok: true,
+      source: 'gateway',
+      data: { kpis: { openNdr: 1, reattempted: 0, delivered: 1, returned: 1 } },
+    });
+    if (!result.ok) return;
+    expect(result.data.items[0]).toMatchObject({
+      awb: 'EVS0000000018',
+      reference_id: 'ORD-1',
+      recipient_name: 'Asha',
+      history: [{ action: 'Delivery attempt failed' }],
+    });
+    expect(result.data.items[0]!.reason).toContain('refused: NDR_REATTEMPT_REFUSED');
+    expect(result.data.items[1]!.status).toBe('RTO_REQUESTED');
+  });
+
+  it('posts the decision and returns the updated case', async () => {
+    const fetchMock = vi.fn(async () => Response.json(ndrCase('REATTEMPT_REQUESTED')));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await gatewayNdrService.takeNdrAction({
+      ndr_id: 'n-1',
+      action: 'REATTEMPT',
+      preferred_date: '2026-11-25',
+      instructions: ' Call first ',
+    });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(new URL(url).pathname).toBe('/api/v1/ndr/n-1/action');
+    expect(JSON.parse(String(init.body))).toEqual({
+      action: 'REATTEMPT',
+      preferred_date: '2026-11-25',
+      instructions: 'Call first',
+    });
+    expect(result).toMatchObject({ ok: true, data: { status: 'REATTEMPT_REQUESTED' } });
   });
 });
 
