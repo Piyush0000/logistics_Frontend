@@ -46,6 +46,12 @@ export function createMockCompanyService(): CompanyService {
       kycStatus = 'submitted';
       return fromMock({ kycStatus });
     },
+
+    // Sample data keeps only the file name, as before.
+    async uploadDocument(kind, file) {
+      documents.set(kind, file.name);
+      return fromMock(null);
+    },
   };
 }
 

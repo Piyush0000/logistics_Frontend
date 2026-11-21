@@ -118,6 +118,19 @@ export function CompanyForm({ company }: { company: CompanyView }) {
     );
 
     startTransition(async () => {
+      // Each chosen file is uploaded first; the details are saved once every file is stored.
+      for (const kind of Object.keys(files) as DocumentKind[]) {
+        const file = files[kind];
+        if (!file || problem) continue;
+        const body = new FormData();
+        body.set('file', file);
+        const response = await fetch(`/settings/company/documents/${kind}`, { method: 'POST', body }).catch(() => null);
+        if (!response?.ok) {
+          const reason = await response?.json().then((r: { message?: string }) => r.message).catch(() => undefined);
+          setFeedback({ ok: false, message: reason ?? 'A document did not upload. Check your connection and try again.' });
+          return;
+        }
+      }
       const result = await saveCompanyAction({
         details: {
           legalName,

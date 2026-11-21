@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mockOnboardingService } from '../onboarding/mock';
 import { gatewayCompanyService } from './gateway';
 import { companyService } from './index';
 import { createMockCompanyService, mockCompanyService } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
+afterEach(() => vi.unstubAllGlobals());
 
 const details = {
   legalName: 'Asha Traders Private Limited',
@@ -102,14 +105,58 @@ describe('mock company service', () => {
 });
 
 describe('gateway company service', () => {
-  it('reports unavailable for both calls', async () => {
-    const expected = {
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
-    };
-    expect(await gatewayCompanyService.getCompany()).toEqual(expected);
-    expect(await gatewayCompanyService.saveCompany(details, docs)).toEqual(expected);
+  it('reads the company with a masked account, saves it, and uploads documents', async () => {
+    const stub = (body: unknown, status = 200) => {
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+      status === 204 ? new Response(null, { status }) : Response.json(body, { status }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+  };
+    let fetchMock = stub({
+      details: {
+        legal_name: details.legalName,
+        brand_name: details.brandName,
+        gstin: details.gstin,
+        pan: details.pan,
+        address: details.address,
+        bank: { ...details.bank, account: '123456789012' },
+      },
+      kyc_status: 'PENDING',
+      kyc_note: null,
+      documents: [{ kind: 'gst', name: 'gst.pdf', size: 10, uploaded_at: '2026-11-22T00:00:00.000Z' }],
+    });
+    expect(await gatewayCompanyService.getCompany()).toMatchObject({
+      ok: true,
+      data: {
+        kycStatus: 'submitted',
+        details: { bank: { account: '********9012' } },
+        documents: [{ kind: 'gst', name: 'gst.pdf' }],
+      },
+    });
+    fetchMock = stub({ kyc_status: 'PENDING' });
+    expect(await gatewayCompanyService.saveCompany(details, docs)).toMatchObject({
+      ok: true,
+      data: { kycStatus: 'submitted' },
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]?.body))).toMatchObject({
+      legal_name: details.legalName,
+      gstin: details.gstin,
+    });
+    fetchMock = stub({ kind: 'pan', name: 'pan.pdf', size: 4, uploaded_at: 'x' });
+    await gatewayCompanyService.uploadDocument('pan', {
+      name: 'pan.pdf',
+      type: 'application/pdf',
+      bytes: new TextEncoder().encode('%PDF'),
+    });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(new URL(String(url)).pathname).toBe('/api/v1/account/documents/pan');
+    expect(init?.method).toBe('PUT');
+    expect(JSON.parse(String(init?.body))).toEqual({
+      file_name: 'pan.pdf',
+      content_type: 'application/pdf',
+      data_base64: Buffer.from('%PDF').toString('base64'),
+    });
   });
 
   it('is picked by DATA_SOURCE_COMPANY', () => {

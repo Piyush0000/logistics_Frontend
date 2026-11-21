@@ -1,8 +1,11 @@
 import { AddressSchema } from '@logicore/contracts';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gatewayPickupAddressService } from './gateway';
 import { pickupAddressService } from './index';
 import { mockPickupAddressService as mock } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
+afterEach(() => vi.unstubAllGlobals());
 
 const address = {
   name: 'Depot',
@@ -82,18 +85,32 @@ describe('mock pickup addresses', () => {
 });
 
 describe('gateway pickup addresses', () => {
-  it('reports every method as unavailable', async () => {
-    const expected = {
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
-    };
-    expect(await gatewayPickupAddressService.list()).toEqual(expected);
-    expect(
-      await gatewayPickupAddressService.save({ label: 'x', address, isDefault: false }),
-    ).toEqual(expected);
-    expect(await gatewayPickupAddressService.remove('pa-001')).toEqual(expected);
-    expect(await gatewayPickupAddressService.makeDefault('pa-001')).toEqual(expected);
+  it('lists, adds, edits, removes and sets the default through the account API', async () => {
+    const stub = (body: unknown, status = 200) => {
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+      status === 204 ? new Response(null, { status }) : Response.json(body, { status }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+  };
+    const row = { id: 'a1', label: 'Depot', address, is_default: true };
+    let fetchMock = stub({ items: [row] });
+    expect(await gatewayPickupAddressService.list()).toMatchObject({
+      ok: true,
+      data: [{ id: 'a1', label: 'Depot', isDefault: true }],
+    });
+    fetchMock = stub(row);
+    await gatewayPickupAddressService.save({ label: 'Depot', address, isDefault: true });
+    await gatewayPickupAddressService.save({ id: 'a1', label: 'Depot', address, isDefault: false });
+    await gatewayPickupAddressService.makeDefault('a1');
+    const calls = fetchMock.mock.calls.map(([url, init]) => [init?.method, new URL(String(url)).pathname]);
+    expect(calls).toEqual([
+      ['POST', '/api/v1/account/pickup-addresses'],
+      ['PUT', '/api/v1/account/pickup-addresses/a1'],
+      ['POST', '/api/v1/account/pickup-addresses/a1/default'],
+    ]);
+    stub(null, 204);
+    expect(await gatewayPickupAddressService.remove('a1')).toMatchObject({ ok: true, data: null });
   });
 
   it('picks the source from DATA_SOURCE_PICKUP_ADDRESSES', () => {

@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gatewayProfileService } from './gateway';
 import { profileService } from './index';
 import { parsePasswordChange, parseProfileInput } from './input';
 import { createMockProfileService, mockProfileService } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
+afterEach(() => vi.unstubAllGlobals());
 
 describe('parseProfileInput', () => {
   it('trims the name and accepts the limits', () => {
@@ -147,14 +150,33 @@ describe('mockProfileService', () => {
 });
 
 describe('gatewayProfileService', () => {
-  const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-
-  it('reports every call as unavailable', async () => {
-    expect(await gatewayProfileService.getProfile()).toMatchObject(unavailable);
-    expect(
-      await gatewayProfileService.updateProfile({ name: 'A', phone: '9800000000' }),
-    ).toMatchObject(unavailable);
-    expect(await gatewayProfileService.changePassword('a', 'b')).toMatchObject(unavailable);
+  it('reads and saves the profile, and changes the password', async () => {
+    const stub = (body: unknown, status = 200) => {
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+      status === 204 ? new Response(null, { status }) : Response.json(body, { status }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    return fetchMock;
+  };
+    let fetchMock = stub({ name: 'Asha', email: 'asha@x.in', phone: '9800000000' });
+    expect(await gatewayProfileService.getProfile()).toMatchObject({
+      ok: true,
+      data: { name: 'Asha', phone: '9800000000' },
+    });
+    await gatewayProfileService.updateProfile({ name: 'Asha Rao', phone: '9800000001' });
+    expect(fetchMock.mock.calls[1]![1]?.method).toBe('PATCH');
+    fetchMock = stub(null, 204);
+    expect(await gatewayProfileService.changePassword('old', 'new-password')).toEqual({
+      ok: true,
+      source: 'gateway',
+      data: null,
+    });
+    expect(new URL(String(fetchMock.mock.calls[0]![0])).pathname).toBe('/api/v1/account/password');
+    stub({ message: 'The current password is not right.' }, 400);
+    expect(await gatewayProfileService.changePassword('wrong', 'new-password')).toMatchObject({
+      ok: false,
+      error: { kind: 'validation', message: 'The current password is not right.' },
+    });
   });
 
   it('uses mock by default and gateway when set', () => {

@@ -48,7 +48,7 @@ function DocumentField({
   );
 }
 
-/** One file box per document kind. Only each file's name, type and size are sent when saving. */
+/** One file box per document kind. Chosen files are uploaded when the form is saved. */
 export function KycDocuments({
   files,
   onChange,
@@ -62,7 +62,7 @@ export function KycDocuments({
     <fieldset className="grid min-w-0 gap-4">
       <legend className="font-heading text-lg leading-7 font-bold tracking-tight">KYC documents</legend>
       <p className="text-sm text-on-surface/70">
-        Files are not uploaded yet. Only each file&apos;s name, type and size are recorded.
+        Each file is uploaded when you save, and our team checks it before approving your account.
       </p>
       <p className="text-sm text-on-surface/70">
         One file for each, as PDF, JPG or PNG, up to {MAX_DOCUMENT_BYTES / (1024 * 1024)} MB.

@@ -213,10 +213,14 @@ export default async function AdminOnboardingDetailPage({
           {() => (
             <div className="grid gap-3">
               {application.documents.map((doc) => (
-                <div
+                <a
                   key={doc.kind}
+                  href={`/admin/onboarding/${encodeURIComponent(application.merchantId)}/documents/${doc.kind}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Open ${DOC_KIND_LABEL[doc.kind] || doc.kind}, ${doc.fileName}`}
                   data-testid="admin-onboarding-doc-row"
-                  className="flex items-center justify-between gap-3 rounded-control border border-secondary/70 bg-surface p-3.5"
+                  className="flex items-center justify-between gap-3 rounded-control border border-secondary/70 bg-surface p-3.5 transition-colors hover:border-primary/60 hover:bg-tertiary"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary">
@@ -238,11 +242,11 @@ export default async function AdminOnboardingDetailPage({
                     </span>
                     <FileCheck aria-hidden="true" className="size-4 text-success" />
                   </div>
-                </div>
+                </a>
               ))}
 
               <p className="mt-1 text-xs text-on-surface/50">
-                Show only file names and sizes; file contents are kept securely in private cloud storage.
+                Open a document to check it. Files are stored privately and shown to admins only.
               </p>
             </div>
           )}

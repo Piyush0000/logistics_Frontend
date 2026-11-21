@@ -19,14 +19,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Your name, phone number and password.',
     href: '/settings/profile',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Company & KYC',
     description: 'Your business details and verification documents.',
     href: '/settings/company',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Users & Roles',
@@ -40,7 +38,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'The places couriers collect your parcels from.',
     href: '/settings/pickup-addresses',
     status: 'live',
-    soon: true,
   },
   {
     label: 'API Keys & Channel Integrations',

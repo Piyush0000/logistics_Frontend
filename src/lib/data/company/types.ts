@@ -13,4 +13,6 @@ export interface CompanyView {
 export interface CompanyService {
   getCompany(): Promise<DataResult<CompanyView>>;
   saveCompany(d: CompanyDetails, documents: DocumentFile[]): Promise<DataResult<{ kycStatus: KycStatus }>>;
+  /** Stores one KYC document's file (replacing any earlier one of that kind). */
+  uploadDocument(kind: DocumentKind, file: { name: string; type: string; bytes: Uint8Array }): Promise<DataResult<null>>;
 }
