@@ -15,7 +15,6 @@ import { formatPaise } from '@/lib/format/money';
 import { AdjustWalletButton } from './adjust-wallet-button';
 import { codBatchHref, Difference, LINK_BUTTON, REMITTANCE_STATUS } from './cod/cod-display';
 import { ExceptionsList } from './cod/exceptions-list';
-import { liveDataOnly } from '@/lib/data/source';
 
 export const metadata: Metadata = { title: 'Money' };
 
@@ -109,7 +108,7 @@ export default async function AdminMoneyPage() {
                           {wallet.lastRechargeAt ? formatDate(wallet.lastRechargeAt) : 'Never'}
                         </td>
                         <td className={`${t.td} text-right`}>
-                          <AdjustWalletButton hidden={liveDataOnly()} wallet={wallet} />
+                          <AdjustWalletButton wallet={wallet} />
                         </td>
                       </tr>
                     ))}
@@ -137,7 +136,7 @@ export default async function AdminMoneyPage() {
                       <Link href={ledgerHref(wallet.merchantId)} className={`${LINK_BUTTON} flex-1`}>
                         Ledger
                       </Link>
-                      <AdjustWalletButton hidden={liveDataOnly()} wallet={wallet} wide />
+                      <AdjustWalletButton wallet={wallet} wide />
                     </div>
                   </li>
                 ))}

@@ -14,7 +14,6 @@ import { requireAdminSession } from '@/lib/admin/session';
 import { formatDate, formatDateTime } from '@/lib/format/date';
 import { formatPaise } from '@/lib/format/money';
 import { AdjustWalletButton } from '../../adjust-wallet-button';
-import { liveDataOnly } from '@/lib/data/source';
 
 export const metadata: Metadata = { title: 'Wallet ledger' };
 
@@ -85,7 +84,7 @@ export default async function AdminWalletLedgerPage({
       <PageHeader
         title={wallet.merchantName}
         description={<span className="font-mono">{wallet.merchantId}</span>}
-        actions={<AdjustWalletButton hidden={liveDataOnly()} wallet={wallet} />}
+        actions={<AdjustWalletButton wallet={wallet} />}
       />
 
       <section aria-label="Wallet figures" className="motion-stagger grid gap-3 sm:grid-cols-3 lg:gap-4">

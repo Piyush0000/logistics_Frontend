@@ -25,18 +25,8 @@ interface WalletRef {
 }
 
 /** The Adjust button for one wallet, and its popup. */
-export function AdjustWalletButton({
-  wallet,
-  wide = false,
-  hidden = false,
-}: {
-  wallet: WalletRef;
-  wide?: boolean;
-  /** True while adjustments have no backend (real data only): no button. */
-  hidden?: boolean;
-}) {
+export function AdjustWalletButton({ wallet, wide = false }: { wallet: WalletRef; wide?: boolean }) {
   const [open, setOpen] = useState(false);
-  if (hidden) return null;
   return (
     <>
       <button

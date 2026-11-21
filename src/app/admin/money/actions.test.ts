@@ -96,23 +96,23 @@ describe('adjustWalletAction', () => {
     expect(audit).not.toHaveBeenCalled();
   });
 
-  it('saves nothing in gateway mode, with the unavailable message', async () => {
+  it('saves through the gateway in gateway mode and records it in the audit log', async () => {
     process.env.DATA_SOURCE_ADMIN_MONEY = 'gateway';
-    // The wallet itself is read from the gateway; only the adjustment has no route yet.
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () =>
-        Response.json({
-          items: [{ merchant_id: 'mer_002', merchant_name: 'Acme', available: 100, reserved: 0, pending_cod: 0 }],
-        }),
-      ),
-    );
-    expect(await adjustWalletAction(IDLE, form({ step: 'confirm' }))).toEqual({
-      status: 'invalid',
-      errors: {},
-      message: 'Coming soon: this is not connected to live data yet.',
+    const wallet = (available: number) => ({
+      merchant_id: 'mer_002',
+      merchant_name: 'Acme',
+      available,
+      reserved: 0,
+      pending_cod: 0,
     });
-    expect(audit).not.toHaveBeenCalled();
+    const fetchMock = vi.fn(async (url: string) =>
+      Response.json(url.endsWith('/adjust') ? wallet(12_345) : { items: [wallet(100)] }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const state = await adjustWalletAction(IDLE, form({ step: 'confirm' }));
+    expect(state).toMatchObject({ status: 'saved', balancePaise: 12_345 });
+    expect(fetchMock.mock.calls.some(([url]) => url.endsWith('/api/v1/admin/wallets/mer_002/adjust'))).toBe(true);
+    expect(audit).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 });

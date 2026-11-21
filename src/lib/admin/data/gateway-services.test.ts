@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { gatewayAdminMerchantsService, merchantStatus } from './merchants/gateway';
+import { gatewayAdminMoneyService } from './money/gateway';
 import { gatewayAdminOnboardingService } from './onboarding/gateway';
 import { attentionFor } from './overview/gateway';
 import { gatewayAdminShipmentsService } from './shipments/gateway';
@@ -157,5 +158,23 @@ describe('overview attention items', () => {
     });
     expect(items.map((i) => i.id)).toEqual(['kyc', 'failed']);
     expect(items[0]?.title).toBe('2 merchants waiting for KYC');
+  });
+});
+
+describe('admin wallet adjustment (gateway)', () => {
+  it('posts the adjustment with a fresh idempotency key and returns the new wallet', async () => {
+    answer({ merchant_id: M1, merchant_name: 'Evoc Labs', available: 50_000, reserved: 0, pending_cod: 0 });
+    const adjustment = { merchantId: M1, amountPaise: 50_000, direction: 'credit' as const, reason: 'Opening balance' };
+    const result = await gatewayAdminMoneyService.adjustWallet(adjustment);
+    const { url, init } = call();
+    expect(url.pathname).toBe(`/api/v1/admin/wallets/${M1}/adjust`);
+    expect(init.method).toBe('POST');
+    const body = JSON.parse(String(init.body));
+    expect(body).toMatchObject({ direction: 'credit', amount_paise: 50_000, reason: 'Opening balance' });
+    expect(body.idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
+    expect(result).toMatchObject({ ok: true, data: { merchantId: M1, merchantName: 'Evoc Labs', balancePaise: 50_000 } });
+
+    await gatewayAdminMoneyService.adjustWallet(adjustment);
+    expect(JSON.parse(String(call(1).init.body)).idempotency_key).not.toBe(body.idempotency_key);
   });
 });

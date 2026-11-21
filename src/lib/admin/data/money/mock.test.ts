@@ -130,9 +130,8 @@ describe('mock money summary', () => {
 });
 
 describe('gateway money service', () => {
-  it('says adjustments and COD reconciliation are not available yet', async () => {
+  it('says COD reconciliation is not available yet', async () => {
     for (const result of [
-      await gatewayAdminMoneyService.adjustWallet(adjustment),
       await gatewayAdminMoneyService.listRemittances(),
       await gatewayAdminMoneyService.listCodExceptions(),
     ]) {

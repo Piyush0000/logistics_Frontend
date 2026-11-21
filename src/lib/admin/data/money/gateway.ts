@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { notAvailable } from '../../../data/not-available';
 import type { DataResult } from '../../../data/source';
@@ -51,6 +52,7 @@ function toWallet(w: z.infer<typeof walletSchema>): MerchantWallet {
 
 /** Ledger reasons are plain text written by ledger-engine; shipment charges all mention it. */
 function kindOf(reason: string): WalletTransactionKind {
+  if (/^Admin (credit|debit):/.test(reason)) return 'adjustment';
   if (/shipment|reserv|rto/i.test(reason)) return 'shipping';
   if (/opening|recharge|top.?up/i.test(reason)) return 'recharge';
   return 'adjustment';
@@ -143,8 +145,19 @@ export const gatewayAdminMoneyService: AdminMoneyService = {
     }));
   },
 
-  // Manual adjustments need an audited ledger-engine route; until then they are switched off.
-  adjustWallet: notAvailable,
+  async adjustWallet({ merchantId, amountPaise, direction, reason }) {
+    const result = await gatewayFetch(
+      `/api/v1/admin/wallets/${encodeURIComponent(merchantId)}/adjust`,
+      {
+        method: 'POST',
+        schema: walletSchema,
+        token: adminToken(),
+        // One key per confirmed adjustment, so a retried request is not booked twice.
+        body: { direction, amount_paise: amountPaise, reason, idempotency_key: randomUUID() },
+      },
+    );
+    return mapResult(result, toWallet);
+  },
   // COD remittance batches and their reconciliation are not stored by the backend yet.
   listRemittances: notAvailable,
   getRemittance: notAvailable,
