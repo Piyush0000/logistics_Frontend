@@ -27,6 +27,10 @@ export interface TeamMember {
   name: string | null;
   role: Role;
   status: 'active' | 'invited';
+  /** The account owner: their role cannot change and they cannot be removed. */
+  owner?: boolean;
+  /** Set only on the result of an invite: the one-time token for the invite link. */
+  inviteToken?: string;
 }
 
 export interface TeamService {

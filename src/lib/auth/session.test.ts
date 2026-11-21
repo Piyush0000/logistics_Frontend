@@ -4,7 +4,7 @@ import { DEMO_SESSION_COOKIE, parseDemoSession } from './session';
 
 describe('parseDemoSession', () => {
   it('reads the email from a valid cookie', () => {
-    expect(parseDemoSession('ops@example.com')).toEqual({ email: 'ops@example.com' });
+    expect(parseDemoSession('ops@example.com')).toEqual({ email: 'ops@example.com', role: 'admin' });
   });
 
   it('treats a missing cookie as signed out', () => {

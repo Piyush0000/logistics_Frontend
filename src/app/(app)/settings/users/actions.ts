@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { getDemoSession } from '@/lib/auth/session';
 import type { DataResult } from '@/lib/data/source';
 import {
@@ -12,7 +13,7 @@ import {
 } from '@/lib/data/team';
 
 export type InviteActionResult =
-  | { ok: true; message: string }
+  | { ok: true; message: string; inviteLink?: string }
   | { ok: false; message: string; errors?: InviteFieldErrors };
 
 export type TeamActionResult = { ok: true; message: string } | { ok: false; message: string };
@@ -48,7 +49,16 @@ export async function inviteAction(input: unknown): Promise<InviteActionResult> 
   const result = await teamService().invite(parsed.value.email, parsed.value.role);
   if (!result.ok) return failure(result);
   revalidatePath('/settings/users');
-  return { ok: true, message: `Invite sent to ${result.data.email}.` };
+  if (!result.data.inviteToken) return { ok: true, message: `Invite sent to ${result.data.email}.` };
+  // The token goes after #, so it never reaches a server log when the link is opened.
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'ship.evoclabs.com';
+  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
+  return {
+    ok: true,
+    message: `Invited ${result.data.email}. Send them this link; it works once, for 7 days.`,
+    inviteLink: `${proto}://${host}/join#${result.data.inviteToken}`,
+  };
 }
 
 export async function changeRoleAction(id: unknown, role: unknown): Promise<TeamActionResult> {

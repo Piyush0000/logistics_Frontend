@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState, useTransition, type FormEvent } from 'react';
+import { CopyButton } from '@/components/ui/copy-button';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, ROLES, isRole, type Role } from '@/lib/data/team/types';
@@ -23,6 +24,7 @@ export function InviteDialog({
   const [errors, setErrors] = useState<InviteFieldErrors>({});
   const [problem, setProblem] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const [sent, setSent] = useState<{ message: string; link: string } | null>(null);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -30,7 +32,9 @@ export function InviteDialog({
     setProblem(null);
     start(async () => {
       const result = await inviteAction({ email, role });
-      if (result.ok) {
+      if (result.ok && result.inviteLink) {
+        setSent({ message: result.message, link: result.inviteLink });
+      } else if (result.ok) {
         onDone(result.message);
         onClose();
       } else if (result.errors && (result.errors.email || result.errors.role)) {
@@ -39,6 +43,31 @@ export function InviteDialog({
         setProblem(result.message);
       }
     });
+  }
+
+  if (sent) {
+    const finish = () => {
+      onDone(sent.message);
+      onClose();
+    };
+    return (
+      <Dialog title="Invite link" onClose={finish}>
+        <div className="grid gap-4">
+          <p role="status" className="text-sm">
+            {sent.message}
+          </p>
+          <p data-testid="invite-link" className="rounded-control bg-tertiary p-3 font-mono text-xs break-all">
+            {sent.link}
+          </p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <CopyButton label="Copy link" text={sent.link} fieldLabel="Invite link" />
+            <button type="button" onClick={finish} className={PRIMARY_BUTTON}>
+              Done
+            </button>
+          </div>
+        </div>
+      </Dialog>
+    );
   }
 
   return (

@@ -1,7 +1,10 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { NavStatus } from '@/components/shell/nav-config';
+import { canOpen } from '@/lib/auth/access';
+import { getDemoSession } from '@/lib/auth/session';
 import { liveDataOnly } from '@/lib/data/source';
+import type { Role } from '@/lib/data/team/types';
 
 export interface SettingsSection {
   label: string;
@@ -31,7 +34,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Invite teammates and choose what each can do.',
     href: '/settings/users',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Pickup Addresses',
@@ -76,8 +78,8 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 ];
 
 /** The sections shown: without the unbuilt ones when the app runs on real data only. */
-export function visibleSettingsSections(liveOnly = liveDataOnly()): SettingsSection[] {
-  return liveOnly ? SETTINGS_SECTIONS.filter((section) => !section.soon) : SETTINGS_SECTIONS;
+export function visibleSettingsSections(liveOnly = liveDataOnly(), role: Role = 'admin'): SettingsSection[] {
+  return SETTINGS_SECTIONS.filter((section) => (!liveOnly || !section.soon) && canOpen(role, section.href));
 }
 
 export const unavailable = (label: string) => `${label} is not available yet`;
@@ -88,7 +90,8 @@ const ROW = 'flex min-h-11 w-full items-center rounded-control px-3 py-2 text-le
  * The section list shared by every Settings page: a column on desktop, and a "Back to Settings"
  * link on phones, where the hub itself is the list.
  */
-export function SettingsNav({ current }: { current: string }) {
+export async function SettingsNav({ current }: { current: string }) {
+  const role = (await getDemoSession())?.role ?? 'admin';
   return (
     <>
       <Link
@@ -104,7 +107,7 @@ export function SettingsNav({ current }: { current: string }) {
         className="motion-rise hidden rounded-card border border-secondary bg-surface p-2 lg:sticky lg:top-24 lg:block"
       >
         <ul className="flex flex-col gap-1">
-          {visibleSettingsSections().map((section) => (
+          {visibleSettingsSections(undefined, role).map((section) => (
             <li key={section.href}>
               {section.status === 'live' ? (
                 <Link

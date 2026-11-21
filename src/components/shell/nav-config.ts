@@ -29,6 +29,8 @@ import {
   Weight,
   type LucideIcon,
 } from 'lucide-react';
+import { canOpen } from '@/lib/auth/access';
+import type { Role } from '@/lib/data/team/types';
 
 /**
  * The sidebar menu. A new screen appears in the sidebar by adding an entry here as `planned`,
@@ -147,11 +149,11 @@ export const NAV: NavGroup[] = [
  * The menu as shown: with `liveOnly` (production, real data only) screens whose backend is not
  * built yet are left out, and so is a group left with no items.
  */
-export function visibleNav(liveOnly: boolean, nav: NavGroup[] = NAV): NavGroup[] {
-  if (!liveOnly) return nav;
+export function visibleNav(liveOnly: boolean, nav: NavGroup[] = NAV, role: Role = 'admin'): NavGroup[] {
+  if (!liveOnly && role === 'admin') return nav;
   return nav.flatMap((group) => {
-    if (!group.children) return [group];
-    const children = group.children.filter((item) => !item.soon);
+    if (!group.children) return !group.href || canOpen(role, group.href) ? [group] : [];
+    const children = group.children.filter((item) => (!liveOnly || !item.soon) && canOpen(role, item.href));
     return children.length ? [{ ...group, children }] : [];
   });
 }

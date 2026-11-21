@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayTeamService } from './gateway';
+
 import { teamService } from './index';
 import { parseInvite } from './input';
 import { createMockTeamService, mockTeamService } from './mock';
 import { ROLE_DESCRIPTIONS, ROLES, type TeamMember } from './types';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 async function list(service = createMockTeamService()) {
   const result = await service.listMembers();
@@ -98,12 +101,29 @@ describe('mock team service', () => {
 });
 
 describe('gateway team service', () => {
-  it('is unavailable for every method', async () => {
-    const expected = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewayTeamService.listMembers()).toMatchObject(expected);
-    expect(await gatewayTeamService.invite('a@b.co', 'viewer')).toMatchObject(expected);
-    expect(await gatewayTeamService.changeRole('x', 'viewer')).toMatchObject(expected);
-    expect(await gatewayTeamService.remove('x')).toMatchObject(expected);
+  it('lists, invites (with the one-time token), changes roles and removes', async () => {
+    const member = { id: 'u1', email: 'a@b.co', name: null, role: 'viewer', owner: false, status: 'invited' };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url, init) => {
+      if (init?.method === 'DELETE') return new Response(null, { status: 204 });
+      if (url.endsWith('/invites')) return Response.json({ member, token: 'evs_inv_abc', expires_at: 'x' });
+      if (init?.method === 'PATCH') return Response.json({ ...member, role: 'finance' });
+      return Response.json({ items: [{ ...member, id: 'o1', owner: true, role: 'admin', status: 'active' }] });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayTeamService.listMembers()).toMatchObject({ ok: true, data: [{ owner: true, role: 'admin' }] });
+    expect(await gatewayTeamService.invite('a@b.co', 'viewer')).toMatchObject({
+      ok: true,
+      data: { email: 'a@b.co', status: 'invited', inviteToken: 'evs_inv_abc' },
+    });
+    expect(await gatewayTeamService.changeRole('u1', 'finance')).toMatchObject({ ok: true, data: { role: 'finance' } });
+    expect(await gatewayTeamService.remove('u1')).toMatchObject({ ok: true, data: null });
+    expect(fetchMock.mock.calls.map(([url, init]) => [init?.method ?? 'GET', new URL(url).pathname])).toEqual([
+      ['GET', '/api/v1/team'],
+      ['POST', '/api/v1/team/invites'],
+      ['PATCH', '/api/v1/team/u1'],
+      ['DELETE', '/api/v1/team/u1'],
+    ]);
+    vi.unstubAllGlobals();
   });
 
   it('is chosen by DATA_SOURCE_TEAM', () => {

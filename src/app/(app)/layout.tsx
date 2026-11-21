@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <ShellIdentityProvider email={session.email}>
-      <LiveOnlyProvider liveOnly={liveDataOnly()}>
+      <LiveOnlyProvider liveOnly={liveDataOnly()} role={session.role}>
         <div className="theme-app font-body">
           <AppShell
             email={session.email}

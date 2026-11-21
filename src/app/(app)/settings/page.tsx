@@ -103,7 +103,7 @@ export default async function SettingsPage() {
           description="Manage your account, your team and how your shipments are sent."
         />
         <ul className="motion-stagger grid gap-3 md:grid-cols-2 lg:gap-4 xl:grid-cols-3">
-          {visibleSettingsSections().map((section, index) => (
+          {visibleSettingsSections(undefined, session.role).map((section, index) => (
             <li key={section.href} className="min-w-0" style={{ '--i': index } as CSSProperties}>
               <SectionCard section={section} />
             </li>

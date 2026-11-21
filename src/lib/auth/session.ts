@@ -7,6 +7,8 @@ import { sessionService } from '../data/session';
 import { mockSessionService } from '../data/session/mock';
 import type { SignedInUser } from '../data/session/types';
 import { gatewayFetch } from '../gateway/client';
+import type { Role } from '../data/team/types';
+import { roleFromIdentity } from './access';
 import { SESSION_COOKIE } from './credentials';
 import { emailSchema } from './login-schema';
 
@@ -19,14 +21,21 @@ const MAX_SESSION_SECONDS = 7 * 24 * 60 * 60;
 /** Who is signed in. The name stays "demo" for history; it now covers real sessions too. */
 export interface DemoSession {
   email: string;
+  /** What this person may use. Sample-data sign-in is admin. */
+  role: Role;
 }
 
 export function parseDemoSession(value: string | undefined): DemoSession | null {
   const email = emailSchema.safeParse(value);
-  return email.success ? { email: email.data } : null;
+  return email.success ? { email: email.data, role: 'admin' } : null;
 }
 
-const MeSchema = z.object({ email: z.string().nullable(), merchant_name: z.string() });
+const MeSchema = z.object({
+  email: z.string().nullable(),
+  merchant_name: z.string(),
+  kind: z.string().optional(),
+  role: z.string().nullable().optional(),
+});
 
 function cookieOptions(maxAge: number) {
   return {
@@ -50,7 +59,10 @@ export const getDemoSession = cache(async (): Promise<DemoSession | null> => {
   if (token) {
     const me = await gatewayFetch('/api/v1/auth/me', { schema: MeSchema, token });
     if (!me.ok) return null;
-    return { email: me.data.email ?? me.data.merchant_name };
+    return {
+      email: me.data.email ?? me.data.merchant_name,
+      role: roleFromIdentity(me.data.kind, me.data.role),
+    };
   }
   if (sessionService() !== mockSessionService) return null;
   return parseDemoSession(store.get(DEMO_SESSION_COOKIE)?.value);
