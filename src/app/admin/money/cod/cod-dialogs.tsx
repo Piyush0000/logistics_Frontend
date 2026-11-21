@@ -172,7 +172,7 @@ export function ReconcileButton({
           <input type="hidden" name="id" value={remittance.id} />
           <p className="text-sm text-on-surface/70">
             Matches each of the {remittance.lineCount} lines against its order and opens an exception for every line that
-            differs. A batch is reconciled once; this cannot be run again.
+            differs. Matched lines are paid into the merchants' wallets. Lines paid later reopen the batch to be matched too.
           </p>
           <Facts
             rows={[
