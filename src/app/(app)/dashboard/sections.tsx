@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { SampleBadge } from "@/components/sample-badge";
 import { splitTwoTone, StatTile, type StatTone } from "@/components/ui/stat-tile";
-import type { DataResult } from "@/lib/data/source";
+import { liveDataOnly, type DataResult } from "@/lib/data/source";
 import { parseEnum } from "@/lib/url-params";
 import { RetryButton } from "./retry-button";
 
@@ -64,19 +64,25 @@ export type DashboardTab =
   "overview" | "pickups" | "ndr" | "rto" | "delivered" | "revenue" | "sms";
 
 /** One entry per tab. A later task flips `enabled` when it builds the tab. */
-const TABS: { id: DashboardTab; label: string; enabled: boolean }[] = [
+// `soon`: no backend yet, so the tab is left out when the app runs on real data only.
+const ALL_TABS: { id: DashboardTab; label: string; enabled: boolean; soon?: boolean }[] = [
   { id: "overview", label: "Overview", enabled: true },
-  { id: "pickups", label: "Pickups", enabled: true },
-  { id: "ndr", label: "NDR", enabled: true },
+  { id: "pickups", label: "Pickups", enabled: true, soon: true },
+  { id: "ndr", label: "NDR", enabled: true, soon: true },
   { id: "rto", label: "RTO", enabled: true },
   { id: "delivered", label: "Delivered", enabled: true },
-  { id: "revenue", label: "Revenue", enabled: true },
-  { id: "sms", label: "SMS", enabled: true },
+  { id: "revenue", label: "Revenue", enabled: true, soon: true },
+  { id: "sms", label: "SMS", enabled: true, soon: true },
 ];
+
+/** The tabs shown: without the unbuilt ones on real data only. */
+export function visibleTabs(liveOnly = liveDataOnly()) {
+  return liveOnly ? ALL_TABS.filter((tab) => !tab.soon) : ALL_TABS;
+}
 
 /** The tab named by `?tab=`, or Overview when it is missing, unknown or not built yet. */
 export function parseTab(value: unknown): DashboardTab {
-  return resolveTab(value, TABS);
+  return resolveTab(value, visibleTabs());
 }
 
 /** `parseTab` over any tab list, so the disabled branch can be tested while every real tab is enabled. */
@@ -106,7 +112,7 @@ export function OverviewTabs({
       // On phones the tabs scroll; the faded right edge hints there is more.
       className="flex gap-1 overflow-x-auto rounded-card border border-secondary bg-surface p-1.5 [scrollbar-width:none] max-sm:pr-6 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]"
     >
-      {TABS.map((tab) => {
+      {visibleTabs().map((tab) => {
         const selected = tab.id === active;
         const className = `h-11 min-w-24 flex-1 shrink-0 rounded-control px-4 text-sm transition-colors duration-150 lg:h-10 ${
           selected
@@ -205,6 +211,7 @@ export function DetailCard<T>({
   result: DataResult<T>;
   children: (data: T) => ReactNode;
 }) {
+  if (!result.ok && result.error.kind === "unavailable") return null;
   return (
     <section
       data-testid={testId}

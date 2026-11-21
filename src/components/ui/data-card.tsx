@@ -6,6 +6,7 @@ import type { DataResult } from '@/lib/data/source';
 /**
  * A card for one data source: a sample badge for mock data, the error with Try again when the
  * source failed, or the content. A failure stays inside this card, so the rest of the page works.
+ * A feature whose backend is not built yet shows no card at all.
  */
 export function DataCard<T>({
   testId,
@@ -20,6 +21,7 @@ export function DataCard<T>({
   actions?: ReactNode;
   children: (data: T) => ReactNode;
 }) {
+  if (!result.ok && result.error.kind === 'unavailable') return null;
   return (
     <section
       data-testid={testId}

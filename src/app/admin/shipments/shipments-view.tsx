@@ -40,6 +40,7 @@ const STATUS_OPTIONS = [
 
 export function ShipmentsView({
   allShipments,
+  showNdr = true,
   allNdrShipments,
   allRtoShipments,
   merchantsList,
@@ -47,6 +48,8 @@ export function ShipmentsView({
   initialQuery = {},
 }: {
   allShipments: AdminShipment[];
+  /** False while NDR has no backend: the tab is left out. */
+  showNdr?: boolean;
   allNdrShipments: AdminNdrShipment[];
   allRtoShipments: AdminRtoShipment[];
   merchantsList: { id: string; name: string }[];
@@ -241,6 +244,7 @@ export function ShipmentsView({
           </span>
         </button>
 
+        {showNdr ? (
         <button
           type="button"
           role="tab"
@@ -262,6 +266,7 @@ export function ShipmentsView({
             {counts.ndr}
           </span>
         </button>
+        ) : null}
 
         <button
           type="button"

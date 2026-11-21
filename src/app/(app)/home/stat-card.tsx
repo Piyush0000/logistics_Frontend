@@ -20,6 +20,8 @@ export function StatCard<T>({
   result: DataResult<T>;
   value: (data: T) => string | number;
 }) {
+  // No backend for this figure yet: leave the tile out.
+  if (!result.ok && result.error.kind === 'unavailable') return null;
   return (
     <div
       data-testid={testId}

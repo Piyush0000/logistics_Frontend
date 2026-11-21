@@ -33,21 +33,22 @@ export default async function AdminShipmentsPage({
     page: parsePage(params.page),
   };
 
-  const initialTab =
-    params.view === 'ndr'
-      ? 'ndr'
-      : params.view === 'rto'
-      ? 'rto'
-      : params.stuck === '1'
-      ? 'stuck'
-      : 'all';
-
   const [shipmentsResult, ndrResult, rtoResult, merchantsResult] = await Promise.all([
     adminShipmentsService().listShipments({ pageSize: 100 }),
     adminShipmentsService().listNdrShipments({ page: 1 }),
     adminShipmentsService().listRtoShipments({ page: 1 }),
     adminMerchantsService().listMerchants({}),
   ]);
+
+  const ndrBuilt = ndrResult.ok || ndrResult.error.kind !== 'unavailable';
+  const initialTab =
+    params.view === 'ndr' && ndrBuilt
+      ? 'ndr'
+      : params.view === 'rto'
+      ? 'rto'
+      : params.stuck === '1'
+      ? 'stuck'
+      : 'all';
 
   const merchantsList = merchantsResult.ok
     ? merchantsResult.data.items.map((m) => ({ id: m.id, name: m.name }))
@@ -63,6 +64,7 @@ export default async function AdminShipmentsPage({
           <ShipmentsView
             key={JSON.stringify(params)}
             allShipments={data.items}
+            showNdr={ndrBuilt}
             allNdrShipments={ndrResult.ok ? ndrResult.data.items : []}
             allRtoShipments={rtoResult.ok ? rtoResult.data.items : []}
             merchantsList={merchantsList}

@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { parseTab, resolveTab } from './sections';
+import { afterEach, describe, expect, it } from 'vitest';
+import { parseTab, resolveTab, visibleTabs } from './sections';
+
+afterEach(() => {
+  delete process.env.DATA_SOURCE_DEFAULT;
+});
 
 describe('parseTab', () => {
   it('opens every built tab and falls back to Overview for anything else', () => {
@@ -7,6 +11,13 @@ describe('parseTab', () => {
       expect(parseTab(id)).toBe(id);
     }
     for (const bad of [undefined, 'foo', '', ['sms', 'ndr'], 7]) expect(parseTab(bad)).toBe('overview');
+  });
+
+  it('on real data only, leaves out the tabs with no backend yet', () => {
+    process.env.DATA_SOURCE_DEFAULT = 'gateway';
+    expect(visibleTabs().map((tab) => tab.id)).toEqual(['overview', 'rto', 'delivered']);
+    expect(parseTab('ndr')).toBe('overview');
+    expect(parseTab('rto')).toBe('rto');
   });
 });
 
