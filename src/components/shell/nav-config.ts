@@ -41,6 +41,8 @@ export interface NavItem {
   href: string;
   status: NavStatus;
   icon: LucideIcon;
+  /** The screen works on sample data only: its backend is not built yet. Hidden in production. */
+  soon?: boolean;
 }
 
 export interface NavGroup {
@@ -67,17 +69,17 @@ export const NAV: NavGroup[] = [
     children: [
       { label: 'All Shipments', href: '/orders', status: 'live', icon: Package },
       { label: 'B2C Shipments', href: '/orders/b2c', status: 'live', icon: UserRound },
-      { label: 'B2B Shipments', href: '/orders/b2b', status: 'live', icon: Building2 },
+      { label: 'B2B Shipments', href: '/orders/b2b', status: 'live', icon: Building2, soon: true },
       { label: 'Create Shipment', href: '/orders/create', status: 'live', icon: PackagePlus },
       { label: 'Bulk Upload', href: '/orders/bulk', status: 'live', icon: Upload },
-      { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'live', icon: Truck },
+      { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'live', icon: Truck, soon: true },
     ],
   },
   {
     label: 'Operations',
     icon: ArrowLeftRight,
     children: [
-      { label: 'NDR', href: '/ndr', status: 'live', icon: TriangleAlert },
+      { label: 'NDR', href: '/ndr', status: 'live', icon: TriangleAlert, soon: true },
       { label: 'RTO', href: '/rto', status: 'live', icon: Undo2 },
     ],
   },
@@ -88,19 +90,20 @@ export const NAV: NavGroup[] = [
     dividerBefore: true,
     children: [
       { label: 'Wallet Transactions', href: '/finances/wallet', status: 'live', icon: Wallet },
-      { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins },
-      { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText },
+      { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins, soon: true },
+      { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText, soon: true },
     ],
   },
   {
     label: 'Reconciliation',
     icon: Scale,
     children: [
-      { label: 'Weight', href: '/reconciliation/weight', status: 'live', icon: Weight },
+      { label: 'Weight', href: '/reconciliation/weight', status: 'live', icon: Weight, soon: true },
       {
         label: 'Weight Settings',
         href: '/reconciliation/weight-settings',
         status: 'live',
+        soon: true,
         icon: SlidersHorizontal,
       },
     ],
@@ -111,11 +114,12 @@ export const NAV: NavGroup[] = [
     icon: BriefcaseBusiness,
     dividerBefore: true,
     children: [
-      { label: 'Rate Card', href: '/tools/rate-card', status: 'live', icon: FileSpreadsheet },
+      { label: 'Rate Card', href: '/tools/rate-card', status: 'live', icon: FileSpreadsheet, soon: true },
       {
         label: 'Rate Calculator',
         href: '/tools/rate-calculator',
         status: 'live',
+        soon: true,
         icon: Calculator,
       },
       { label: 'Order Tracking', href: '/tools/tracking', status: 'live', icon: MapPinned },
@@ -133,11 +137,24 @@ export const NAV: NavGroup[] = [
     label: 'Help & Support',
     icon: CircleHelp,
     children: [
-      { label: 'Support Tickets', href: '/support/tickets', status: 'live', icon: Ticket },
+      { label: 'Support Tickets', href: '/support/tickets', status: 'live', icon: Ticket, soon: true },
       { label: 'Help Centre', href: '/support/help', status: 'live', icon: BookOpen },
     ],
   },
 ];
+
+/**
+ * The menu as shown: with `liveOnly` (production, real data only) screens whose backend is not
+ * built yet are left out, and so is a group left with no items.
+ */
+export function visibleNav(liveOnly: boolean, nav: NavGroup[] = NAV): NavGroup[] {
+  if (!liveOnly) return nav;
+  return nav.flatMap((group) => {
+    if (!group.children) return [group];
+    const children = group.children.filter((item) => !item.soon);
+    return children.length ? [{ ...group, children }] : [];
+  });
+}
 
 const ALL_HREFS = NAV.flatMap((group) => [
   ...(group.href ? [group.href] : []),

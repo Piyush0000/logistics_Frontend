@@ -129,7 +129,7 @@ export default async function AdminOverviewPage() {
               href="/admin/money"
             />
             <Figure
-              label="Revenue, last 30 days"
+              label="Shipping billed, last 30 days"
               value={formatPaise(result.data.money.revenue30dPaise)}
               icon={Wallet}
               tone="success"
@@ -206,7 +206,7 @@ export default async function AdminOverviewPage() {
           <Link href="/admin/shipments?view=rto" className="hover:text-primary underline-offset-2 hover:underline">
             {result.data.shipments.rto30d.toLocaleString('en-IN')} returned
           </Link>
-          , revenue{' '}
+          , billed{' '}
           <Link href="/admin/money" className="hover:text-primary underline-offset-2 hover:underline">
             {formatPaiseCompact(result.data.money.revenue30dPaise)}
           </Link>

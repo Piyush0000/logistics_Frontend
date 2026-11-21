@@ -130,11 +130,11 @@ describe('mock money summary', () => {
 });
 
 describe('gateway money service', () => {
-  it('says every call is not available yet', async () => {
+  it('says adjustments and COD reconciliation are not available yet', async () => {
     for (const result of [
-      await gatewayAdminMoneyService.getSummary(),
-      await gatewayAdminMoneyService.getWalletLedger('mer_001', 1),
       await gatewayAdminMoneyService.adjustWallet(adjustment),
+      await gatewayAdminMoneyService.listRemittances(),
+      await gatewayAdminMoneyService.listCodExceptions(),
     ]) {
       expect(result.ok ? null : result.error.kind).toBe('unavailable');
     }

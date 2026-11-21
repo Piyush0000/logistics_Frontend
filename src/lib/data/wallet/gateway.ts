@@ -5,14 +5,31 @@ import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
 import { notAvailable } from '../not-available';
 import { fromGateway } from '../source';
-import { mockWalletService } from './mock';
-import type { WalletService } from './types';
+import type { DebitType } from './filters';
+import { PAGE_SIZE } from './mock';
+import type { WalletService, WalletTransaction } from './types';
 
 /** GET /api/v1/wallet: ledger balances in integer paise. */
 const WalletSchema = z.object({
   available: z.number().int(),
   reserved: z.number().int(),
   pendingCod: z.number().int(),
+});
+
+/** GET /api/v1/wallet/transactions: the wallet's ledger lines, newest first. */
+const TransactionsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      at: z.string(),
+      direction: z.enum(['credit', 'debit']),
+      amount_paise: z.number().int(),
+      reason: z.string(),
+    }),
+  ),
+  page: z.number().int(),
+  limit: z.number().int(),
+  total: z.number().int(),
 });
 
 export async function fetchWalletBalance(token: string | null) {
@@ -22,12 +39,54 @@ export async function fetchWalletBalance(token: string | null) {
   );
 }
 
+/** Ledger reasons are plain text from ledger-engine; RTO fees name it, other debits are freight. */
+function debitTypeOf(reason: string): DebitType {
+  return /rto/i.test(reason) ? 'rto-freight' : 'b2c-prepaid';
+}
+
 export const gatewayWalletService: WalletService = {
   async getBalance() {
     return fetchWalletBalance(await merchantCredential('shipments'));
   },
-  // No service lists ledger entries yet, so the list stays labelled sample data.
-  listTransactions: mockWalletService.listTransactions,
+
+  async listTransactions(filters) {
+    const result = await gatewayFetch('/api/v1/wallet/transactions', {
+      schema: TransactionsSchema,
+      token: await merchantCredential('shipments'),
+      query: {
+        page: filters.page,
+        limit: PAGE_SIZE,
+        direction: filters.type === 'all' ? undefined : filters.type,
+        from: filters.from || undefined,
+        to: filters.to || undefined,
+      },
+    });
+    if (!result.ok) return fromGateway(result);
+    const entries = result.data.items
+      .map((line): WalletTransaction => ({
+        id: line.id,
+        direction: line.direction,
+        debitType: line.direction === 'debit' ? debitTypeOf(line.reason) : null,
+        title: line.reason,
+        orderRef: null,
+        amountPaise: line.amount_paise,
+        breakdown: null,
+        occurredAt: line.at,
+      }))
+      // The ledger does not store debit types; this narrows the page that was fetched.
+      .filter((entry) => filters.debitType === 'all' || entry.debitType === filters.debitType);
+    return {
+      ok: true,
+      source: 'gateway',
+      data: {
+        entries,
+        page: result.data.page,
+        pageCount: Math.max(1, Math.ceil(result.data.total / PAGE_SIZE)),
+        total: result.data.total,
+      },
+    };
+  },
+
   // No recharge route yet (PRD POST /v1/wallet/recharge); nothing is charged.
   startRecharge: notAvailable,
 };

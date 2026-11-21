@@ -52,7 +52,7 @@ describe('gateway rate card', () => {
     expect(await gatewayRatesService.getRateCard()).toEqual({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
   });
 
@@ -68,7 +68,7 @@ describe('gateway rate card', () => {
     ).toEqual({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
   });
 

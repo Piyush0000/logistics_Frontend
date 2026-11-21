@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { activeGroupLabel, isActivePath, isGroupActive, NAV } from './nav-config';
+import { activeGroupLabel, isActivePath, isGroupActive, NAV, visibleNav } from './nav-config';
 
 const APP_DIR = join(process.cwd(), 'src', 'app');
 
@@ -101,5 +101,23 @@ describe('Settings', () => {
     }
     expect(isGroupActive(settings!, '/settingsx')).toBe(false);
     expect(isGroupActive(settings!, '/orders')).toBe(false);
+  });
+});
+
+describe('visibleNav', () => {
+  const hrefs = (nav: ReturnType<typeof visibleNav>) =>
+    nav.flatMap((group) => [group.href, ...(group.children ?? []).map((item) => item.href)]).filter(Boolean);
+
+  it('shows every screen while sample data is allowed', () => {
+    expect(visibleNav(false)).toBe(NAV);
+  });
+
+  it('hides screens without a backend, and groups left empty, on real data only', () => {
+    const live = hrefs(visibleNav(true));
+    expect(live).toEqual(expect.arrayContaining(['/orders', '/orders/create', '/rto', '/finances/wallet', '/tools/tracking']));
+    for (const hidden of ['/ndr', '/finances/cod', '/reconciliation/weight', '/support/tickets', '/orders/b2b']) {
+      expect(live).not.toContain(hidden);
+    }
+    expect(visibleNav(true).some((group) => group.label === 'Reconciliation')).toBe(false);
   });
 });

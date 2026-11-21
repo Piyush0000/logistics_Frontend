@@ -17,7 +17,7 @@ import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
-import { SETTINGS_SECTIONS, unavailable, type SettingsSection } from './settings-nav';
+import { unavailable, visibleSettingsSections, type SettingsSection } from './settings-nav';
 
 export const metadata: Metadata = { title: 'Settings | Evoc Ships' };
 
@@ -103,7 +103,7 @@ export default async function SettingsPage() {
           description="Manage your account, your team and how your shipments are sent."
         />
         <ul className="motion-stagger grid gap-3 md:grid-cols-2 lg:gap-4 xl:grid-cols-3">
-          {SETTINGS_SECTIONS.map((section, index) => (
+          {visibleSettingsSections().map((section, index) => (
             <li key={section.href} className="min-w-0" style={{ '--i': index } as CSSProperties}>
               <SectionCard section={section} />
             </li>

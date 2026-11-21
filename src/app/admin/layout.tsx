@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { AdminShell } from '@/components/admin/admin-shell';
 import { getAdminSession } from '@/lib/admin/session';
+import { liveDataOnly } from '@/lib/data/source';
 
 export const metadata: Metadata = {
   title: { default: 'Admin | Evoc Ships', template: '%s | Evoc Ships Admin' },
@@ -17,7 +18,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = await getAdminSession();
   return (
     <div className="theme-app font-body">
-      {session ? <AdminShell email={session.email}>{children}</AdminShell> : children}
+      {session ? <AdminShell email={session.email} liveOnly={liveDataOnly()}>{children}</AdminShell> : children}
     </div>
   );
 }

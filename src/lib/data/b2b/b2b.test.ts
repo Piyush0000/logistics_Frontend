@@ -132,7 +132,7 @@ describe('gateway B2B shipments', () => {
     const expected = {
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     };
     expect(await gatewayB2bService.listShipments({ page: 1, search: '' })).toEqual(expected);
     expect(await gatewayB2bService.createShipment(valid)).toEqual(expected);

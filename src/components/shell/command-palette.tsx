@@ -5,16 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { buildCommands, filterCommands, type Command } from './command-items';
-import { NAV } from './nav-config';
-
-const COMMANDS = buildCommands(NAV);
+import { useVisibleNav } from './live-only';
 
 function Palette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const listId = useId();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
-  const results = useMemo(() => filterCommands(COMMANDS, query), [query]);
+  const nav = useVisibleNav();
+  const commands = useMemo(() => buildCommands(nav), [nav]);
+  const results = useMemo(() => filterCommands(commands, query), [commands, query]);
   const current = Math.min(active, Math.max(0, results.length - 1));
 
   const run = (command: Command | undefined) => {

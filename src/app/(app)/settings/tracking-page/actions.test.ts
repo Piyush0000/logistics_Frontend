@@ -70,7 +70,7 @@ describe('saveTrackingPageAction', () => {
   });
 
   it('shows the service error', async () => {
-    service.save.mockResolvedValue({ ok: false, source: 'gateway', error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' } });
-    expect(await saveTrackingPageAction({ ...branding, logo: 'keep' })).toEqual({ ok: false, message: 'This data is not available yet.' });
+    service.save.mockResolvedValue({ ok: false, source: 'gateway', error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' } });
+    expect(await saveTrackingPageAction({ ...branding, logo: 'keep' })).toEqual({ ok: false, message: 'Coming soon: this is not connected to live data yet.' });
   });
 });

@@ -1,8 +1,10 @@
 import { Suspense, type ReactNode } from 'react';
 import { AppShell } from '@/components/shell/app-shell';
+import { LiveOnlyProvider } from '@/components/shell/live-only';
 import { ShellIdentityProvider } from '@/components/shell/shell-identity';
 import { WalletChip, WalletChipSkeleton } from '@/components/shell/wallet-chip';
 import { getDemoSession } from '@/lib/auth/session';
+import { liveDataOnly } from '@/lib/data/source';
 
 /**
  * Signed-in screens. The shell renders here once and stays mounted between pages; pages render only
@@ -16,18 +18,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <ShellIdentityProvider email={session.email}>
-      <div className="theme-app font-body">
-        <AppShell
-          email={session.email}
-          wallet={
-            <Suspense fallback={<WalletChipSkeleton />}>
-              <WalletChip />
-            </Suspense>
-          }
-        >
-          {children}
-        </AppShell>
-      </div>
+      <LiveOnlyProvider liveOnly={liveDataOnly()}>
+        <div className="theme-app font-body">
+          <AppShell
+            email={session.email}
+            wallet={
+              <Suspense fallback={<WalletChipSkeleton />}>
+                <WalletChip />
+              </Suspense>
+            }
+          >
+            {children}
+          </AppShell>
+        </div>
+      </LiveOnlyProvider>
     </ShellIdentityProvider>
   );
 }

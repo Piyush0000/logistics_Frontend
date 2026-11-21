@@ -7,6 +7,7 @@ import { useId, useState, type PointerEvent, type Ref } from 'react';
 import { signOutAction } from '@/app/(auth)/login/actions';
 import { BrandMark } from '@/components/brand-mark';
 import { userLabel } from '@/lib/format/user';
+import { useVisibleNav } from './live-only';
 import { activeGroupLabel, isActivePath, isGroupActive, NAV, type NavGroup, type NavItem } from './nav-config';
 
 const ROW = 'flex h-12 w-full shrink-0 items-center gap-3 rounded-control px-3 text-base';
@@ -177,6 +178,7 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const nav = useVisibleNav();
   const { name, initials } = userLabel(email);
   // The desktop rail is wide when pinned open by a click or while the mouse rests on it.
   const wide = open || peek;
@@ -258,7 +260,7 @@ export function Sidebar({
         aria-label="Main"
         className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 py-2 [scrollbar-width:none]"
       >
-        {NAV.map((group) => (
+        {nav.map((group) => (
           <div key={group.label} className="contents">
             {group.section ? (
               <>

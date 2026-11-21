@@ -36,7 +36,7 @@ describe('submitNdrAction', () => {
     process.env.DATA_SOURCE_NDR = 'gateway';
     expect(await submitNdrAction({ ok: false }, form())).toEqual({
       ok: false,
-      message: 'This data is not available yet.',
+      message: 'Coming soon: this is not connected to live data yet.',
     });
   });
 });

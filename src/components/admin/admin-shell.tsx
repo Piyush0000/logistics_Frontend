@@ -7,18 +7,18 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { adminSignOutAction } from '@/app/admin/actions';
 import { BrandMark } from '@/components/brand-mark';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { activeAdminItem, ADMIN_NAV } from './admin-nav';
+import { activeAdminItem, visibleAdminNav } from './admin-nav';
 
 const ROW = 'flex h-11 w-full items-center gap-3 rounded-control px-3 text-[15px] transition-colors duration-150';
 const ACTIVE = 'bg-muted font-semibold text-primary';
 const IDLE = 'font-medium text-on-surface/70 hover:bg-tertiary hover:text-on-surface';
 
-function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
+function AdminNav({ liveOnly, onNavigate }: { liveOnly: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const current = activeAdminItem(pathname);
   return (
     <nav aria-label="Admin" className="flex flex-col gap-1">
-      {ADMIN_NAV.map(({ label, href, icon: Icon }) => {
+      {visibleAdminNav(liveOnly).map(({ label, href, icon: Icon }) => {
         const selected = current?.href === href;
         return (
           <Link
@@ -56,7 +56,16 @@ function SignOut() {
  * the theme switch and sign out. Separate from the merchant shell on purpose (different menu, no
  * wallet, no AWB search), but built from the same tokens and styles.
  */
-export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
+export function AdminShell({
+  email,
+  liveOnly = false,
+  children,
+}: {
+  email: string;
+  /** Real data only (production): sections with no backend yet are left out of the menu. */
+  liveOnly?: boolean;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const title = activeAdminItem(pathname)?.label ?? 'Admin';
@@ -82,7 +91,7 @@ export function AdminShell({ email, children }: { email: string; children: React
           Admin
         </span>
         <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
-          <AdminNav />
+          <AdminNav liveOnly={liveOnly} />
         </div>
         <p className="truncate border-t border-secondary px-2 pt-3 text-xs text-on-surface/60" title={email}>
           {email}
@@ -116,7 +125,7 @@ export function AdminShell({ email, children }: { email: string; children: React
               </button>
             </div>
             <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
-              <AdminNav onNavigate={() => setOpen(false)} />
+              <AdminNav liveOnly={liveOnly} onNavigate={() => setOpen(false)} />
             </div>
             <p className="truncate border-t border-secondary pt-3 text-xs text-on-surface/60">{email}</p>
           </div>

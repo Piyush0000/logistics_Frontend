@@ -20,6 +20,8 @@ export interface AdminNavItem {
   icon: LucideIcon;
   description: string;
   owner: 1 | 2;
+  /** No backend yet: hidden when the app runs on real data only. */
+  soon?: boolean;
 }
 
 export const ADMIN_NAV: readonly AdminNavItem[] = [
@@ -28,10 +30,15 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { label: 'Onboarding & KYC', href: '/admin/onboarding', icon: ShieldCheck, description: 'Review new sign-ups and approve or reject KYC.', owner: 1 },
   { label: 'Shipments', href: '/admin/shipments', icon: Package, description: 'Shipments from every merchant, stuck ones first.', owner: 1 },
   { label: 'Money', href: '/admin/money', icon: Wallet, description: 'Merchant wallets, adjustments and COD remittances.', owner: 2 },
-  { label: 'Pricing & couriers', href: '/admin/pricing', icon: Tags, description: 'Rate cards, zones and which couriers are on.', owner: 2 },
-  { label: 'Support', href: '/admin/support', icon: Headset, description: 'Tickets from every merchant.', owner: 1 },
+  { label: 'Pricing & couriers', href: '/admin/pricing', icon: Tags, description: 'Rate cards, zones and which couriers are on.', owner: 2, soon: true },
+  { label: 'Support', href: '/admin/support', icon: Headset, description: 'Tickets from every merchant.', owner: 1, soon: true },
   { label: 'System', href: '/admin/system', icon: Cog, description: 'Service health, webhook failures and the audit log.', owner: 2 },
 ];
+
+/** The menu as shown: without the unbuilt sections when the app runs on real data only. */
+export function visibleAdminNav(liveOnly: boolean): readonly AdminNavItem[] {
+  return liveOnly ? ADMIN_NAV.filter((item) => !item.soon) : ADMIN_NAV;
+}
 
 /** The nav item a path belongs to: Overview only for `/admin` itself, others for their whole subtree. */
 export function activeAdminItem(pathname: string): AdminNavItem | undefined {

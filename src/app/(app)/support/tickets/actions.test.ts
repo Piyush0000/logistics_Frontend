@@ -57,9 +57,9 @@ describe('createTicketAction', () => {
     service.createTicket.mockResolvedValue({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
-    expect(await createTicketAction(input)).toEqual({ ok: false, message: 'This data is not available yet.' });
+    expect(await createTicketAction(input)).toEqual({ ok: false, message: 'Coming soon: this is not connected to live data yet.' });
   });
 });
 

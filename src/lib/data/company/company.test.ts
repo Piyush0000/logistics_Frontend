@@ -106,7 +106,7 @@ describe('gateway company service', () => {
     const expected = {
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     };
     expect(await gatewayCompanyService.getCompany()).toEqual(expected);
     expect(await gatewayCompanyService.saveCompany(details, docs)).toEqual(expected);

@@ -95,7 +95,7 @@ describe('gateway tracking-page service', () => {
     const expected = {
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     };
     expect(await gatewayTrackingPageService.get()).toEqual(expected);
     expect(await gatewayTrackingPageService.save(valid as never)).toEqual(expected);

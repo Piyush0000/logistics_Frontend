@@ -98,11 +98,21 @@ describe('adjustWalletAction', () => {
 
   it('saves nothing in gateway mode, with the unavailable message', async () => {
     process.env.DATA_SOURCE_ADMIN_MONEY = 'gateway';
+    // The wallet itself is read from the gateway; only the adjustment has no route yet.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          items: [{ merchant_id: 'mer_002', merchant_name: 'Acme', available: 100, reserved: 0, pending_cod: 0 }],
+        }),
+      ),
+    );
     expect(await adjustWalletAction(IDLE, form({ step: 'confirm' }))).toEqual({
       status: 'invalid',
       errors: {},
-      message: 'This data is not available yet.',
+      message: 'Coming soon: this is not connected to live data yet.',
     });
     expect(audit).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });

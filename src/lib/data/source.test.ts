@@ -19,6 +19,16 @@ describe('resolveDataSource', () => {
     expect(resolveDataSource('wallet', { DATA_SOURCE_WALLET: '' })).toBe('mock');
   });
 
+  it('falls back to DATA_SOURCE_DEFAULT, which a feature setting overrides', () => {
+    expect(resolveDataSource('wallet', { DATA_SOURCE_DEFAULT: 'gateway' })).toBe('gateway');
+    expect(
+      resolveDataSource('wallet', { DATA_SOURCE_DEFAULT: 'gateway', DATA_SOURCE_WALLET: 'mock' }),
+    ).toBe('mock');
+    expect(() => resolveDataSource('wallet', { DATA_SOURCE_DEFAULT: 'live' })).toThrow(
+      'DATA_SOURCE_DEFAULT must be "gateway" or "mock"',
+    );
+  });
+
   it('rejects an unknown value instead of silently showing sample data', () => {
     expect(() => resolveDataSource('wallet', { DATA_SOURCE_WALLET: 'live' })).toThrow(
       'DATA_SOURCE_WALLET must be "gateway" or "mock"',

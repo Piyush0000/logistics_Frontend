@@ -10,13 +10,22 @@ export type DataResult<T> =
 
 type Env = Record<string, string | undefined>;
 
-/** Picks a feature's source from DATA_SOURCE_<FEATURE>. Features use mock until switched. */
+/**
+ * Picks a feature's source from DATA_SOURCE_<FEATURE>, else DATA_SOURCE_DEFAULT, else mock.
+ * Production sets DATA_SOURCE_DEFAULT=gateway, so no screen can fall back to sample data there.
+ */
 export function resolveDataSource(feature: string, env: Env = process.env): DataSource {
-  const name = `DATA_SOURCE_${feature.toUpperCase()}`;
+  const own = `DATA_SOURCE_${feature.toUpperCase()}`;
+  const name = env[own] ? own : 'DATA_SOURCE_DEFAULT';
   const value = env[name];
   if (!value) return 'mock';
   if (value === 'gateway' || value === 'mock') return value;
   throw new Error(`${name} must be "gateway" or "mock"`);
+}
+
+/** True when the app runs on real data only (production): unbuilt screens are then hidden. */
+export function liveDataOnly(env: Env = process.env): boolean {
+  return env.DATA_SOURCE_DEFAULT === 'gateway';
 }
 
 export function fromMock<T>(data: T): DataResult<T> {

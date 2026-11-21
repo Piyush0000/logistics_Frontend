@@ -95,12 +95,12 @@ describe('saveNotificationsAction', () => {
     const failure = {
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     };
     service.get.mockResolvedValue(failure);
     expect(await saveNotificationsAction({ events: {} })).toEqual({
       ok: false,
-      message: 'This data is not available yet.',
+      message: 'Coming soon: this is not connected to live data yet.',
     });
     expect(service.save).not.toHaveBeenCalled();
   });

@@ -1,12 +1,15 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { NavStatus } from '@/components/shell/nav-config';
+import { liveDataOnly } from '@/lib/data/source';
 
 export interface SettingsSection {
   label: string;
   description: string;
   href: string;
   status: NavStatus;
+  /** Works on sample data only: its backend is not built yet. Hidden in production. */
+  soon?: boolean;
 }
 
 /** In the order of the plan's Decisions table. Each later task flips its section to `live`. */
@@ -16,24 +19,28 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Your name, phone number and password.',
     href: '/settings/profile',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Company & KYC',
     description: 'Your business details and verification documents.',
     href: '/settings/company',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Users & Roles',
     description: 'Invite teammates and choose what each can do.',
     href: '/settings/users',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Pickup Addresses',
     description: 'The places couriers collect your parcels from.',
     href: '/settings/pickup-addresses',
     status: 'live',
+    soon: true,
   },
   {
     label: 'API Keys & Channel Integrations',
@@ -46,26 +53,35 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Choose which messages your buyers get about their parcels.',
     href: '/settings/notifications',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Tracking Page',
     description: 'Set up the page your buyers open to follow a parcel.',
     href: '/settings/tracking-page',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Courier Rules',
     description: 'Decide which couriers are used for which shipments.',
     href: '/settings/courier-rules',
     status: 'live',
+    soon: true,
   },
   {
     label: 'Sub-merchants',
     description: 'Manage the sellers who ship under your account.',
     href: '/settings/sub-merchants',
     status: 'live',
+    soon: true,
   },
 ];
+
+/** The sections shown: without the unbuilt ones when the app runs on real data only. */
+export function visibleSettingsSections(liveOnly = liveDataOnly()): SettingsSection[] {
+  return liveOnly ? SETTINGS_SECTIONS.filter((section) => !section.soon) : SETTINGS_SECTIONS;
+}
 
 export const unavailable = (label: string) => `${label} is not available yet`;
 
@@ -91,7 +107,7 @@ export function SettingsNav({ current }: { current: string }) {
         className="motion-rise hidden rounded-card border border-secondary bg-surface p-2 lg:sticky lg:top-24 lg:block"
       >
         <ul className="flex flex-col gap-1">
-          {SETTINGS_SECTIONS.map((section) => (
+          {visibleSettingsSections().map((section) => (
             <li key={section.href}>
               {section.status === 'live' ? (
                 <Link

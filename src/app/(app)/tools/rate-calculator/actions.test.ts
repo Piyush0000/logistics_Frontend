@@ -110,8 +110,8 @@ describe('quoteAction', () => {
     service.quote.mockResolvedValue({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
-    expect(await quoteAction(valid)).toEqual({ ok: false, message: 'This data is not available yet.' });
+    expect(await quoteAction(valid)).toEqual({ ok: false, message: 'Coming soon: this is not connected to live data yet.' });
   });
 });

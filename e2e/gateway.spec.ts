@@ -87,7 +87,7 @@ test.describe('with no wallet or COD route', () => {
 
     for (const id of ['wallet-balance', 'wallet-transactions']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
       await expect(card.getByText('Sample data')).toBeHidden();
     }
@@ -99,7 +99,7 @@ test.describe('with no wallet or COD route', () => {
 
     for (const id of ['cod-summary', 'cod-remittances']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
       await expect(card.getByText('Sample data')).toBeHidden();
     }
@@ -228,7 +228,7 @@ test.describe('home with no wallet or setup route', () => {
 
     for (const id of ['stat-wallet', 'stat-ndr', 'checklist-card']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
       await expect(card.getByText('Sample data')).toBeHidden();
     }
@@ -323,7 +323,7 @@ test.describe('B2B with no route', () => {
     await page.goto('/orders/b2b', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('b2b-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(card.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Create B2B shipment' })).toHaveCount(0);
@@ -400,7 +400,7 @@ test.describe('pickups with no route', () => {
     await page.goto('/orders/pickups', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('pickups-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(card.getByText('Sample data')).toBeHidden();
     // Scheduling needs the pickup routes, so it is not offered.
@@ -412,7 +412,7 @@ test.describe('pickups with no route', () => {
     await signIn(page);
     await page.goto('/orders/pickups/manifest-print/pk-001');
 
-    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(page.getByTestId('sample-manifest')).toHaveCount(0);
   });
 });
@@ -425,7 +425,7 @@ test.describe('invoices with no route', () => {
     await page.goto('/finances/invoices', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('invoices-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('invoice-row')).toHaveCount(0);
@@ -435,7 +435,7 @@ test.describe('invoices with no route', () => {
     await signIn(page);
     await page.goto('/finances/invoices/inv-2026-10');
 
-    await expect(page.getByText('This data is not available yet.')).toBeVisible();
+    await expect(page.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(page.getByText('Sample invoice. Not a tax document.')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
   });
@@ -450,7 +450,7 @@ test.describe('NDR with no route', () => {
 
     for (const id of ['ndr-kpis', 'ndr-list']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     }
     await expect(page.getByText('Sample data')).toBeHidden();
@@ -522,7 +522,7 @@ test.describe('wallet recharge with no route', () => {
 
     await dialog.getByRole('button', { name: 'Recharge', exact: true }).click();
 
-    await expect(dialog.getByText('This data is not available yet.')).toBeVisible();
+    await expect(dialog.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(dialog.getByText('No payment was taken')).toBeHidden();
   });
 });
@@ -536,7 +536,7 @@ test.describe('weight with no route', () => {
 
     for (const id of ['weight-summary', 'weight-card']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     }
     await expect(page.getByText('Sample data')).toBeHidden();
@@ -553,7 +553,7 @@ test.describe('support tickets with no route', () => {
     await page.goto('/support/tickets', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('tickets-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('ticket-row')).toHaveCount(0);
@@ -564,7 +564,7 @@ test.describe('support tickets with no route', () => {
     // A ticket page shows the same card, not a made-up ticket or a not-found page.
     await page.goto('/support/tickets/tk-001', { waitUntil: 'networkidle' });
     const ticket = page.getByTestId('ticket-card');
-    await expect(ticket.getByText('This data is not available yet.')).toBeVisible();
+    await expect(ticket.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('ticket-message')).toHaveCount(0);
   });
@@ -578,7 +578,7 @@ test.describe('weight settings with no route', () => {
     await page.goto('/reconciliation/weight-settings', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('presets-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('preset-row')).toHaveCount(0);
@@ -596,7 +596,7 @@ test.describe('profile with no route', () => {
 
     for (const id of ['profile-card', 'password-card']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('This data is not available yet.')).toBeVisible();
+      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     }
     await expect(page.getByText('Sample data')).toBeHidden();
@@ -614,7 +614,7 @@ test.describe('pickup addresses with no route', () => {
     await page.goto('/settings/pickup-addresses', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('addresses-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('address-item')).toHaveCount(0);
@@ -631,7 +631,7 @@ test.describe('buyer notifications with no route', () => {
     await page.goto('/settings/notifications', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('notifications-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('switch')).toHaveCount(0);
@@ -648,7 +648,7 @@ test.describe('company with no route', () => {
     await page.goto('/settings/company', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('company-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Submit for review' })).toHaveCount(0);
@@ -664,7 +664,7 @@ test.describe('users and roles with no route', () => {
     await page.goto('/settings/users', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('team-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Invite user' })).toHaveCount(0);
@@ -683,7 +683,7 @@ test.describe('courier rules with no route', () => {
     await page.goto('/settings/courier-rules', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('rules-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('courier-row')).toHaveCount(0);
@@ -700,7 +700,7 @@ test.describe('sub-merchants with no route', () => {
     await page.goto('/settings/sub-merchants', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('sub-merchants-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Onboard seller' })).toHaveCount(0);
@@ -717,7 +717,7 @@ test.describe('rate card with no route', () => {
     await page.goto('/tools/rate-card', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('rates-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('rate-row')).toHaveCount(0);
@@ -743,7 +743,7 @@ test.describe('rate calculator with no route', () => {
     await page.getByRole('button', { name: 'Get quotes' }).click();
 
     const card = page.getByTestId('quotes-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByTestId('quote-item')).toHaveCount(0);
@@ -878,7 +878,7 @@ test.describe('reports with no COD, wallet or NDR route', () => {
       const response = await page.request.get(`/reports/export?type=${type}&from=2026-10-01&to=2026-10-31`);
 
       expect(response.status(), type).toBe(503);
-      expect(await response.text(), type).toBe('This data is not available yet.');
+      expect(await response.text(), type).toBe('Coming soon: this is not connected to live data yet.');
     }
   });
 });
@@ -891,7 +891,7 @@ test.describe('dashboard pickups tab with no pickups route', () => {
     await page.goto('/dashboard?tab=pickups', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('pickups-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(card.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('aria-selected', 'true');
@@ -905,7 +905,7 @@ test.describe('dashboard NDR tab with no route', () => {
     await signIn(page);
     await page.goto('/dashboard?tab=ndr');
     const card = page.getByTestId('ndr-tab-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'NDR' })).toHaveAttribute('aria-selected', 'true');
@@ -952,7 +952,7 @@ test.describe('dashboard Delivered tab with the stand-in gateway', () => {
     await expect(total.getByTestId('tile-Delivered')).toContainText('5');
     await expect(total.getByText('Sample data')).toBeHidden();
     const trend = page.getByTestId('delivered-trend-card');
-    await expect(trend.getByText('This data is not available yet.')).toBeVisible();
+    await expect(trend.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(trend.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'Delivered' })).toHaveAttribute('aria-selected', 'true');
@@ -980,7 +980,7 @@ test.describe('dashboard Revenue tab with no gateway route', () => {
     await signIn(page);
     await page.goto('/dashboard?tab=revenue');
     const card = page.getByTestId('revenue-tab-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'Revenue' })).toHaveAttribute('aria-selected', 'true');
@@ -994,7 +994,7 @@ test.describe('dashboard SMS tab with no gateway route', () => {
     await signIn(page);
     await page.goto('/dashboard?tab=sms');
     const card = page.getByTestId('sms-tab-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('tab', { name: 'SMS' })).toHaveAttribute('aria-selected', 'true');
@@ -1009,7 +1009,7 @@ test.describe('tracking page settings with no route', () => {
     await page.goto('/settings/tracking-page', { waitUntil: 'networkidle' });
 
     const card = page.getByTestId('tracking-page-card');
-    await expect(card.getByText('This data is not available yet.')).toBeVisible();
+    await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
     await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(page.getByText('Sample data')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(0);

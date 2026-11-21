@@ -69,7 +69,7 @@ describe('createB2bShipmentAction', () => {
     b2b.createShipment.mockResolvedValue({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
 
     const result = await createB2bShipmentAction(input);

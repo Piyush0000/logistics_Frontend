@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'demo-token' }));
 import { walletService } from '.';
 import { DEFAULT_FILTERS, type WalletFilters } from './filters';
 import { gatewayWalletService } from './gateway';
@@ -98,10 +99,27 @@ describe('listTransactions', () => {
 });
 
 describe('gateway wallet service', () => {
-  it('labels transactions as sample data, since no service lists ledger entries yet', async () => {
-    const result = await gatewayWalletService.listTransactions(DEFAULT_FILTERS);
+  it('lists the wallet ledger lines from the gateway, never sample data', async () => {
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(async () =>
+      Response.json({
+        items: [
+          { id: 'e1', at: '2026-11-21T10:00:00.000Z', direction: 'debit', amount_paise: 7200, reason: 'Charge RTO handling fee' },
+          { id: 'e2', at: '2026-11-20T10:00:00.000Z', direction: 'credit', amount_paise: 500, reason: 'Release shipment reservation' },
+        ],
+        page: 1,
+        limit: 10,
+        total: 12,
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await gatewayWalletService.listTransactions({ ...DEFAULT_FILTERS, type: 'debit', from: '2026-11-01' });
+    vi.unstubAllGlobals();
 
-    expect(result).toMatchObject({ ok: true, source: 'mock' });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/api/v1/wallet/transactions?page=1&limit=10&direction=debit&from=2026-11-01');
+    expect(result).toMatchObject({ ok: true, source: 'gateway', data: { page: 1, pageCount: 2, total: 12 } });
+    if (!result.ok) return;
+    expect(result.data.entries[0]).toMatchObject({ direction: 'debit', debitType: 'rto-freight', amountPaise: 7200 });
+    expect(result.data.entries[1]).toMatchObject({ direction: 'credit', debitType: null });
   });
 
   it('never fakes a recharge', async () => {

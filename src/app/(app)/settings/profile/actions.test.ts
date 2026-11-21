@@ -64,11 +64,11 @@ describe('saveProfileAction', () => {
     service.updateProfile.mockResolvedValueOnce({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
     expect(await saveProfileAction(profile)).toEqual({
       ok: false,
-      message: 'This data is not available yet.',
+      message: 'Coming soon: this is not connected to live data yet.',
     });
 
     service.updateProfile.mockResolvedValueOnce({
@@ -113,11 +113,11 @@ describe('changePasswordAction', () => {
     service.changePassword.mockResolvedValue({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'This data is not available yet.' },
+      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
     });
     expect(await changePasswordAction(passwords)).toEqual({
       ok: false,
-      message: 'This data is not available yet.',
+      message: 'Coming soon: this is not connected to live data yet.',
     });
   });
 });
