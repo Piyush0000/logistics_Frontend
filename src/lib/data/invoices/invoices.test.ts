@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { invoiceService } from '.';
 import { gatewayInvoiceService } from './gateway';
 import { gstOf, INVOICE_YEARS } from './gst';
 import { mockInvoiceService, SAMPLE_INVOICES } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const list = async (query: { page: number; year?: number }) => {
   const result = await mockInvoiceService.listInvoices(query);
@@ -96,10 +98,36 @@ describe('mock getInvoice', () => {
 });
 
 describe('gateway invoices', () => {
-  it('are unavailable, as the backend has no invoice route', async () => {
-    const expected = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewayInvoiceService.listInvoices({ page: 1 })).toMatchObject(expected);
-    expect(await gatewayInvoiceService.getInvoice('inv-2026-10')).toMatchObject(expected);
+  it('reads monthly statements and pages them', async () => {
+    const statement = (month: string) => ({
+      id: month,
+      number: `EVS/2026-27/ABC123/${month.replace('-', '')}`,
+      period_start: `${month}-01`,
+      period_end: `${month}-30`,
+      shipments: 3,
+      freight_paise: 16_520,
+      cod_fees_paise: 0,
+      taxable_paise: 14_000,
+      gst_paise: 2_520,
+      total_paise: 16_520,
+      status: 'paid',
+      issued_at: '2026-11-01T00:00:00.000Z',
+    });
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url) =>
+      url.endsWith('/2026-10')
+        ? Response.json(statement('2026-10'))
+        : Response.json({ items: Array.from({ length: 12 }, (_, i) => statement(`2025-${String(12 - i).padStart(2, '0')}`)) }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const page2 = await gatewayInvoiceService.listInvoices({ page: 2, year: 2025 });
+    expect(page2).toMatchObject({ ok: true, data: { page: 2, pageCount: 2 } });
+    if (page2.ok) expect(page2.data.items).toHaveLength(2);
+    expect(new URL(fetchMock.mock.calls[0]![0]).searchParams.get('year')).toBe('2025');
+    expect(await gatewayInvoiceService.getInvoice('2026-10')).toMatchObject({
+      ok: true,
+      data: { taxablePaise: 14_000, gstPaise: 2_520, totalPaise: 16_520, status: 'paid' },
+    });
+    vi.unstubAllGlobals();
   });
 });
 

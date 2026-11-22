@@ -115,7 +115,7 @@ describe('visibleNav', () => {
   it('hides screens without a backend, and groups left empty, on real data only', () => {
     const live = hrefs(visibleNav(true));
     expect(live).toEqual(expect.arrayContaining(['/orders', '/orders/create', '/rto', '/finances/wallet', '/finances/cod', '/ndr', '/tools/tracking']));
-    for (const hidden of ['/reconciliation/weight', '/support/tickets', '/orders/b2b']) {
+    for (const hidden of ['/reconciliation/weight', '/orders/b2b']) {
       expect(live).not.toContain(hidden);
     }
     expect(visibleNav(true).some((group) => group.label === 'Reconciliation')).toBe(false);

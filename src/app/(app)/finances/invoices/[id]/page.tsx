@@ -111,14 +111,14 @@ export default async function InvoicePrintPage({ params }: InvoicePageProps) {
 
       {/* On paper the card's border, tint and glass drop away, leaving a plain light sheet. */}
       <article className="motion-rise grid gap-6 rounded-card border border-secondary bg-surface p-card lg:p-8 print:rounded-none print:border-0 print:bg-transparent! print:bg-none! print:p-0 print:backdrop-blur-none! print:animate-none">
-        {result.source === 'mock' ? (
-          <p
-            data-testid="sample-invoice"
-            className="rounded-control border border-primary/40 bg-muted px-3 py-2 text-sm font-semibold text-primary print:border-on-surface print:bg-transparent print:text-on-surface"
-          >
-            Sample invoice. Not a tax document.
-          </p>
-        ) : null}
+        <p
+          data-testid="sample-invoice"
+          className="rounded-control border border-primary/40 bg-muted px-3 py-2 text-sm font-semibold text-primary print:border-on-surface print:bg-transparent print:text-on-surface"
+        >
+          {result.source === 'mock'
+            ? 'Sample invoice. Not a tax document.'
+            : 'Monthly statement of shipping charged from your wallet, GST included. Not a tax invoice.'}
+        </p>
 
         <header className="grid gap-1 border-b border-secondary pb-5">
           <h1 className="font-heading text-[26px] leading-9 font-extrabold tracking-[-0.02em] break-words lg:text-[34px] lg:leading-[42px]">

@@ -93,7 +93,7 @@ export const NAV: NavGroup[] = [
     children: [
       { label: 'Wallet Transactions', href: '/finances/wallet', status: 'live', icon: Wallet },
       { label: 'COD Remittance', href: '/finances/cod', status: 'live', icon: HandCoins },
-      { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText, soon: true },
+      { label: 'Invoice', href: '/finances/invoices', status: 'live', icon: ReceiptText },
     ],
   },
   {
@@ -138,7 +138,7 @@ export const NAV: NavGroup[] = [
     label: 'Help & Support',
     icon: CircleHelp,
     children: [
-      { label: 'Support Tickets', href: '/support/tickets', status: 'live', icon: Ticket, soon: true },
+      { label: 'Support Tickets', href: '/support/tickets', status: 'live', icon: Ticket },
       { label: 'Help Centre', href: '/support/help', status: 'live', icon: BookOpen },
     ],
   },

@@ -31,7 +31,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { label: 'Shipments', href: '/admin/shipments', icon: Package, description: 'Shipments from every merchant, stuck ones first.', owner: 1 },
   { label: 'Money', href: '/admin/money', icon: Wallet, description: 'Merchant wallets, adjustments and COD remittances.', owner: 2 },
   { label: 'Pricing & couriers', href: '/admin/pricing', icon: Tags, description: 'Rate cards, zones and which couriers are on.', owner: 2, soon: true },
-  { label: 'Support', href: '/admin/support', icon: Headset, description: 'Tickets from every merchant.', owner: 1, soon: true },
+  { label: 'Support', href: '/admin/support', icon: Headset, description: 'Tickets from every merchant.', owner: 1 },
   { label: 'System', href: '/admin/system', icon: Cog, description: 'Service health, webhook failures and the audit log.', owner: 2 },
 ];
 

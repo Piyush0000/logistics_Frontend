@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewaySupportService } from './gateway';
 import { supportService } from './index';
 import { checkReply, checkTicket } from './input';
 import { mockSupportService as mock, RESOLVED_TEST_TICKETS, SAMPLE_TICKETS } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const valid = {
   subject: 'Courier did not pick up',
@@ -137,12 +139,37 @@ describe('mock support service', () => {
 });
 
 describe('gateway support service', () => {
-  it('shows tickets as unavailable in gateway mode', async () => {
-    const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewaySupportService.listTickets({ page: 1 })).toMatchObject(unavailable);
-    expect(await gatewaySupportService.getTicket('tk-001')).toMatchObject(unavailable);
-    expect(await gatewaySupportService.createTicket(valid)).toMatchObject(unavailable);
-    expect(await gatewaySupportService.reply('tk-001', 'Hello there')).toMatchObject(unavailable);
+  it('maps tickets and their conversation from the support API', async () => {
+    const apiTicket = {
+      id: 't1',
+      number: 1042,
+      merchant_id: 'm1',
+      merchant_name: 'Evoc',
+      subject: 'Parcel stuck',
+      category: 'shipment',
+      awb: 'EVS0000000018',
+      status: 'AWAITING_MERCHANT',
+      priority: 'NORMAL',
+      created_at: '2026-11-21T00:00:00.000Z',
+      updated_at: '2026-11-22T00:00:00.000Z',
+      messages: [
+        { id: 'a', sender: 'MERCHANT', sender_name: 'Asha', body: 'Stuck', created_at: '2026-11-21T00:00:00.000Z' },
+        { id: 'b', sender: 'ADMIN', sender_name: 'Evoc support', body: 'Checking', created_at: '2026-11-22T00:00:00.000Z' },
+      ],
+    };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (_url, init) =>
+      init?.method === 'POST' ? Response.json(apiTicket) : Response.json({ items: [apiTicket], page: 1, limit: 10, total: 11 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const list = await gatewaySupportService.listTickets({ status: 'awaiting_you', page: 1 });
+    expect(list).toMatchObject({
+      ok: true,
+      data: { pageCount: 2, items: [{ status: 'awaiting_you', messages: [{ from: 'you' }, { from: 'support' }] }] },
+    });
+    expect(new URL(fetchMock.mock.calls[0]![0]).searchParams.get('status')).toBe('AWAITING_MERCHANT');
+    await gatewaySupportService.createTicket(valid);
+    expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toMatchObject({ subject: valid.subject, body: valid.body });
+    vi.unstubAllGlobals();
   });
 
   it('is picked by DATA_SOURCE_SUPPORT', () => {

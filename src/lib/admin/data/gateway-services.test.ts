@@ -4,6 +4,7 @@ import { gatewayAdminMoneyService } from './money/gateway';
 import { gatewayAdminOnboardingService } from './onboarding/gateway';
 import { attentionFor } from './overview/gateway';
 import { gatewayAdminShipmentsService } from './shipments/gateway';
+import { gatewayAdminSupportService } from './support/gateway';
 
 const ADMIN_KEY = 'k'.repeat(64);
 const M1 = '0f8fad5b-d9cb-469f-a165-70867728950e';
@@ -244,5 +245,30 @@ describe('admin COD (gateway)', () => {
     const result = await gatewayAdminMoneyService.reconcileRemittance('COD-DEL-20261122');
     expect(call().url.pathname).toBe('/api/v1/admin/cod/batches/COD-DEL-20261122/reconcile');
     expect(result).toMatchObject({ ok: true, data: { matched: 1, mismatched: 1, remittance: { status: 'short' } } });
+  });
+});
+
+describe('admin support (gateway)', () => {
+  it('lists with filters, replies as Evoc support and updates status and priority', async () => {
+    const ticket = {
+      id: 't1', number: 1042, merchant_id: M1, merchant_name: 'Evoc Labs', subject: 'Parcel stuck',
+      category: 'shipment', awb: null, status: 'OPEN', priority: 'HIGH',
+      created_at: '2026-11-21T00:00:00.000Z', updated_at: '2026-11-22T00:00:00.000Z', messages: [],
+    };
+    answer({ items: [ticket] });
+    const list = await gatewayAdminSupportService.listTickets({ status: 'open', priority: 'high', query: '1042' });
+    expect(Object.fromEntries(call().url.searchParams)).toMatchObject({ status: 'OPEN', priority: 'HIGH', q: '1042' });
+    expect(list).toMatchObject({ ok: true, data: [{ subject: '#1042 Parcel stuck', priority: 'high', status: 'open' }] });
+
+    answer({ ...ticket, status: 'AWAITING_MERCHANT' });
+    await gatewayAdminSupportService.reply('t1', 'We are on it');
+    expect(JSON.parse(String(call().init.body))).toEqual({ body: 'We are on it', sender_name: 'Evoc support' });
+
+    answer({ ...ticket, status: 'RESOLVED', priority: 'LOW' });
+    expect(await gatewayAdminSupportService.updateTicket('t1', { status: 'resolved', priority: 'low' })).toMatchObject({
+      ok: true,
+      data: { status: 'resolved', priority: 'low' },
+    });
+    expect(JSON.parse(String(call().init.body))).toEqual({ status: 'RESOLVED', priority: 'LOW' });
   });
 });
