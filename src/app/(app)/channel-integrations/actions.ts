@@ -12,6 +12,8 @@ import {
   type WebhookFieldErrors,
 } from '@/lib/data/webhooks';
 import { parseWebhookInput } from '@/lib/data/webhooks/input';
+import { apiKeyService } from '@/lib/data/api-keys';
+import { MAX_KEY_NAME } from '@/lib/data/api-keys/types';
 
 const PAGE_PATH = '/channel-integrations';
 const SIGN_IN_AGAIN = 'Sign in again to continue.';
@@ -78,4 +80,20 @@ export async function retryDeliveryAction(id: unknown): Promise<ActionResult> {
   if (!isId(id)) return { ok: false, message: BAD_ID };
 
   return fromResult(await webhookService().retryDelivery(id), () => undefined);
+}
+
+/** Creates an API key; the full key comes back once, to show and copy. */
+export async function createApiKeyAction(name: unknown): Promise<ActionResult<{ key: string }>> {
+  if (!(await getDemoSession())) return { ok: false, message: SIGN_IN_AGAIN };
+  const clean = typeof name === 'string' ? name.trim() : '';
+  if (!clean || clean.length > MAX_KEY_NAME) {
+    return { ok: false, message: `Name the key in 1 to ${MAX_KEY_NAME} characters, for example "Shopify store".` };
+  }
+  return fromResult(await apiKeyService().create(clean), ({ key }) => ({ key }));
+}
+
+export async function revokeApiKeyAction(id: unknown): Promise<ActionResult<undefined>> {
+  if (!(await getDemoSession())) return { ok: false, message: SIGN_IN_AGAIN };
+  if (!isId(id)) return { ok: false, message: BAD_ID };
+  return fromResult(await apiKeyService().revoke(id), () => undefined);
 }

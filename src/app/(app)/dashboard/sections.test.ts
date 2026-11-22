@@ -15,7 +15,7 @@ describe('parseTab', () => {
 
   it('on real data only, leaves out the tabs with no backend yet', () => {
     process.env.DATA_SOURCE_DEFAULT = 'gateway';
-    expect(visibleTabs().map((tab) => tab.id)).toEqual(['overview', 'ndr', 'rto', 'delivered']);
+    expect(visibleTabs().map((tab) => tab.id)).toEqual(['overview', 'ndr', 'rto', 'delivered', 'revenue']);
     expect(parseTab('sms')).toBe('overview');
     expect(parseTab('rto')).toBe('rto');
   });

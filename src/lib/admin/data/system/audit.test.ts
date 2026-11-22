@@ -6,6 +6,8 @@ import { gatewayAdminSystemService } from './gateway';
 import { adminSystemService, recordAudit } from './index';
 import { createMockAdminSystemService } from './mock';
 
+vi.mock('../../session', () => ({ getAdminSession: async () => ({ email: 'ops@evoc.test' }) }));
+
 const list = async (
   service = createMockAdminSystemService(),
   filters: Partial<AuditFilters> = {},
@@ -161,22 +163,35 @@ describe('recordAudit helper', () => {
   it('never throws, so a failed audit cannot undo the action that called it', async () => {
     process.env.DATA_SOURCE_ADMIN_SYSTEM = 'gateway';
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    // The audit store cannot be reached.
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new TypeError('fetch failed');
+    }));
 
     await expect(
       recordAudit({ action: 'Wallet credit', target: 'mer_001', detail: 'x' }),
     ).resolves.toBeUndefined();
     expect(warn).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
   });
 });
 
 describe('gateway', () => {
-  it('has no audit store yet, so it never passes sample data off as real', async () => {
-    expect(await gatewayAdminSystemService.listAuditLog(DEFAULT_AUDIT_FILTERS)).toMatchObject({
-      ok: false,
-      source: 'gateway',
-    });
-    expect(
-      await gatewayAdminSystemService.recordAudit({ action: 'a', target: 'b', detail: 'c' }),
-    ).toMatchObject({ ok: false, source: 'gateway' });
+  it('lists the live log and records entries with the signed-in admin', async () => {
+    const log = {
+      items: [{ id: 'a1', actor: 'admin@evoc.test', action: 'Wallet credit', target: 'm1 · Evoc', detail: 'x', at: '2026-11-22T00:00:00.000Z' }],
+      page: 1,
+      limit: 10,
+      total: 1,
+      actions: ['Wallet credit'],
+    };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => Response.json(log));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await gatewayAdminSystemService.listAuditLog({ ...DEFAULT_AUDIT_FILTERS, action: 'Not a real action' });
+    expect(result).toMatchObject({ ok: true, data: { actions: ['Wallet credit'], applied: { action: '' }, page: { total: 1 } } });
+    await gatewayAdminSystemService.recordAudit({ action: 'Wallet credit', target: 'm1', detail: 'Goodwill' });
+    const [, init] = fetchMock.mock.calls.at(-1)!;
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(String(init?.body))).toMatchObject({ action: 'Wallet credit', actor: 'ops@evoc.test' });
   });
 });

@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { indianDay } from '../../format/date';
 import { gatewayAnalyticsService } from './gateway';
 import { analyticsService } from './index';
 import { mockAnalyticsService } from './mock';
 import { parseRange, sumPoints } from './totals';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -70,13 +72,19 @@ describe('parseRange', () => {
 });
 
 describe('gateway analytics', () => {
-  it('is not available, because the backend has no analytics route', async () => {
-    for (const result of [
-      await gatewayAnalyticsService.deliveredByDay(7),
-      await gatewayAnalyticsService.revenueByDay(30),
-    ]) {
-      expect(result).toMatchObject({ ok: false, source: 'gateway', error: { kind: 'unavailable' } });
-    }
+  it('reads daily deliveries and money from the analytics API', async () => {
+    const day = [{ day: '2026-11-22', value: 3 }];
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url) =>
+      Response.json(url.includes('/delivered') ? { items: day } : { freight: day, cod: [{ day: '2026-11-22', value: 99_800 }] }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayAnalyticsService.deliveredByDay(7)).toMatchObject({ ok: true, data: day });
+    expect(await gatewayAnalyticsService.revenueByDay(30)).toMatchObject({
+      ok: true,
+      data: { freightPaise: day, codPaise: [{ value: 99_800 }] },
+    });
+    expect(new URL(String(fetchMock.mock.calls[1]![0])).searchParams.get('days')).toBe('30');
+    vi.unstubAllGlobals();
   });
 
   it('is picked by DATA_SOURCE_ANALYTICS', () => {

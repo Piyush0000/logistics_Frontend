@@ -113,8 +113,30 @@ describe('gateway health', () => {
     expect(errorKind(await gatewayAdminSystemService.getHealth())).toBe('invalid_response');
   });
 
-  it('has no webhook route yet', async () => {
-    expect(errorKind(await gatewayAdminSystemService.listWebhookFailures())).toBe('unavailable');
-    expect(errorKind(await gatewayAdminSystemService.retryWebhookDelivery('whd_1b7c'))).toBe('unavailable');
+  it('lists failed deliveries and retries one', async () => {
+    const failure = {
+      id: 'd1',
+      merchant_id: 'm1',
+      merchant_name: 'Evoc',
+      topic: 'shipment.status.updated',
+      target_url: 'https://shop.example/hook',
+      attempts: 8,
+      last_http_status: 500,
+      last_error: 'HTTP 500',
+      last_attempt_at: '2026-11-22T00:00:00.000Z',
+      status: 'failed',
+      subscription_status: 'active',
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.endsWith('/retry') ? Response.json({ id: 'd1', status: 'PENDING' }, { status: 202 }) : Response.json({ items: [{ ...failure, status: url.endsWith('/retry') ? 'queued' : 'failed' }] }),
+      ),
+    );
+    expect(await gatewayAdminSystemService.listWebhookFailures()).toMatchObject({
+      ok: true,
+      data: [{ id: 'd1', merchantName: 'Evoc', lastHttpStatus: 500, status: 'failed' }],
+    });
+    expect(await gatewayAdminSystemService.retryWebhookDelivery('d1')).toMatchObject({ ok: true, data: { id: 'd1' } });
   });
 });

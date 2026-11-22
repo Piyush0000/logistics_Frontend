@@ -1,12 +1,12 @@
-import { KeyRound, Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
+import { apiKeyService } from '@/lib/data/api-keys';
 import { webhookService } from '@/lib/data/webhooks';
+import { ApiKeysPanel } from './api-keys-panel';
 import { DetailCard } from '../dashboard/sections';
 import { DeliveryHistory } from './delivery-history';
 import { WebhookInfo } from './webhook-info';
@@ -45,26 +45,6 @@ function Tabs({ active }: { active: string }) {
   );
 }
 
-// The backend has no API key routes, so nothing here pretends to create a key.
-function ApiKeys() {
-  return (
-    <section
-      aria-label="API Keys"
-      className="motion-rise grid justify-items-center gap-3 rounded-card border border-secondary bg-surface p-card py-12 text-center"
-    >
-      <span className="grid size-14 place-items-center rounded-card bg-muted text-primary">
-        <KeyRound aria-hidden="true" className="size-7" />
-      </span>
-      <p className="text-sm">API keys are not available yet.</p>
-      <p className="text-sm text-on-surface/70">You will be able to create them here later.</p>
-      <button type="button" disabled className={PRIMARY_BUTTON}>
-        <Plus aria-hidden="true" className="size-4" />
-        Create API Key
-      </button>
-    </section>
-  );
-}
-
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function ChannelIntegrationsPage({
@@ -81,9 +61,10 @@ export default async function ChannelIntegrationsPage({
   const cursor = z.string().uuid().safeParse(first(params.cursor)).data;
 
   const service = webhookService();
-  const [webhooks, deliveries] = await Promise.all([
+  const [webhooks, deliveries, keys] = await Promise.all([
     tab === 'webhooks' ? service.list() : null,
     tab === 'webhooks' ? service.listDeliveries(cursor) : null,
+    tab === 'api-keys' ? apiKeyService().list() : null,
   ]);
 
   return (
@@ -105,9 +86,11 @@ export default async function ChannelIntegrationsPage({
             {(page) => <DeliveryHistory page={page} isFirstPage={!cursor} basePath={PATH} />}
           </DetailCard>
         </>
-      ) : (
-        <ApiKeys />
-      )}
+      ) : keys ? (
+        <DetailCard testId="api-keys-card" title="API keys" result={keys}>
+          {(items) => <ApiKeysPanel keys={items} />}
+        </DetailCard>
+      ) : null}
     </>
   );
 }
