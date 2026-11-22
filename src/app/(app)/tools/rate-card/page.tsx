@@ -58,7 +58,8 @@ export default async function RateCardPage({ searchParams }: RateCardPageProps) 
             What the zones mean
           </h2>
           <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {ZONES.map((zone) => (
+            {/* Only the zones with prices: sample data has a fifth zone the courier network lacks. */}
+            {(rates.ok ? ZONES.filter((zone) => rates.data.some((row) => row.zone === zone)) : ZONES).map((zone) => (
               <div key={zone} data-testid="zone-entry" className="flex min-w-0 items-start gap-3 rounded-control border border-secondary/70 bg-tertiary/50 p-3">
                 <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-control bg-muted font-mono text-base font-semibold text-primary">
                   {zone}

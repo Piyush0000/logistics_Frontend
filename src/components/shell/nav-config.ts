@@ -116,12 +116,11 @@ export const NAV: NavGroup[] = [
     icon: BriefcaseBusiness,
     dividerBefore: true,
     children: [
-      { label: 'Rate Card', href: '/tools/rate-card', status: 'live', icon: FileSpreadsheet, soon: true },
+      { label: 'Rate Card', href: '/tools/rate-card', status: 'live', icon: FileSpreadsheet },
       {
         label: 'Rate Calculator',
         href: '/tools/rate-calculator',
         status: 'live',
-        soon: true,
         icon: Calculator,
       },
       { label: 'Order Tracking', href: '/tools/tracking', status: 'live', icon: MapPinned },
