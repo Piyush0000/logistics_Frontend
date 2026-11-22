@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayOnboardingService } from './gateway';
 import { onboardingService } from './index';
 import { mockOnboardingService } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 describe('onboardingService', () => {
   it('lists the four setup steps in order, as sample data', async () => {
@@ -24,12 +26,29 @@ describe('onboardingService', () => {
     ]);
   });
 
-  it('gateway mode reports unavailable', async () => {
-    expect(await gatewayOnboardingService.getChecklist()).toEqual({
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
-    });
+  it('works each step out from live data', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        const path = new URL(url).pathname;
+        if (path === '/api/v1/account/company') {
+          return Response.json({ details: null, kyc_status: 'PENDING', documents: [] });
+        }
+        if (path === '/api/v1/account/pickup-addresses') return Response.json({ items: [] });
+        if (path === '/api/v1/wallet') return Response.json({ available: 50_000, reserved: 0, pendingCod: 0 });
+        return Response.json({ items: [], page: 1, limit: 1, total: 0 });
+      }),
+    );
+    const result = await gatewayOnboardingService.getChecklist();
+    vi.unstubAllGlobals();
+    expect(result.ok ? null : result.error).toBeNull();
+    if (!result.ok) return;
+    expect(result.data.map(({ id, done }) => [id, done])).toEqual([
+      ['kyc', true],
+      ['pickup_address', false],
+      ['recharge', true],
+      ['first_shipment', false],
+    ]);
   });
 
   it('picks the source from DATA_SOURCE_ONBOARDING', () => {
