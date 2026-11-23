@@ -37,9 +37,15 @@ test.beforeEach(async ({ page }) => {
 test.describe('overview', () => {
   test('shows the title with Overview selected and every tab enabled', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dashboard');
-    await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await expect(page.getByRole('tab', { name: 'Pickups' })).toBeEnabled();
-    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute('href', '/dashboard?tab=pickups');
+    await expect(page.getByRole('tab', { name: 'Pickups' })).toHaveAttribute(
+      'href',
+      '/dashboard?tab=pickups',
+    );
     for (const name of ['SMS']) {
       await expect(page.getByRole('tab', { name })).toBeEnabled();
     }
@@ -48,7 +54,12 @@ test.describe('overview', () => {
   test('shows the four KPI cards', async ({ page }) => {
     const cards = page.getByTestId('kpi-cards');
 
-    for (const label of ["Today's Order", "Today's Revenue", 'Average Shipping', "Today's Delivery"]) {
+    for (const label of [
+      "Today's Orders",
+      "Today's Order Value",
+      'Average Shipping (30 days)',
+      "Today's Deliveries",
+    ]) {
       await expect(cards.getByText(label)).toBeVisible();
     }
     await expect(cards.getByText('₹18,450')).toBeVisible();
@@ -110,7 +121,10 @@ test.describe('sidebar', () => {
       'page',
     );
     await expect(nav(page).getByRole('button', { name: 'Shipping Management' })).toBeVisible();
-    await expect(nav(page).getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/home');
+    await expect(nav(page).getByRole('link', { name: 'Home', exact: true })).toHaveAttribute(
+      'href',
+      '/home',
+    );
 
     // Takes whichever planned entry is left, so making a screen live never breaks this check.
     const single = NAV.find((entry) => entry.href && entry.status === 'planned');
@@ -122,7 +136,8 @@ test.describe('sidebar', () => {
       expect(all.filter((entry) => entry.status === 'planned')).toEqual([]);
       return;
     }
-    if (!single && group && child) await nav(page).getByRole('button', { name: group.label }).click();
+    if (!single && group && child)
+      await nav(page).getByRole('button', { name: group.label }).click();
     const label = single ? single.label : child!.label;
 
     const entry = nav(page).getByRole('button', { name: label, exact: true });
@@ -207,7 +222,9 @@ test.describe('sidebar', () => {
     await openSidebar(page, testInfo.project.name === 'phone');
 
     await expect(page.getByTestId('sidebar-user').getByText('ops', { exact: true })).toBeVisible();
-    await expect(page.getByTestId('sidebar-user').getByRole('button', { name: 'Sign out' })).toBeVisible();
+    await expect(
+      page.getByTestId('sidebar-user').getByRole('button', { name: 'Sign out' }),
+    ).toBeVisible();
   });
 
   test('starts as an icon rail and overlays the page when expanded', async ({ page }, testInfo) => {
@@ -237,7 +254,9 @@ test.describe('sidebar', () => {
     await expect(sidebar).toHaveCSS('width', '80px');
 
     await openSidebar(page, false);
-    await page.getByRole('heading', { level: 1 }).click({ position: { x: 400, y: 5 }, force: true });
+    await page
+      .getByRole('heading', { level: 1 })
+      .click({ position: { x: 400, y: 5 }, force: true });
     await expect(sidebar).toHaveCSS('width', '80px');
   });
 
@@ -332,8 +351,7 @@ test.describe('AWB search', () => {
   test('fits the search hint to the screen and hides it while typing', async ({
     page,
   }, testInfo) => {
-    const hint =
-      testInfo.project.name === 'phone' ? 'Search AWB' : 'Search AWB separated by comma';
+    const hint = testInfo.project.name === 'phone' ? 'Search AWB' : 'Search AWB separated by comma';
 
     await expect(page.getByText(hint, { exact: true })).toBeVisible();
 

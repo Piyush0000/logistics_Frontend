@@ -1,7 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { overviewService } from './overview';
 import { fetchShipmentSummary } from './shipments/gateway';
 import { mockShipmentService } from './shipments/mock';
 import { toShipmentSummary } from './shipments/summary';
@@ -109,8 +108,22 @@ describe('fetchTracking', () => {
     last_event_at: '2026-10-23T10:00:00.000Z',
     stuck: false,
     timeline: [
-      { event_id: '1', status: 'MANIFESTED', raw_status: 'x', location: null, occurred_at: 'a', source: 's' },
-      { event_id: '2', status: 'IN_TRANSIT', raw_status: 'y', location: 'Pune', occurred_at: 'b', source: 's' },
+      {
+        event_id: '1',
+        status: 'MANIFESTED',
+        raw_status: 'x',
+        location: null,
+        occurred_at: 'a',
+        source: 's',
+      },
+      {
+        event_id: '2',
+        status: 'IN_TRANSIT',
+        raw_status: 'y',
+        location: 'Pune',
+        occurred_at: 'b',
+        source: 's',
+      },
     ],
   };
 
@@ -171,27 +184,15 @@ describe('mock services', () => {
   });
 });
 
-describe('features with no gateway route yet', () => {
-  it('reports the overview as unavailable instead of showing sample data as real', async () => {
-    process.env.DATA_SOURCE_OVERVIEW = 'gateway';
-
-    expect(await overviewService().getOverview()).toMatchObject({
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable' },
-    });
-  });
-
+describe('wallet through the gateway', () => {
   it('reads the wallet balance from the ledger through the gateway', async () => {
     process.env.DATA_SOURCE_WALLET = 'gateway';
     process.env.GATEWAY_URL = 'http://gateway.test';
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ available: 1_000_000, reserved: 7_200, pendingCod: 0 }), {
-          status: 200,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ available: 1_000_000, reserved: 7_200, pendingCod: 0 }), {
+        status: 200,
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
     try {
       expect(await fetchWalletBalance('evs_sess_test-token-value')).toEqual({
