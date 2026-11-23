@@ -57,7 +57,7 @@ export default async function AdminPricingPage({
                 <li key={courier.carrier} data-testid="admin-courier" data-carrier={courier.carrier} className="rounded-control border border-secondary p-3">
                   <span className="font-semibold">{courier.name}</span>
                   <p className="mt-1 text-xs text-on-surface/65">
-                    Delivered <span className="font-mono text-on-surface">{courier.deliveryRate.toFixed(1)}%</span> in 30 days
+                    Delivered <span className="font-mono text-on-surface">{courier.deliveryRate.toFixed(1)}%</span> in 90 days
                   </p>
                   <div className="mt-2">
                     <CourierSwitch courier={courier} />

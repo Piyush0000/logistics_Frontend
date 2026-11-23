@@ -1,12 +1,16 @@
 import type { DataResult } from '../source';
 import type { Range } from '../analytics/types';
 
-/** Buyer text messages in a period. `byStatus` counts messages by the shipment status that sent them. */
+/** WhatsApp updates to buyers over a range: what went out, what was skipped and why, and the cost. */
 export interface MessageStats {
   sent: number;
-  delivered: number;
+  skipped: number;
   failed: number;
+  chargedPaise: number;
+  /** Sent messages per shipment event. */
   byStatus: { status: string; count: number }[];
+  /** Why messages were skipped or failed, most common first. */
+  reasons: { reason: string; count: number }[];
 }
 
 export interface MessagesService {

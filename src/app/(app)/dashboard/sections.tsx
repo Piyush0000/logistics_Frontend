@@ -72,7 +72,7 @@ const ALL_TABS: { id: DashboardTab; label: string; enabled: boolean; soon?: bool
   { id: "rto", label: "RTO", enabled: true },
   { id: "delivered", label: "Delivered", enabled: true },
   { id: "revenue", label: "Revenue", enabled: true },
-  { id: "sms", label: "SMS", enabled: true, soon: true },
+  { id: "sms", label: "WhatsApp", enabled: true },
 ];
 
 /** The tabs shown: without the unbuilt ones on real data only. */

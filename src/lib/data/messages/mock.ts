@@ -4,31 +4,31 @@ import { fromMock } from '../source';
 import type { MessagesService, MessageStats } from './types';
 
 const WEEK: MessageStats = {
-  sent: 236,
-  delivered: 229,
-  failed: 7,
+  sent: 212,
+  skipped: 18,
+  failed: 6,
+  chargedPaise: 21_200,
   byStatus: [
-    { status: 'PICKED_UP', count: 52 },
-    { status: 'IN_TRANSIT', count: 71 },
-    { status: 'OUT_FOR_DELIVERY', count: 48 },
-    { status: 'DELIVERED', count: 41 },
+    { status: 'MANIFESTED', count: 52 },
+    { status: 'OUT_FOR_DELIVERY', count: 71 },
+    { status: 'DELIVERED', count: 68 },
     { status: 'NDR', count: 14 },
-    { status: 'RTO', count: 10 },
+    { status: 'RTO_INITIATED', count: 7 },
+  ],
+  reasons: [
+    { reason: 'switched off by the merchant', count: 12 },
+    { reason: 'no valid customer phone', count: 6 },
+    { reason: 'WAPI answered 400', count: 6 },
   ],
 };
 
 const MONTH: MessageStats = {
-  sent: 1000,
-  delivered: 980,
-  failed: 20,
-  byStatus: [
-    { status: 'PICKED_UP', count: 214 },
-    { status: 'IN_TRANSIT', count: 301 },
-    { status: 'OUT_FOR_DELIVERY', count: 203 },
-    { status: 'DELIVERED', count: 178 },
-    { status: 'NDR', count: 62 },
-    { status: 'RTO', count: 42 },
-  ],
+  ...WEEK,
+  sent: 848,
+  skipped: 64,
+  failed: 21,
+  chargedPaise: 84_800,
+  byStatus: WEEK.byStatus.map((row) => ({ ...row, count: row.count * 4 })),
 };
 
 export const mockMessagesService: MessagesService = {

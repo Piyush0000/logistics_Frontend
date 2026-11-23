@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayMessagesService } from './gateway';
 import { messagesService } from './index';
 import { mockMessagesService } from './mock';
 import { deliveryRate } from './rate';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 describe('deliveryRate', () => {
   it('calculates delivery rate to one decimal', () => {
@@ -26,30 +28,36 @@ describe('deliveryRate', () => {
 });
 
 describe('mock messages', () => {
-  it('adds up: delivered plus failed is sent, and the statuses count every message', async () => {
+  it('adds up: the events count every message sent', async () => {
     for (const days of [7, 30] as const) {
       const result = await mockMessagesService.getStats(days);
       expect(result.ok && result.source).toBe('mock');
       if (!result.ok) return;
-      const { sent, delivered, failed, byStatus } = result.data;
-      expect(delivered + failed).toBe(sent);
-      expect(byStatus.reduce((sum, row) => sum + row.count, 0)).toBe(sent);
+      expect(result.data.byStatus.reduce((sum, row) => sum + row.count, 0)).toBe(result.data.sent);
     }
-  });
-
-  it('reports 980 of 1,000 over 30 days', async () => {
-    const result = await mockMessagesService.getStats(30);
-    expect(result.ok && deliveryRate(result.data.sent, result.data.delivered)).toBe('98.0%');
   });
 });
 
 describe('gateway messages', () => {
-  it('shows SMS as unavailable in gateway mode', async () => {
+  it('reads WhatsApp counts, cost and reasons from the analytics API', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          sent: 3,
+          skipped: 1,
+          failed: 0,
+          charged_paise: 300,
+          by_event: [{ event: 'DELIVERED', count: 3 }],
+          skip_reasons: [{ reason: 'not enough money in the wallet', count: 1 }],
+        }),
+      ),
+    );
     expect(await gatewayMessagesService.getStats(7)).toMatchObject({
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable' },
+      ok: true,
+      data: { sent: 3, chargedPaise: 300, byStatus: [{ status: 'DELIVERED', count: 3 }], reasons: [{ count: 1 }] },
     });
+    vi.unstubAllGlobals();
   });
 
   it('picks the service from DATA_SOURCE_MESSAGES', () => {
