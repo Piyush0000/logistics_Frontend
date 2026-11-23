@@ -118,6 +118,7 @@ describe('visibleNav', () => {
     for (const hidden of ['/reconciliation/weight', '/orders/b2b']) {
       expect(live).not.toContain(hidden);
     }
-    expect(visibleNav(true).some((group) => group.label === 'Reconciliation')).toBe(false);
+    // Reconciliation keeps only its weight presets until weight disputes have a backend.
+    expect(visibleNav(true).find((group) => group.label === 'Reconciliation')?.children?.map((c) => c.href)).toEqual(['/reconciliation/weight-settings']);
   });
 });

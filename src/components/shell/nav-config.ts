@@ -105,7 +105,6 @@ export const NAV: NavGroup[] = [
         label: 'Weight Settings',
         href: '/reconciliation/weight-settings',
         status: 'live',
-        soon: true,
         icon: SlidersHorizontal,
       },
     ],

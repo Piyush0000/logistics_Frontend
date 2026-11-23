@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gatewayWeightSettingsService } from './gateway';
 import { weightSettingsService } from './index';
 import { MAX_PRESETS, parsePresetInput } from './input';
 import { createMockWeightSettingsService, mockWeightSettingsService } from './mock';
 import type { PackagePreset, PresetInput } from './types';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const input = (over: Partial<PresetInput> = {}): PresetInput => ({
   name: 'Shoe box',
@@ -180,12 +182,27 @@ describe('mock service', () => {
 });
 
 describe('gatewayWeightSettingsService', () => {
-  const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-
-  it('reports every call as unavailable', async () => {
-    expect(await gatewayWeightSettingsService.listPresets()).toMatchObject(unavailable);
-    expect(await gatewayWeightSettingsService.savePreset(input())).toMatchObject(unavailable);
-    expect(await gatewayWeightSettingsService.deletePreset('x')).toMatchObject(unavailable);
+  it('lists, saves and deletes presets through the settings API', async () => {
+    const preset = { id: 'p1', name: 'Small box', length_cm: 20, width_cm: 15, height_cm: 10, weight_kg: 0.5, is_default: true };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (_url, init) =>
+      init?.method === 'DELETE'
+        ? new Response(null, { status: 204 })
+        : init?.method === 'POST' || init?.method === 'PUT'
+          ? Response.json(preset)
+          : Response.json({ items: [preset] }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayWeightSettingsService.listPresets()).toMatchObject({ ok: true, data: [{ id: 'p1', lengthCm: 20, isDefault: true }] });
+    await gatewayWeightSettingsService.savePreset(input());
+    await gatewayWeightSettingsService.savePreset({ ...input(), id: 'p1' });
+    expect(await gatewayWeightSettingsService.deletePreset('p1')).toMatchObject({ ok: true, data: null });
+    expect(fetchMock.mock.calls.map(([url, init]) => [init?.method ?? 'GET', new URL(url).pathname])).toEqual([
+      ['GET', '/api/v1/settings/presets'],
+      ['POST', '/api/v1/settings/presets'],
+      ['PUT', '/api/v1/settings/presets/p1'],
+      ['DELETE', '/api/v1/settings/presets/p1'],
+    ]);
+    vi.unstubAllGlobals();
   });
 
   it('uses mock by default and gateway when set', () => {

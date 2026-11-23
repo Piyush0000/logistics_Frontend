@@ -52,14 +52,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Choose which messages your buyers get about their parcels.',
     href: '/settings/notifications',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Tracking Page',
     description: 'Set up the page your buyers open to follow a parcel.',
     href: '/settings/tracking-page',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Courier Rules',
@@ -72,7 +70,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Manage the sellers who ship under your account.',
     href: '/settings/sub-merchants',
     status: 'live',
-    soon: true,
   },
 ];
 

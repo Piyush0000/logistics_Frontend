@@ -43,6 +43,7 @@ export interface PublicView {
   status: string;
   progress: StageProgress;
   timeline: PublicEvent[];
+  branding: { displayName: string; supportEmail: string; supportPhone: string } | null;
 }
 
 /** Picks each field by name. Never spread `detail`: new fields on it must not reach buyers. */
@@ -57,6 +58,13 @@ export function toPublicView(detail: TrackingDetail): PublicView {
       location: event.location,
       occurredAt: event.occurredAt,
     })),
+    branding: detail.branding
+      ? {
+          displayName: detail.branding.displayName,
+          supportEmail: detail.branding.supportEmail,
+          supportPhone: detail.branding.supportPhone,
+        }
+      : null,
   };
 }
 

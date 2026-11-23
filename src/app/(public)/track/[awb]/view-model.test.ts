@@ -57,7 +57,7 @@ describe('toPublicView', () => {
 
   it('keeps only the allow-listed fields', () => {
     const view = toPublicView(detail);
-    expect(Object.keys(view).sort()).toEqual(['awb', 'carrier', 'progress', 'status', 'timeline']);
+    expect(Object.keys(view).sort()).toEqual(['awb', 'branding', 'carrier', 'progress', 'status', 'timeline']);
     expect(Object.keys(view.timeline[0]!).sort()).toEqual(['location', 'occurredAt', 'status']);
     const text = JSON.stringify(view);
     for (const secret of ['Aditi', '9988776655', 'Green Glen', '249900', '10000000', 'm-1']) {

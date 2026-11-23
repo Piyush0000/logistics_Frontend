@@ -58,4 +58,15 @@ export const PublicTrackingSchema = z.object({
   timeline: z.array(
     z.object({ status: z.string(), location: z.string().nullable(), occurred_at: z.string() }),
   ),
+  /** What the merchant chose to show customers; null when they set nothing. */
+  branding: z
+    .object({
+      display_name: z.string(),
+      support_email: z.string(),
+      support_phone: z.string(),
+      accent: z.string(),
+      carrier: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
 });

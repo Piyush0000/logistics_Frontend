@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayNotificationService } from './gateway';
 import { notificationService } from './index';
 import { MAX_TEMPLATE_LENGTH, parseNotificationInput } from './input';
 import { createMockNotificationService } from './mock';
 import { NOTIFY_CHANNELS, NOTIFY_EVENTS, type NotificationSettings } from './types';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 async function sample(): Promise<NotificationSettings> {
   const result = await createMockNotificationService().get();
@@ -93,10 +95,16 @@ describe('parseNotificationInput', () => {
 });
 
 describe('gateway service', () => {
-  it('has no route, so both calls are unavailable', async () => {
-    const expected = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewayNotificationService.get()).toMatchObject(expected);
-    expect(await gatewayNotificationService.save(await sample())).toMatchObject(expected);
+  it('reads and saves the settings through the settings API', async () => {
+    const settings = await sample();
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => Response.json(settings));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayNotificationService.get()).toMatchObject({ ok: true, data: settings });
+    await gatewayNotificationService.save(settings);
+    const [url, init] = fetchMock.mock.calls[1]!;
+    expect(new URL(url).pathname).toBe('/api/v1/settings/notifications');
+    expect(init?.method).toBe('PUT');
+    vi.unstubAllGlobals();
   });
 
   it('is picked by DATA_SOURCE_NOTIFICATIONS', () => {

@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayTrackingPageService } from './gateway';
 import { trackingPageService } from './index';
 import { ACCENTS, checkLogo, MAX_LOGO_BYTES, parseBrandingInput } from './input';
 import { createMockTrackingPageService, mockTrackingPageService } from './mock';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const valid = {
   displayName: 'Asha Mart',
@@ -91,14 +93,14 @@ describe('mock tracking-page service', () => {
 });
 
 describe('gateway tracking-page service', () => {
-  it('reports unavailable for both calls', async () => {
-    const expected = {
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
-    };
-    expect(await gatewayTrackingPageService.get()).toEqual(expected);
-    expect(await gatewayTrackingPageService.save(valid as never)).toEqual(expected);
+  it('reads and saves branding through the settings API', async () => {
+    const api = { display_name: 'Asha Mart', support_email: 'help@asha.example', support_phone: '', accent: 'success', show_courier: false, logo_name: null };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => Response.json(api));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayTrackingPageService.get()).toMatchObject({ ok: true, data: { displayName: 'Asha Mart', showCourier: false } });
+    await gatewayTrackingPageService.save({ displayName: 'Asha Mart', supportEmail: 'help@asha.example', supportPhone: '', accent: 'success', showCourier: false, logoName: null });
+    expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toEqual(api);
+    vi.unstubAllGlobals();
   });
 
   it('is picked by DATA_SOURCE_TRACKING_PAGE', () => {

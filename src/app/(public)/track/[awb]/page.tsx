@@ -46,6 +46,11 @@ export default async function PublicTrackingPage({ params }: Props) {
   return (
     <section className="motion-rise grid min-w-0 gap-6 rounded-card border border-secondary bg-surface p-card">
       <div className="grid gap-2">
+        {view.branding?.displayName ? (
+          <p data-testid="tracking-brand" className="font-heading text-lg font-bold">
+            {view.branding.displayName}
+          </p>
+        ) : null}
         <p className="text-xs text-on-surface/60">AWB</p>
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h1 className="min-w-0 break-all font-mono text-xl leading-7 font-semibold tracking-tight lg:text-2xl">{view.awb}</h1>
@@ -59,6 +64,15 @@ export default async function PublicTrackingPage({ params }: Props) {
       </div>
 
       <StageProgressBar progress={view.progress} />
+
+      {view.branding && (view.branding.supportEmail || view.branding.supportPhone) ? (
+        <p data-testid="tracking-support" className="text-sm text-on-surface/70">
+          Questions about your order? Contact {view.branding.displayName || 'the seller'}
+          {view.branding.supportEmail ? <> at <a className="text-primary underline" href={`mailto:${view.branding.supportEmail}`}>{view.branding.supportEmail}</a></> : null}
+          {view.branding.supportEmail && view.branding.supportPhone ? ' or' : null}
+          {view.branding.supportPhone ? <> on <a className="text-primary underline" href={`tel:${view.branding.supportPhone}`}>{view.branding.supportPhone}</a></> : null}.
+        </p>
+      ) : null}
 
       <div>
         <h2 className="font-heading text-lg leading-7 font-bold tracking-tight">Tracking history</h2>

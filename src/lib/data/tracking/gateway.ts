@@ -114,7 +114,15 @@ export async function fetchTimelinePublic(awb: string): Promise<DataResult<Track
     source: 'gateway',
     data: {
       awb: data.awb,
-      carrier: '',
+      // The courier is shown only when the merchant allows it.
+      carrier: data.branding?.carrier ?? '',
+      branding: data.branding
+        ? {
+            displayName: data.branding.display_name,
+            supportEmail: data.branding.support_email,
+            supportPhone: data.branding.support_phone,
+          }
+        : null,
       status: data.status,
       rawStatus: null,
       location: located?.location ?? null,

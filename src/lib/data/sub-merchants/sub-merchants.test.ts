@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewaySubMerchantService } from './gateway';
 import { subMerchantService } from './index';
 import { parseSubMerchantInput } from './input';
 import { createMockSubMerchantService } from './mock';
 import { SUB_MERCHANT_PAGE_SIZE, type SubMerchantInput } from './types';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const input = (over: Partial<SubMerchantInput> = {}): SubMerchantInput => ({
   name: 'Test Seller',
@@ -100,10 +102,19 @@ describe('mock sub-merchant service', () => {
 });
 
 describe('gateway sub-merchant service', () => {
-  it('is unavailable, as the backend has no route', async () => {
-    const expected = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewaySubMerchantService.list({ page: 1, search: '' })).toMatchObject(expected);
-    expect(await gatewaySubMerchantService.onboard(input())).toMatchObject(expected);
+  it('lists and onboards through the settings API, never seeing the full account', async () => {
+    const row = { id: 's1', name: 'Neel Crafts', email: 'neel@crafts.example', gstin: null, kyc_status: 'NOT_STARTED', bank_last4: '9012', created_at: 'x' };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (_url, init) =>
+      init?.method === 'POST' ? Response.json(row) : Response.json({ items: [row], page: 1, limit: 10, total: 11 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewaySubMerchantService.list({ page: 1, search: ' neel ' })).toMatchObject({
+      ok: true,
+      data: { pageCount: 2, total: 11, items: [{ bankLast4: '9012', kycStatus: 'not_started' }] },
+    });
+    expect(new URL(fetchMock.mock.calls[0]![0]).searchParams.get('q')).toBe('neel');
+    expect(await gatewaySubMerchantService.onboard(input())).toMatchObject({ ok: true, data: { id: 's1' } });
+    vi.unstubAllGlobals();
   });
 
   it('is picked by DATA_SOURCE_SUB_MERCHANTS', () => {

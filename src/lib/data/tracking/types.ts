@@ -17,6 +17,15 @@ export interface TrackingEvent {
 }
 
 /** The timeline runs newest first. */
+/** The merchant's own name and support contacts, shown to their customer. */
+export interface TrackingBranding {
+  displayName: string;
+  supportEmail: string;
+  supportPhone: string;
+}
+
 export interface TrackingDetail extends TrackingSummary {
   timeline: TrackingEvent[];
+  /** Public page only: what the merchant chose to show. */
+  branding?: TrackingBranding | null;
 }
