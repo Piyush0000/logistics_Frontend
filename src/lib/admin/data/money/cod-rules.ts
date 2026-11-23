@@ -70,7 +70,7 @@ export interface PaymentLine {
 }
 
 /** One CSV row into cells. Handles quoted cells ("1,249.00") and doubled quotes inside them. */
-function csvCells(row: string): string[] {
+export function csvCells(row: string): string[] {
   const cells: string[] = [];
   let cell = '';
   let quoted = false;

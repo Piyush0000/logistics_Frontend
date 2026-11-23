@@ -45,7 +45,15 @@ export default async function AdminMoneyPage() {
 
   return (
     <>
-      <PageHeader title="Money" description="Merchant wallets and the COD that couriers owe." />
+      <PageHeader
+        title="Money"
+        description="Merchant wallets, the COD that couriers owe, and courier weight disputes."
+        actions={
+          <Link href="/admin/money/weight" className={LINK_BUTTON}>
+            Weight disputes
+          </Link>
+        }
+      />
 
       {summary.ok ? (
         <section aria-label="Money figures" className="motion-stagger grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:gap-4 xl:grid-cols-4">

@@ -17,15 +17,15 @@ import {
 
 const IDLE: CodActionState = { status: 'idle' };
 const SIZE = 'max-lg:h-11';
-const FIELD =
+export const FIELD =
   'w-full rounded-control border border-secondary bg-surface px-3 text-sm transition-[border-color,box-shadow] duration-150 outline-none hover:border-on-surface/30 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 aria-invalid:border-error';
-const CHOICE =
+export const CHOICE =
   'flex h-11 flex-1 cursor-pointer items-center justify-center rounded-control border text-sm font-medium transition-colors duration-150 has-focus-visible:ring-2 has-focus-visible:ring-primary/30 lg:h-control';
 
-type Action = (previous: CodActionState, form: FormData) => Promise<CodActionState>;
+export type Action = (previous: CodActionState, form: FormData) => Promise<CodActionState>;
 
 /** A button that opens a popup holding one action's form; after saving, the popup shows the result. */
-function ActionDialog({
+export function ActionDialog({
   label,
   ariaLabel,
   title,
@@ -108,7 +108,7 @@ function ActionBody({
   );
 }
 
-function Buttons({ pending, close, submit }: { pending: boolean; close: () => void; submit: string }) {
+export function Buttons({ pending, close, submit }: { pending: boolean; close: () => void; submit: string }) {
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <button type="button" onClick={close} className={`${SECONDARY_BUTTON} ${SIZE} max-lg:flex-1`}>
@@ -121,7 +121,7 @@ function Buttons({ pending, close, submit }: { pending: boolean; close: () => vo
   );
 }
 
-function Facts({ rows }: { rows: [string, ReactNode][] }) {
+export function Facts({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <dl className="grid gap-2 rounded-control bg-tertiary p-3 text-sm">
       {rows.map(([label, value]) => (
@@ -134,7 +134,7 @@ function Facts({ rows }: { rows: [string, ReactNode][] }) {
   );
 }
 
-function FieldError({ id, message }: { id: string; message?: string }) {
+export function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? (
     <p id={id} role="alert" className="mt-1 text-sm text-error">
       {message}
@@ -142,7 +142,7 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   ) : null;
 }
 
-const errorsOf = (state: CodActionState) => (state.status === 'invalid' ? state.errors : {});
+export const errorsOf = (state: CodActionState) => (state.status === 'invalid' ? state.errors : {});
 
 function signed(paise: number) {
   if (paise === 0) return formatPaise(0);
