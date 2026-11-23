@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const orders = vi.hoisted(() => ({ listOrders: vi.fn() }));
 vi.mock('../orders', () => ({ ordersService: () => orders }));
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 import { isValidIsoDay } from '../../format/calendar';
 import { gatewayPickupsService } from './gateway';
@@ -216,51 +217,68 @@ describe('mock pickups', () => {
 
 describe('gateway pickups', () => {
   beforeEach(() => orders.listOrders.mockReset());
+  afterEach(() => vi.unstubAllGlobals());
 
-  it('has no route for pickups, so they are unavailable', async () => {
-    const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewayPickupsService.listPickups({ page: 1 })).toMatchObject(unavailable);
-    expect(
-      await gatewayPickupsService.schedulePickup({
-        pickupDate: '2026-11-11',
-        window: null,
-        awbs: ['A'],
-        pickupAddressId: 'pa-001',
-      }),
-    ).toMatchObject(unavailable);
-    expect(await gatewayPickupsService.getPickup('pk-001')).toMatchObject(unavailable);
+  const apiPickup = {
+    id: 'p1',
+    carrier: 'delhivery',
+    pickup_date: '2026-11-25',
+    window: { start: '10:00', end: '14:00' },
+    address_label: 'Main warehouse',
+    awbs: ['EVS0000000018'],
+    status: 'SCHEDULED',
+    carrier_pickup_id: 'PK-77',
+    error: null,
+    created_at: '2026-11-23T00:00:00.000Z',
+  };
+
+  it('lists and schedules pickups through the pickups API', async () => {
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (_url, init) =>
+      init?.method === 'POST'
+        ? Response.json({ ...apiPickup, status: 'REQUESTED' })
+        : Response.json({ items: [apiPickup, { ...apiPickup, id: 'p2', status: 'FAILED', error: 'No slot' }], page: 1, limit: 10, total: 2 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayPickupsService.listPickups({ page: 1 })).toMatchObject({
+      ok: true,
+      data: {
+        pageCount: 1,
+        items: [
+          { id: 'p1', status: 'scheduled', addressLabel: 'Main warehouse' },
+          { id: 'p2', status: 'cancelled', addressLabel: 'Main warehouse (courier refused: No slot)' },
+        ],
+      },
+    });
+    await gatewayPickupsService.schedulePickup({
+      pickupDate: '2026-11-25',
+      window: null,
+      awbs: ['EVS0000000018'],
+      pickupAddressId: 'a1',
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[1]![1]?.body))).toEqual({
+      pickup_date: '2026-11-25',
+      awbs: ['EVS0000000018'],
+      pickup_address_id: 'a1',
+    });
   });
 
-  it('reads manifested shipments through the orders service', async () => {
-    const item = {
-      shipment_id: 's1',
-      reference_id: 'R',
-      carrier: 'ekart',
-      awb: 'LIVE201',
-      status: 'MANIFESTED',
-      created_at: 'x',
-      last_status_at: 'x',
-      stuck: false,
-    };
+  it('offers manifested shipments that are not already in an open pickup', async () => {
+    const item = (awb: string) => ({ shipment_id: awb, reference_id: 'R', carrier: 'delhivery', awb, status: 'MANIFESTED', created_at: 'x', last_status_at: 'x', stuck: false });
     orders.listOrders.mockResolvedValue({
       ok: true,
       source: 'gateway',
-      data: { items: [item], page: 1, limit: 100, total: 1 },
+      data: { items: [item('EVS1'), item('EVS2')], page: 1, limit: 100, total: 2 },
     });
-
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ awbs: ['EVS1'] })));
     const result = await gatewayPickupsService.readyToShip();
-
     expect(orders.listOrders).toHaveBeenCalledWith({ status: 'MANIFESTED', limit: 100, page: 1 });
-    expect(result).toEqual({ ok: true, source: 'gateway', data: [item] });
+    expect(result).toMatchObject({ ok: true, data: [{ awb: 'EVS2' }] });
   });
 
   it('passes on an orders failure', async () => {
-    const failure = {
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'network', status: 0, message: 'down' },
-    };
+    const failure = { ok: false, source: 'gateway', error: { kind: 'network', status: 0, message: 'down' } };
     orders.listOrders.mockResolvedValue(failure);
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ awbs: [] })));
     expect(await gatewayPickupsService.readyToShip()).toEqual(failure);
   });
 });

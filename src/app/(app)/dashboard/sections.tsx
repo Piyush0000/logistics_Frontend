@@ -67,7 +67,7 @@ export type DashboardTab =
 // `soon`: no backend yet, so the tab is left out when the app runs on real data only.
 const ALL_TABS: { id: DashboardTab; label: string; enabled: boolean; soon?: boolean }[] = [
   { id: "overview", label: "Overview", enabled: true },
-  { id: "pickups", label: "Pickups", enabled: true, soon: true },
+  { id: "pickups", label: "Pickups", enabled: true },
   { id: "ndr", label: "NDR", enabled: true },
   { id: "rto", label: "RTO", enabled: true },
   { id: "delivered", label: "Delivered", enabled: true },

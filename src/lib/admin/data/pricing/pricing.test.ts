@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { DataResult } from '../../../data/source';
 import { gatewayAdminPricingService } from './gateway';
 import { createMockAdminPricingService } from './mock';
@@ -173,8 +173,29 @@ describe('mock overrides', () => {
 });
 
 describe('gateway pricing service', () => {
-  it('says the changes are not available yet', async () => {
-    expect(errorKind(await gatewayAdminPricingService.setCourierEnabled('ekart', false))).toBe('unavailable');
-    expect(errorKind(await gatewayAdminPricingService.listOverrides())).toBe('unavailable');
+  it('maps zones, edits a rate, and adds a discount for every courier', async () => {
+    process.env.ADMIN_API_KEY = 'k'.repeat(64);
+    const rate = { carrier: 'delhivery', zone: 'metro-metro', base_paise: 4500, additional_paise: 1700, cod_fee_pct: 2, min_cod_fee_paise: 1000 };
+    const posted: { url: string; body: Record<string, unknown> }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        const path = new URL(url).pathname;
+        if (init?.method === 'POST') posted.push({ url: path, body: JSON.parse(String(init.body ?? '{}')) });
+        if (path.endsWith('/rates') && init?.method === 'POST') return Response.json({ before: rate, after: { ...rate, base_paise: 5000 } });
+        if (path.endsWith('/rates')) return Response.json({ items: [rate, { ...rate, zone: 'moon' }] });
+        if (path.endsWith('/couriers')) return Response.json({ items: [{ carrier: 'delhivery', enabled: true, delivery_rate: 94.5 }, { carrier: 'shadowfax', enabled: false, delivery_rate: null }] });
+        return Response.json({ id: 'o1', merchant_id: 'm1', merchant_name: 'Evoc', carrier: 'delhivery', discount_pct: 10, reason: 'Launch offer', created_at: 'x' });
+      }),
+    );
+    expect(await gatewayAdminPricingService.listRateCard()).toMatchObject({ ok: true, data: [{ zone: 'C', basePaise: 4500 }] });
+    expect(await gatewayAdminPricingService.listCouriers()).toMatchObject({ ok: true, data: [{ name: 'Delhivery', deliveryRate: 94.5 }, { enabled: false, deliveryRate: 0 }] });
+    const updated = await gatewayAdminPricingService.updateRate({ carrier: 'delhivery', zone: 'C', basePaise: 5000, extraPer500gPaise: 1700, codPercent: 2, codMinimumPaise: 1000 });
+    expect(updated).toMatchObject({ ok: true, data: { after: { basePaise: 5000 } } });
+    expect(posted[0]!.body).toMatchObject({ zone: 'metro-metro', base_paise: 5000 });
+    await gatewayAdminPricingService.addOverride({ merchantId: 'm1', carrier: 'all', discountPercent: 10, reason: 'Launch offer' });
+    expect(posted.filter((p) => p.url.endsWith('/overrides')).map((p) => p.body.carrier)).toEqual(['delhivery', 'shadowfax']);
+    vi.unstubAllGlobals();
+    delete process.env.ADMIN_API_KEY;
   });
 });

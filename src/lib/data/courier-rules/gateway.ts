@@ -1,11 +1,40 @@
 import 'server-only';
 
-import { notAvailable } from '../not-available';
-import type { CourierRulesService } from './types';
+import type { CarrierName } from '@logicore/contracts';
+import { z } from 'zod';
+import { merchantCredential } from '../../auth/credentials';
+import { gatewayFetch } from '../../gateway/client';
+import { fromGateway } from '../source';
+import { PREFERENCES, type CourierRulesService } from './types';
 
-// The order engine reads `request.preference`, but the contract strips it and the backend has no
-// settings route, so sample rules never pass as the real ones.
+const rulesSchema = z.object({
+  preference: z.enum(PREFERENCES),
+  priority: z.array(z.string()),
+  disabled: z.array(z.string()),
+});
+const toRules = (r: z.infer<typeof rulesSchema>) => ({
+  preference: r.preference,
+  priority: r.priority as CarrierName[],
+  disabled: r.disabled as CarrierName[],
+});
+
+/** Courier rules from /api/v1/courier-rules: booking follows them for this merchant. */
 export const gatewayCourierRulesService: CourierRulesService = {
-  get: notAvailable,
-  save: notAvailable,
+  async get() {
+    const result = await gatewayFetch('/api/v1/courier-rules', {
+      schema: rulesSchema,
+      token: await merchantCredential('shipments'),
+    });
+    return fromGateway(result.ok ? { ...result, data: toRules(result.data) } : result);
+  },
+
+  async save(rules) {
+    const result = await gatewayFetch('/api/v1/courier-rules', {
+      method: 'PUT',
+      schema: rulesSchema,
+      token: await merchantCredential('shipments'),
+      body: rules,
+    });
+    return fromGateway(result.ok ? { ...result, data: toRules(result.data) } : result);
+  },
 };

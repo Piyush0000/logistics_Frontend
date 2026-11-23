@@ -66,7 +66,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Decide which couriers are used for which shipments.',
     href: '/settings/courier-rules',
     status: 'live',
-    soon: true,
   },
   {
     label: 'Sub-merchants',

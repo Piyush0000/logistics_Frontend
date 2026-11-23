@@ -74,7 +74,7 @@ export const NAV: NavGroup[] = [
       { label: 'B2B Shipments', href: '/orders/b2b', status: 'live', icon: Building2, soon: true },
       { label: 'Create Shipment', href: '/orders/create', status: 'live', icon: PackagePlus },
       { label: 'Bulk Upload', href: '/orders/bulk', status: 'live', icon: Upload },
-      { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'live', icon: Truck, soon: true },
+      { label: 'Pickups & Manifests', href: '/orders/pickups', status: 'live', icon: Truck },
     ],
   },
   {

@@ -1,6 +1,5 @@
 import { CARRIERS } from '@logicore/contracts';
-import { createServer, type Server } from 'node:http';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { gatewayCourierRulesService } from './gateway';
 import { courierRulesService } from './index';
 import {
@@ -12,6 +11,8 @@ import {
 } from './input';
 import { createMockCourierRulesService } from './mock';
 import type { CourierRules } from './types';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 
 const BASE: CourierRules = { preference: 'custom', priority: [...CARRIERS], disabled: [] };
 
@@ -131,19 +132,18 @@ describe('mock courier rules service', () => {
 });
 
 describe('gateway courier rules service', () => {
-  let server: Server | undefined;
-  afterEach(() => server?.close());
 
-  it('has no route, so it is unavailable and never calls the backend', async () => {
-    let calls = 0;
-    server = createServer((_req, res) => {
-      calls += 1;
-      res.end('{}');
-    });
-    const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
-    expect(await gatewayCourierRulesService.get()).toMatchObject(unavailable);
-    expect(await gatewayCourierRulesService.save(BASE)).toMatchObject(unavailable);
-    expect(calls).toBe(0);
+  it('reads and saves the rules through the courier rules API', async () => {
+    const rules = { preference: 'custom', priority: ['shadowfax', 'delhivery'], disabled: ['ekart'] };
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => Response.json(rules));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayCourierRulesService.get()).toMatchObject({ ok: true, data: rules });
+    await gatewayCourierRulesService.save(BASE);
+    const [url, init] = fetchMock.mock.calls[1]!;
+    expect(new URL(url).pathname).toBe('/api/v1/courier-rules');
+    expect(init?.method).toBe('PUT');
+    expect(JSON.parse(String(init?.body))).toEqual(BASE);
+    vi.unstubAllGlobals();
   });
 
   it('is chosen by DATA_SOURCE_COURIER_RULES', () => {
