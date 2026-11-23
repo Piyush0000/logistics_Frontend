@@ -6,7 +6,9 @@ import { DataCard } from '@/components/ui/data-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatTile } from '@/components/ui/stat-tile';
 import { getDemoSession } from '@/lib/auth/session';
+import type { DataResult } from '@/lib/data/source';
 import { walletService, type WalletTransaction } from '@/lib/data/wallet';
+import type { RechargeStatus } from '@/lib/data/wallet/types';
 import { parseWalletFilters, walletHref } from '@/lib/data/wallet/filters';
 import { formatPaise } from '@/lib/format/money';
 import { RechargeDialog } from './recharge-dialog';
@@ -14,6 +16,48 @@ import { TransactionFilters } from './transaction-filters';
 import { TransactionList } from './transaction-list';
 
 export const metadata: Metadata = { title: 'Wallet Transactions | Evoc Ships' };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** What happened to the recharge the merchant just paid (or didn't) on Razorpay. */
+function RechargeNotice({ result }: { result: DataResult<RechargeStatus> }) {
+  const tone = {
+    good: 'border-success/40 bg-success/10',
+    wait: 'border-warning/40 bg-warning/10',
+    bad: 'border-error/40 bg-error/10',
+  };
+  let message: { tone: keyof typeof tone; text: string };
+  if (!result.ok) {
+    message = {
+      tone: 'wait',
+      text: 'We could not check your payment just now. If you paid, it will be added to your wallet within a few minutes.',
+    };
+  } else if (result.data.status === 'PAID') {
+    message = {
+      tone: 'good',
+      text: `${formatPaise(result.data.creditedPaise ?? result.data.amountPaise)} was added to your wallet.`,
+    };
+  } else if (result.data.status === 'CREATED') {
+    message = {
+      tone: 'wait',
+      text: 'Your payment is not confirmed yet. If you paid, it will be added to your wallet within a few minutes. Nothing is added for an unfinished payment.',
+    };
+  } else {
+    message = {
+      tone: 'bad',
+      text: 'That payment page has closed and nothing was charged. Start a new recharge to add money.',
+    };
+  }
+  return (
+    <p
+      role="status"
+      data-testid="recharge-notice"
+      className={`rounded-xl border px-4 py-3 text-sm ${tone[message.tone]}`}
+    >
+      {message.text}
+    </p>
+  );
+}
 
 /** Money in, money out and the debit charges, added up over the transactions on this page. */
 function pageTotals(entries: WalletTransaction[]) {
@@ -37,8 +81,13 @@ export default async function WalletPage({
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const { filters, error } = parseWalletFilters(await searchParams);
+  const params = await searchParams;
+  const { filters, error } = parseWalletFilters(params);
   const service = walletService();
+  // Back from Razorpay: confirm first, so the balance below already includes the money.
+  const rechargeId = typeof params.recharge_id === 'string' ? params.recharge_id : null;
+  const recharge =
+    rechargeId && UUID.test(rechargeId) ? await service.confirmRecharge(rechargeId) : null;
   const [wallet, transactions] = await Promise.all([
     service.getBalance(),
     error ? null : service.listTransactions(filters),
@@ -49,6 +98,8 @@ export default async function WalletPage({
   return (
     <>
       <PageHeader title="Wallet Transactions" actions={<RechargeDialog />} />
+
+      {recharge ? <RechargeNotice result={recharge} /> : null}
 
       {/* Like Home's health row: the balance beside how this page's money moved. */}
       <div

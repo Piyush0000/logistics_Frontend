@@ -64,7 +64,11 @@ describe('startRechargeAction', () => {
     service.startRecharge.mockResolvedValue({
       ok: false,
       source: 'gateway',
-      error: { kind: 'unavailable', status: 0, message: 'Coming soon: this is not connected to live data yet.' },
+      error: {
+        kind: 'unavailable',
+        status: 0,
+        message: 'Coming soon: this is not connected to live data yet.',
+      },
     });
 
     expect(await startRechargeAction(50000)).toEqual({

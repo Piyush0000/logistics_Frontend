@@ -122,4 +122,7 @@ export const mockWalletService: WalletService = {
   async startRecharge() {
     return fromMock({ paymentUrl: null });
   },
+  async confirmRecharge(id) {
+    return fromMock({ id, status: 'CREATED' as const, amountPaise: 0, creditedPaise: null });
+  },
 };

@@ -5,8 +5,7 @@ import { walletService } from '@/lib/data/wallet';
 import { RECHARGE_RANGE_MESSAGE, validateRechargePaise } from '@/lib/data/wallet/recharge';
 
 export type RechargeActionResult =
-  | { ok: true; paymentUrl: string | null }
-  | { ok: false; message: string };
+  { ok: true; paymentUrl: string | null } | { ok: false; message: string };
 
 const isSecureUrl = (value: string) => {
   try {

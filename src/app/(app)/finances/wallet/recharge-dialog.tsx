@@ -5,10 +5,7 @@ import { useId, useState, useTransition, type FormEvent } from 'react';
 import { Dialog, PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { FIELD_LABEL } from '@/components/ui/field-styles';
 import { formatPaise } from '@/lib/format/money';
-import {
-  parseRechargeRupees,
-  RECHARGE_PRESETS_RUPEES,
-} from '@/lib/data/wallet/recharge';
+import { parseRechargeRupees, RECHARGE_PRESETS_RUPEES } from '@/lib/data/wallet/recharge';
 import { startRechargeAction } from './actions';
 
 const NO_PAYMENT = "Recharge isn't connected yet. No payment was taken.";
@@ -83,7 +80,9 @@ function RechargeForm() {
               aria-pressed={selected}
               onClick={() => change(String(rupees))}
               className={`inline-flex h-control items-center justify-center rounded-control border px-3 text-sm font-medium ${
-                selected ? 'border-primary bg-primary/10 text-primary' : 'border-secondary hover:bg-muted'
+                selected
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-secondary hover:bg-muted'
               }`}
             >
               {formatPaise(rupees * 100, { decimals: 0 })}

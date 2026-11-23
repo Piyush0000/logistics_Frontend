@@ -3,7 +3,6 @@ import 'server-only';
 import { z } from 'zod';
 import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
-import { notAvailable } from '../not-available';
 import { fromGateway } from '../source';
 import type { DebitType } from './filters';
 import { PAGE_SIZE } from './mock';
@@ -30,6 +29,15 @@ const TransactionsSchema = z.object({
   page: z.number().int(),
   limit: z.number().int(),
   total: z.number().int(),
+});
+
+/** A recharge as ledger-engine reports it. */
+const RechargeSchema = z.object({
+  id: z.string(),
+  status: z.enum(['CREATED', 'PAID', 'EXPIRED', 'CANCELLED', 'FAILED']),
+  amount_paise: z.number().int(),
+  credited_paise: z.number().int().nullable(),
+  payment_url: z.string().nullable(),
 });
 
 export async function fetchWalletBalance(token: string | null) {
@@ -87,6 +95,37 @@ export const gatewayWalletService: WalletService = {
     };
   },
 
-  // No recharge route yet (PRD POST /v1/wallet/recharge); nothing is charged.
-  startRecharge: notAvailable,
+  /** Opens a Razorpay payment page. The wallet is credited only after Razorpay confirms it. */
+  async startRecharge(amountPaise) {
+    const result = await gatewayFetch('/api/v1/wallet/recharge', {
+      method: 'POST',
+      schema: RechargeSchema,
+      token: await merchantCredential('shipments'),
+      body: { amount_paise: amountPaise },
+    });
+    return fromGateway(
+      result.ok ? { ...result, data: { paymentUrl: result.data.payment_url } } : result,
+    );
+  },
+
+  async confirmRecharge(id) {
+    const result = await gatewayFetch(`/api/v1/wallet/recharge/${encodeURIComponent(id)}/confirm`, {
+      method: 'POST',
+      schema: RechargeSchema,
+      token: await merchantCredential('shipments'),
+    });
+    return fromGateway(
+      result.ok
+        ? {
+            ...result,
+            data: {
+              id: result.data.id,
+              status: result.data.status,
+              amountPaise: result.data.amount_paise,
+              creditedPaise: result.data.credited_paise,
+            },
+          }
+        : result,
+    );
+  },
 };

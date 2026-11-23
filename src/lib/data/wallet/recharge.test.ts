@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { gatewayWalletService } from './gateway';
 import { mockWalletService } from './mock';
 import { parseRechargeRupees, validateRechargePaise } from './recharge';
 
@@ -37,13 +36,5 @@ describe('startRecharge', () => {
 
     expect(result).toEqual({ ok: true, source: 'mock', data: { paymentUrl: null } });
     expect(after).toEqual(before);
-  });
-
-  it('is unavailable through the gateway', async () => {
-    expect(await gatewayWalletService.startRecharge(50000)).toMatchObject({
-      ok: false,
-      source: 'gateway',
-      error: { kind: 'unavailable' },
-    });
   });
 });

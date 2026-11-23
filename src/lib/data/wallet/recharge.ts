@@ -17,11 +17,18 @@ export function validateRechargePaise(value: unknown): value is number {
 }
 
 /** Turns what a person typed into paise, or says what to fix. Commas are allowed. */
-export function parseRechargeRupees(text: string): { ok: true; paise: number } | { ok: false; message: string } {
+export function parseRechargeRupees(
+  text: string,
+): { ok: true; paise: number } | { ok: false; message: string } {
   const cleaned = text.trim().replace(/,/g, '');
   if (!/^\d+$/.test(cleaned)) {
-    return { ok: false, message: /^\d+\.\d*$/.test(cleaned) ? RECHARGE_WHOLE_MESSAGE : RECHARGE_RANGE_MESSAGE };
+    return {
+      ok: false,
+      message: /^\d+\.\d*$/.test(cleaned) ? RECHARGE_WHOLE_MESSAGE : RECHARGE_RANGE_MESSAGE,
+    };
   }
   const paise = Number(cleaned) * 100;
-  return validateRechargePaise(paise) ? { ok: true, paise } : { ok: false, message: RECHARGE_RANGE_MESSAGE };
+  return validateRechargePaise(paise)
+    ? { ok: true, paise }
+    : { ok: false, message: RECHARGE_RANGE_MESSAGE };
 }

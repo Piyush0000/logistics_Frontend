@@ -29,7 +29,9 @@ describe('sample transactions', () => {
       expect(Number.isInteger(amountPaise)).toBe(true);
       expect(amountPaise).toBeGreaterThan(0);
       if (breakdown) {
-        expect(breakdown.freightPaise + breakdown.otherPaise + breakdown.codPaise).toBe(amountPaise);
+        expect(breakdown.freightPaise + breakdown.otherPaise + breakdown.codPaise).toBe(
+          amountPaise,
+        );
       }
     }
   });
@@ -103,8 +105,20 @@ describe('gateway wallet service', () => {
     const fetchMock = vi.fn<(url: string) => Promise<Response>>(async () =>
       Response.json({
         items: [
-          { id: 'e1', at: '2026-11-21T10:00:00.000Z', direction: 'debit', amount_paise: 7200, reason: 'Charge RTO handling fee' },
-          { id: 'e2', at: '2026-11-20T10:00:00.000Z', direction: 'credit', amount_paise: 500, reason: 'Release shipment reservation' },
+          {
+            id: 'e1',
+            at: '2026-11-21T10:00:00.000Z',
+            direction: 'debit',
+            amount_paise: 7200,
+            reason: 'Charge RTO handling fee',
+          },
+          {
+            id: 'e2',
+            at: '2026-11-20T10:00:00.000Z',
+            direction: 'credit',
+            amount_paise: 500,
+            reason: 'Release shipment reservation',
+          },
         ],
         page: 1,
         limit: 10,
@@ -112,21 +126,68 @@ describe('gateway wallet service', () => {
       }),
     );
     vi.stubGlobal('fetch', fetchMock);
-    const result = await gatewayWalletService.listTransactions({ ...DEFAULT_FILTERS, type: 'debit', from: '2026-11-01' });
+    const result = await gatewayWalletService.listTransactions({
+      ...DEFAULT_FILTERS,
+      type: 'debit',
+      from: '2026-11-01',
+    });
     vi.unstubAllGlobals();
 
-    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/api/v1/wallet/transactions?page=1&limit=10&direction=debit&from=2026-11-01');
-    expect(result).toMatchObject({ ok: true, source: 'gateway', data: { page: 1, pageCount: 2, total: 12 } });
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
+      '/api/v1/wallet/transactions?page=1&limit=10&direction=debit&from=2026-11-01',
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      source: 'gateway',
+      data: { page: 1, pageCount: 2, total: 12 },
+    });
     if (!result.ok) return;
-    expect(result.data.entries[0]).toMatchObject({ direction: 'debit', debitType: 'rto-freight', amountPaise: 7200 });
+    expect(result.data.entries[0]).toMatchObject({
+      direction: 'debit',
+      debitType: 'rto-freight',
+      amountPaise: 7200,
+    });
     expect(result.data.entries[1]).toMatchObject({ direction: 'credit', debitType: null });
   });
 
-  it('never fakes a recharge', async () => {
+  it('opens the Razorpay page the ledger made, and checks a payment by id', async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) =>
+      Response.json({
+        id: '6f1c2a4e-1b2c-4d5e-8f90-123456789abc',
+        status: String(url).endsWith('/confirm') ? 'PAID' : 'CREATED',
+        amount_paise: 150_000,
+        credited_paise: String(url).endsWith('/confirm') ? 150_000 : null,
+        payment_url: String(url).endsWith('/confirm') ? null : 'https://rzp.io/i/plink_1',
+        method: init?.method,
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayWalletService.startRecharge(150_000)).toMatchObject({
+      ok: true,
+      data: { paymentUrl: 'https://rzp.io/i/plink_1' },
+    });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(String(url)).toContain('/api/v1/wallet/recharge');
+    expect(init).toMatchObject({ method: 'POST', body: JSON.stringify({ amount_paise: 150_000 }) });
+    expect(
+      await gatewayWalletService.confirmRecharge('6f1c2a4e-1b2c-4d5e-8f90-123456789abc'),
+    ).toMatchObject({
+      ok: true,
+      data: { status: 'PAID', creditedPaise: 150_000 },
+    });
+    vi.unstubAllGlobals();
+  });
+
+  it('never fakes a recharge when the gateway fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ error: 'UPSTREAM_UNAVAILABLE' }, { status: 502 })),
+    );
     expect(await gatewayWalletService.startRecharge(10_000)).toMatchObject({
       ok: false,
       source: 'gateway',
     });
+    vi.unstubAllGlobals();
   });
 });
 

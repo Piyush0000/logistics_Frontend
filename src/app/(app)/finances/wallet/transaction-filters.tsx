@@ -78,10 +78,7 @@ export function TransactionFilters({
         <DateField label="To Date" name="to" value={to} onChange={changeDate(setTo)} />
 
         <div className="flex gap-3 md:col-span-2 md:justify-end xl:col-span-1 xl:col-start-4 xl:row-span-2 xl:row-start-1 xl:self-center">
-          <button
-            type="submit"
-            className={`${PRIMARY_BUTTON} flex-1 md:flex-none`}
-          >
+          <button type="submit" className={`${PRIMARY_BUTTON} flex-1 md:flex-none`}>
             Apply
           </button>
           <Link

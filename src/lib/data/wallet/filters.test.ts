@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_FILTERS, DEBIT_TYPES, hasActiveFilters, parseWalletFilters, walletHref } from './filters';
+import {
+  DEFAULT_FILTERS,
+  DEBIT_TYPES,
+  hasActiveFilters,
+  parseWalletFilters,
+  walletHref,
+} from './filters';
 
 describe('parseWalletFilters', () => {
   it('uses the defaults when the URL has no filters', () => {
