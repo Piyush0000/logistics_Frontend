@@ -115,10 +115,10 @@ describe('visibleNav', () => {
   it('hides screens without a backend, and groups left empty, on real data only', () => {
     const live = hrefs(visibleNav(true));
     expect(live).toEqual(expect.arrayContaining(['/orders', '/orders/create', '/rto', '/finances/wallet', '/finances/cod', '/ndr', '/tools/tracking']));
-    for (const hidden of ['/reconciliation/weight', '/orders/b2b']) {
+    expect(live).toContain('/reconciliation/weight');
+    for (const hidden of ['/orders/b2b']) {
       expect(live).not.toContain(hidden);
     }
-    // Reconciliation keeps only its weight presets until weight disputes have a backend.
-    expect(visibleNav(true).find((group) => group.label === 'Reconciliation')?.children?.map((c) => c.href)).toEqual(['/reconciliation/weight-settings']);
+    expect(visibleNav(true).find((group) => group.label === 'Reconciliation')?.children?.map((c) => c.href)).toEqual(['/reconciliation/weight', '/reconciliation/weight-settings']);
   });
 });

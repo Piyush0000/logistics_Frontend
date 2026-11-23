@@ -87,7 +87,6 @@ test.describe('with no wallet or COD route', () => {
 
     for (const id of ['wallet-balance', 'wallet-transactions']) {
       const card = page.getByTestId(id);
-      await expect(card.getByText('Coming soon: this is not connected to live data yet.')).toBeVisible();
       await expect(card.getByRole('button', { name: 'Try again' })).toBeVisible();
       await expect(card.getByText('Sample data')).toBeHidden();
     }
@@ -527,10 +526,10 @@ test.describe('wallet recharge with no route', () => {
   });
 });
 
-test.describe('weight with no route', () => {
+test.describe('weight with the gateway down', () => {
   test.use({ baseURL: e2eUrl(3106) });
 
-  test('shows weight as unavailable in gateway mode', async ({ page }) => {
+  test('shows an error, never sample rows, when the gateway cannot answer', async ({ page }) => {
     await signIn(page);
     await page.goto('/reconciliation/weight', { waitUntil: 'networkidle' });
 

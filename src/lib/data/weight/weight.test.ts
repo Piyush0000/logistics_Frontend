@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../auth/credentials', () => ({ merchantCredential: async () => 'evs_sess_test' }));
 import { gatewayWeightService } from './gateway';
 import { weightService } from './index';
 import {
@@ -42,7 +44,9 @@ describe('checkDispute', () => {
 
   it('refuses a short or long note, counting the trimmed text', () => {
     expect(checkDispute({ note: 'too short', evidence: [image] })).toMatch(/at least 10/);
-    expect(checkDispute({ note: `   ${'x'.repeat(9)}   `, evidence: [image] })).toMatch(/at least 10/);
+    expect(checkDispute({ note: `   ${'x'.repeat(9)}   `, evidence: [image] })).toMatch(
+      /at least 10/,
+    );
     expect(checkDispute({ note: 'x'.repeat(1001), evidence: [image] })).toMatch(/1,000/);
   });
 
@@ -157,15 +161,63 @@ describe('mockWeightService', () => {
 });
 
 describe('gatewayWeightService', () => {
-  const unavailable = { ok: false, source: 'gateway', error: { kind: 'unavailable' } };
+  afterEach(() => vi.unstubAllGlobals());
+  const row = {
+    id: '6f1c2a4e-1b2c-4d5e-8f90-123456789abc',
+    awb: 'EVS0000000018',
+    carrier: 'delhivery',
+    declared_grams: 500,
+    charged_grams: 1500,
+    extra_charge_paise: 4500,
+    status: 'open',
+    raised_at: '2026-11-20T04:30:00.000Z',
+    respond_by: '2026-11-27',
+  };
 
-  it('reports every call as unavailable', async () => {
-    expect(await gatewayWeightService.getSummary()).toMatchObject(unavailable);
-    expect(await gatewayWeightService.listDiscrepancies({ page: 1 })).toMatchObject(unavailable);
-    expect(await gatewayWeightService.accept('x')).toMatchObject(unavailable);
-    expect(await gatewayWeightService.dispute({ id: 'x', note, evidence: [image] })).toMatchObject(
-      unavailable,
+  it('reads the summary and pages of discrepancies in kilograms', async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      Response.json(
+        String(url).includes('/summary')
+          ? { open: 2, disputed: 1, extra_charge_paise: 9000 }
+          : { items: [row], page: 1, limit: 10, total: 11 },
+      ),
     );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayWeightService.getSummary()).toMatchObject({
+      ok: true,
+      data: { open: 2, disputed: 1, extraChargePaise: 9000 },
+    });
+    expect(
+      await gatewayWeightService.listDiscrepancies({ status: 'open', q: 'evs', page: 1 }),
+    ).toMatchObject({
+      ok: true,
+      data: {
+        page: 1,
+        pageCount: 2,
+        items: [{ awb: 'EVS0000000018', declaredKg: 0.5, chargedKg: 1.5 }],
+      },
+    });
+    const query = new URL(String(fetchMock.mock.calls[1]![0])).searchParams;
+    expect(query.get('status')).toBe('open');
+    expect(query.get('q')).toBe('evs');
+  });
+
+  it('sends a dispute with the evidence described, never the file', async () => {
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+      Response.json({ ...row, status: 'disputed' }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(
+      await gatewayWeightService.dispute({ id: row.id, note, evidence: [image] }),
+    ).toMatchObject({
+      ok: true,
+      data: { status: 'disputed' },
+    });
+    const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body));
+    expect(body).toEqual({
+      note,
+      evidence: [{ name: image.name, type: image.type, size: image.size }],
+    });
   });
 });
 

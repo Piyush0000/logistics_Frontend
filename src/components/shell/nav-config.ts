@@ -100,7 +100,7 @@ export const NAV: NavGroup[] = [
     label: 'Reconciliation',
     icon: Scale,
     children: [
-      { label: 'Weight', href: '/reconciliation/weight', status: 'live', icon: Weight, soon: true },
+      { label: 'Weight', href: '/reconciliation/weight', status: 'live', icon: Weight },
       {
         label: 'Weight Settings',
         href: '/reconciliation/weight-settings',
