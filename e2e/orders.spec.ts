@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './helpers';
+import { fillShipmentForm } from './fill-shipment';
 
 test.describe('Orders screen', () => {
   test.beforeEach(async ({ page }) => {
@@ -115,7 +116,8 @@ test.describe('Orders screen', () => {
     test('creates a shipment and shows confirmation with new AWB', async ({ page }) => {
       await page.goto('/orders/create');
 
-      // Submit prefilled valid form
+      // The form starts empty: fill it as a person would, then submit.
+      await fillShipmentForm(page);
       await page.getByTestId('submit-shipment').click();
 
       // Should show success confirmation
@@ -133,8 +135,7 @@ test.describe('Orders screen', () => {
       expect(before).toMatch(/^idem-/);
 
       // A pincode that is too short is refused, which forces a failure.
-      await page.getByLabel('Customer Name *').fill('Edited Buyer');
-      await page.locator('#destination_pincode').fill('12');
+      await fillShipmentForm(page, { destination_name: 'Edited Buyer', destination_pincode: '12' });
       await page.getByTestId('submit-shipment').click();
       await expect(page.getByText('Please check the form for errors')).toBeVisible();
       await expect(page.getByLabel('Customer Name *')).toHaveValue('Edited Buyer');

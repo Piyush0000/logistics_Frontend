@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { BULK_COLUMNS } from '../src/lib/bulk-shipments';
 import { e2eUrl, signIn } from './helpers';
+import { fillShipmentForm } from './fill-shipment';
 
 test.describe('with the gateway answering', () => {
   test.use({ baseURL: e2eUrl(3104) });
@@ -252,7 +253,7 @@ test.describe('shipments with the gateway answering', () => {
   test('explains that booking is unavailable and keeps the form', async ({ page }) => {
     await signIn(page);
     await page.goto('/orders/create');
-    await page.getByLabel('Customer Name *').fill('Edited Buyer');
+    await fillShipmentForm(page, { destination_name: 'Edited Buyer' });
     await page.getByTestId('submit-shipment').click();
 
     await expect(
