@@ -7,6 +7,7 @@ import { SampleBadge } from '@/components/sample-badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { getDemoSession } from '@/lib/auth/session';
 import { pickupAddressService } from '@/lib/data/pickup-addresses';
+import { weightSettingsService } from '@/lib/data/weight-settings';
 import { resolveDataSource } from '@/lib/data/source';
 import { CreateShipmentForm } from './create-form';
 
@@ -16,8 +17,9 @@ export default async function CreateShipmentPage() {
   const session = await getDemoSession();
   if (!session) redirect('/login');
 
-  const [addresses] = await Promise.all([
+  const [addresses, presets] = await Promise.all([
     pickupAddressService().list(),
+    weightSettingsService().listPresets(),
   ]);
 
   // A fresh key per render; "Book another" refreshes the page, which remounts the form with a new key.
@@ -49,6 +51,7 @@ export default async function CreateShipmentPage() {
           key={idempotencyKey}
           idempotencyKey={idempotencyKey}
           savedAddresses={addresses.ok ? addresses.data : []}
+          presets={presets.ok ? presets.data : []}
         />
       </div>
     </>

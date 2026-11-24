@@ -4,6 +4,7 @@ import { CheckCircle2, ChevronRight, Package, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useActionState, useState } from 'react';
+import type { PackagePreset } from '@/lib/data/weight-settings/types';
 import type { PickupAddress } from '@/lib/data/pickup-addresses/types';
 import { createShipmentAction, type CreateShipmentFormState } from '../actions';
 
@@ -15,10 +16,13 @@ const INITIAL_STATE: CreateShipmentFormState = {
 export function CreateShipmentForm({
   idempotencyKey,
   savedAddresses = [],
+  presets = [],
 }: {
   idempotencyKey: string;
   /** Saved pickup addresses, offered to fill the origin. Empty when none or not available. */
   savedAddresses?: PickupAddress[];
+  /** Saved package sizes (Weight settings), offered to fill weight and size. */
+  presets?: PackagePreset[];
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(createShipmentAction, INITIAL_STATE);
@@ -27,6 +31,16 @@ export function CreateShipmentForm({
   // The values of the last failed submit that choosing a saved address has replaced.
   const [replacedValues, setReplacedValues] = useState(state.values);
   const saved = savedAddresses.find((entry) => entry.id === savedId);
+  // The package starts from the merchant's default preset, like the pickup from the default address.
+  const [presetId, setPresetId] = useState(() => presets.find((p) => p.isDefault)?.id ?? '');
+  const [presetReplacedValues, setPresetReplacedValues] = useState(state.values);
+  const preset = presets.find((p) => p.id === presetId);
+  const pkg = (name: string, presetValue: number | undefined) =>
+    state.values && state.values !== presetReplacedValues
+      ? v(name, '')
+      : presetValue !== undefined
+        ? String(presetValue)
+        : '';
 
   // A submitted form resets its fields, so the fields start from what was sent.
   const v = (name: string, fallback: string) => state.values?.[name] ?? fallback;
@@ -355,6 +369,30 @@ export function CreateShipmentForm({
           </h2>
 
           <div className="mt-4 grid gap-3 text-sm">
+            {presets.length > 0 ? (
+              <div>
+                <label htmlFor="package_preset" className="block text-xs font-medium text-on-surface/70">
+                  Use saved package
+                </label>
+                <select
+                  id="package_preset"
+                  value={presetId}
+                  onChange={(event) => {
+                    setPresetId(event.target.value);
+                    setPresetReplacedValues(state.values);
+                  }}
+                  className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-base focus:border-primary focus:outline-none lg:text-sm"
+                >
+                  <option value="">Type the size below</option>
+                  {presets.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}: {p.weightKg} kg, {p.lengthCm} × {p.widthCm} × {p.heightCm} cm
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            <div key={presetId} className="grid gap-3">
             <div>
               <label htmlFor="weight_kg" className="block text-xs font-medium text-on-surface/70">
                 Total Weight (kg) *
@@ -367,7 +405,7 @@ export function CreateShipmentForm({
                 min="0.05"
                 required
                 placeholder="e.g. 0.5"
-                defaultValue={v("weight_kg", "")}
+                defaultValue={pkg("weight_kg", preset?.weightKg)}
                 className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
               />
               {getError('weight_kg') ? (
@@ -387,7 +425,7 @@ export function CreateShipmentForm({
                   step="0.1"
                   required
                   placeholder="cm"
-                  defaultValue={v("length_cm", "")}
+                  defaultValue={pkg("length_cm", preset?.lengthCm)}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -402,7 +440,7 @@ export function CreateShipmentForm({
                   step="0.1"
                   required
                   placeholder="cm"
-                  defaultValue={v("width_cm", "")}
+                  defaultValue={pkg("width_cm", preset?.widthCm)}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -417,10 +455,11 @@ export function CreateShipmentForm({
                   step="0.1"
                   required
                   placeholder="cm"
-                  defaultValue={v("height_cm", "")}
+                  defaultValue={pkg("height_cm", preset?.heightCm)}
                   className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
+            </div>
             </div>
 
             {/* Item details */}

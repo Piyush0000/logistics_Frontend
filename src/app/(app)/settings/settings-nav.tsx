@@ -70,6 +70,8 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: 'Manage the sellers who ship under your account.',
     href: '/settings/sub-merchants',
     status: 'live',
+    // Saved, but nothing pays sub-merchants or reviews their KYC yet: hidden on real data until built.
+    soon: true,
   },
 ];
 
