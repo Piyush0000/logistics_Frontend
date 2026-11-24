@@ -21,8 +21,6 @@ const CARRIERS = [
   { label: 'Delhivery', value: 'delhivery' },
   { label: 'Ekart', value: 'ekart' },
   { label: 'Shadowfax', value: 'shadowfax' },
-  { label: 'Blue Dart', value: 'bluedart' },
-  { label: 'DHL', value: 'dhl' },
 ];
 
 export function OrderFilters() {
