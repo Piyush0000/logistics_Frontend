@@ -110,18 +110,16 @@ describe('parseBulkCsv', () => {
     expect(rows[0]?.errors).toEqual(['Line 2: has more cells than the template.']);
   });
 
-  it('keeps the template file in step with the parser', () => {
+  it('keeps the template file in step with the parser, with no sample row', () => {
     const template = readFileSync(
       join(process.cwd(), 'public/samples/bulk-shipments-template.csv'),
       'utf8',
     );
+    // Only the column names: a sample row could be uploaded unchanged and book a real shipment.
     const lines = template.split(/\r?\n/).filter(Boolean);
-    expect(lines[0]).toBe(HEADER);
-    expect(lines).toHaveLength(2);
-    const { rows, fatal } = parseBulkCsv(template, 'k');
-    expect(fatal).toBeNull();
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.errors).toEqual([]);
-    expect(rows[0]?.input).not.toBeNull();
+    expect(lines).toEqual([HEADER]);
+    // The parser still reads the template's header once a row is added.
+    const filled = `${template}${HEADER.split(',').map(() => 'x').join(',')}`;
+    expect(parseBulkCsv(filled, 'k').fatal).toBeNull();
   });
 });

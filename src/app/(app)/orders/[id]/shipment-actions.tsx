@@ -1,6 +1,6 @@
 'use client';
 
-import { Ban, Download, LoaderCircle } from 'lucide-react';
+import { Ban, Download, LoaderCircle, Printer } from 'lucide-react';
 import { useActionState, useState } from 'react';
 import { cancelShipmentAction, type CancelState } from './actions';
 
@@ -38,14 +38,25 @@ export function ShipmentActions({
     <div className="grid justify-items-end gap-2">
       <div className="flex flex-wrap items-center justify-end gap-2">
         {labelAvailable && status !== 'CANCELLED' ? (
-          <a
-            href={`/orders/${encodeURIComponent(id)}/label`}
-            className="inline-flex h-11 items-center gap-1.5 rounded-control bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary/90 lg:h-control"
-            data-testid="download-label"
-          >
-            <Download aria-hidden="true" className="size-4" />
-            Download label
-          </a>
+          <>
+            <a
+              href={`/orders/${encodeURIComponent(id)}/print-label`}
+              className="inline-flex h-11 items-center gap-1.5 rounded-control bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary/90 lg:h-control"
+              data-testid="print-label"
+            >
+              <Printer aria-hidden="true" className="size-4" />
+              Print label
+            </a>
+            {/* The courier's own label, for the rare courier desk that asks for theirs. */}
+            <a
+              href={`/orders/${encodeURIComponent(id)}/label`}
+              className={secondaryButton}
+              data-testid="download-label"
+            >
+              <Download aria-hidden="true" className="size-4" />
+              Courier label (PDF)
+            </a>
+          </>
         ) : null}
 
         {canCancel && !confirming ? (

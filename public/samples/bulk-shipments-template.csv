@@ -1,2 +1,1 @@
 origin_name,origin_phone,origin_line1,origin_city,origin_state,origin_pincode,destination_name,destination_phone,destination_line1,destination_line2,destination_city,destination_state,destination_pincode,weight_kg,length_cm,width_cm,height_cm,item_name,item_quantity,item_unit_price,payment_type,cod_amount,reference_id,preferred_carrier
-Central Hub,9876543210,42 Industrial Road,Bengaluru,Karnataka,560100,Aditi Rao,9988776655,Flat 302 Green Glen,Bellandur,Bengaluru,Karnataka,560103,1.2,25,15,10,Keyboard,1,3499,PREPAID,0,ORD-1001,delhivery

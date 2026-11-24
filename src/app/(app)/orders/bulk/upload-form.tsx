@@ -99,7 +99,8 @@ export function UploadForm() {
         <div>
           <h2 className="font-heading text-xl leading-7 lg:text-2xl lg:leading-8">Upload a file</h2>
           <p className="mt-1 text-sm text-on-surface/70">
-            Use the template, one shipment per row, up to 200 rows and 1 MB. Sending the same file
+            The template has only the column names: add one row per shipment, up to 200 rows and 1 MB.
+            Every valid row books a real courier pickup, so use real addresses. Sending the same file
             twice never books a shipment twice.
           </p>
         </div>
