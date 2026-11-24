@@ -26,6 +26,8 @@ export interface OrderListQuery {
   status?: string;
   carrier?: string;
   from?: string;
+  /** YYYY-MM-DD: booked on or before this day. */
+  to?: string;
   search?: string;
   page?: number;
   limit?: number;

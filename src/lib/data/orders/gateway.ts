@@ -28,6 +28,7 @@ export async function fetchOrdersList(
       status: query.status,
       carrier: query.carrier,
       from: query.from,
+      to: query.to,
       // Searched on the server across every page: Evoc AWB or the merchant's own reference.
       q: query.search?.trim() || undefined,
       page: query.page,

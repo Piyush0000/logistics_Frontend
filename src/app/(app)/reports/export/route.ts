@@ -40,7 +40,7 @@ const inRange = (moment: string, { from, to }: Range) => {
 async function listOrders(range: Range, status?: string): Promise<DataResult<Capped<OrderSummary>>> {
   const service = ordersService();
   const result = await pageThrough((page) =>
-    service.listOrders({ status, from: range.from, page, limit: ORDER_PAGE_SIZE }),
+    service.listOrders({ status, from: range.from, to: range.to, page, limit: ORDER_PAGE_SIZE }),
   );
   if (!result.ok) return result;
   const items = result.data.items.filter((item) => inRange(item.created_at, range));
