@@ -30,7 +30,7 @@ describe('help articles', () => {
 
   it('keeps the exact webhook header names', () => {
     const text = JSON.stringify(ARTICLES.find((a) => a.slug === 'verify-a-webhook-signature'));
-    for (const name of ['X-LogiCore-Event-Id', 'X-LogiCore-Timestamp', 'X-LogiCore-Signature']) {
+    for (const name of ['X-Evoc-Event-Id', 'X-Evoc-Timestamp', 'X-Evoc-Signature']) {
       expect(text).toContain(name);
     }
   });

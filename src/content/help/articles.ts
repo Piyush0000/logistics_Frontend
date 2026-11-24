@@ -255,7 +255,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Add a webhook',
         paragraphs: [
-          'Open Channel Integrations, at /channel-integrations. The side menu does not link to it yet, so type the address in your browser. Add a webhook with the address of your server, and choose the events you want: shipment.created, shipment.status.updated and shipment.failed.',
+          'Open Settings, then Channel Integrations (/channel-integrations). Add a webhook with the address of your server, and choose the events you want: shipment.created, shipment.status.updated and shipment.failed.',
         ],
       },
       {
@@ -267,7 +267,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Delivery history',
         paragraphs: [
-          'The Delivery history card lists each delivery and lets you retry one. Live delivery of events is not connected yet, so you may see no real deliveries for now.',
+          'The Delivery history card lists each delivery and lets you retry one. A failed delivery is retried automatically after 1 minute, 5 minutes, 30 minutes, 2 hours and 12 hours.',
         ],
       },
     ],
@@ -282,9 +282,9 @@ export const ARTICLES: HelpArticle[] = [
         heading: 'The headers',
         paragraphs: [
           'Save the secret you got when you created the webhook. Each request is a POST with three headers.',
-          'X-LogiCore-Event-Id is a stable event ID. Use it to ignore repeated deliveries of the same event.',
-          'X-LogiCore-Timestamp is the Unix time in seconds when this attempt was signed.',
-          'X-LogiCore-Signature is "sha256=" followed by the HMAC-SHA256 of the timestamp, a full stop, and the raw body, signed with your secret.',
+          'X-Evoc-Event-Id is a stable event ID. Use it to ignore repeated deliveries of the same event.',
+          'X-Evoc-Timestamp is the Unix time in seconds when this attempt was signed.',
+          'X-Evoc-Signature is "sha256=" followed by the HMAC-SHA256 of the timestamp, a full stop, and the raw body, signed with your secret.',
         ],
       },
       {
@@ -298,7 +298,7 @@ export const ARTICLES: HelpArticle[] = [
       {
         heading: 'Status',
         paragraphs: [
-          'The sender exists as an internal component. Live event delivery and the retry worker are not connected yet, so treat this as how to build your receiver ahead of time.',
+          'Every shipment event is delivered to the webhooks you subscribed to it, keyed by your Evoc AWB. The full reference is on the developer portal at /developers.',
         ],
       },
     ],

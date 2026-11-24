@@ -3,15 +3,14 @@
 import { ChevronDown, Info } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, PRIMARY_BUTTON, SECONDARY_BUTTON } from '@/components/ui/dialog';
-import { samplePayload, WEBHOOK_EVENTS, type WebhookEventName } from '@/lib/data/webhooks/events';
+import {
+  samplePayload,
+  WEBHOOK_EVENTS,
+  WEBHOOK_HEADERS as HEADERS,
+  type WebhookEventName,
+} from '@/lib/data/webhooks/events';
 import { CopyButton } from '@/components/ui/copy-button';
 
-// These match the headers sent by services/webhooks/src/deliveries/webhook-sender.ts.
-const HEADERS = [
-  { name: 'X-LogiCore-Signature', note: 'sha256= followed by the signature.' },
-  { name: 'X-LogiCore-Timestamp', note: 'When it was sent, in Unix seconds.' },
-  { name: 'X-LogiCore-Event-Id', note: 'Stays the same on a retry, so you can skip repeats.' },
-];
 
 const SUBHEADING = 'text-sm font-medium';
 

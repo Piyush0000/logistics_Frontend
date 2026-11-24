@@ -66,7 +66,7 @@ test('finds the webhook signature article', async ({ page }) => {
   await hit.getByRole('link').click();
   await expect(page).toHaveURL(/\/support\/help\/verify-a-webhook-signature$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Verify a webhook signature' })).toBeVisible();
-  await expect(page.getByText('X-LogiCore-Signature').first()).toBeVisible();
+  await expect(page.getByText('X-Evoc-Signature').first()).toBeVisible();
 });
 
 test('filters by category through the URL', async ({ page }) => {

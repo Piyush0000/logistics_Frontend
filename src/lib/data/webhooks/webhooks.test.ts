@@ -112,9 +112,11 @@ describe('sample payloads', () => {
     for (const { value } of WEBHOOK_EVENTS) {
       const payload = samplePayload(value);
 
-      expect(payload).toMatchObject({ type: value, api_version: '2026-10-01' });
-      expect(payload.data.order_id).toBeTruthy();
-      expect(JSON.stringify(payload)).toContain('DEMO');
+      expect(Object.keys(payload).sort()).toEqual(['created_at', 'data', 'id', 'type']);
+      expect(payload.type).toBe(value);
+      // Keyed by the Evoc AWB; courier details never appear.
+      expect(payload.data).toMatchObject({ awb: expect.stringMatching(/^EVS\d{10}$/) });
+      expect(JSON.stringify(payload)).not.toMatch(/carrier|delhivery|label_url|merchant_id/);
     }
   });
 });

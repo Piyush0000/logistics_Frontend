@@ -63,9 +63,9 @@ test.describe('page', () => {
     const info = page.getByTestId('webhook-info');
 
     for (const text of [
-      'X-LogiCore-Signature',
-      'X-LogiCore-Timestamp',
-      'X-LogiCore-Event-Id',
+      'X-Evoc-Signature',
+      'X-Evoc-Timestamp',
+      'X-Evoc-Event-Id',
       'shipment.created',
       'shipment.status.updated',
       'shipment.failed',

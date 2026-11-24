@@ -69,7 +69,18 @@ export default async function ChannelIntegrationsPage({
 
   return (
     <>
-      <PageHeader title="Channel Integrations" description="Manage API keys and webhook subscriptions" />
+      <PageHeader
+        title="Channel Integrations"
+        description="Manage API keys and webhook subscriptions"
+        actions={
+          <Link
+            href="/developers"
+            className="inline-flex h-11 items-center rounded-control border border-secondary px-4 text-sm font-medium hover:bg-muted lg:h-control"
+          >
+            API docs
+          </Link>
+        }
+      />
 
       <Tabs active={tab} />
 
