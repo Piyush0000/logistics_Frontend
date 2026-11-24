@@ -40,6 +40,7 @@ export function createMockAdminPricingService(): AdminPricingService {
     carrier,
     name: NAMES[carrier]!,
     enabled: carrier !== 'dhl',
+    running: true,
     deliveryRate: [94.2, 91.8, 96.1, 89.4, 97.3][index]!,
   }));
   const overrides: PriceOverride[] = [

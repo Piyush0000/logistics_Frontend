@@ -8,12 +8,13 @@ import { gatewayFetch } from '../../gateway/client';
 import { fromGateway } from '../source';
 import type { RateCardRow, RatesService, Zone } from './types';
 
-// The backend's zones, in the order the rate card shows them (A to D).
+// The backend's zones, in the order the rate card shows them (A to E).
 const ZONE: Record<string, Zone> = {
   'within-city': 'A',
   'within-state': 'B',
   'metro-metro': 'C',
   'rest-of-india': 'D',
+  special: 'E',
 };
 
 const cardSchema = z.object({

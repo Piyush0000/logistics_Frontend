@@ -24,7 +24,12 @@ const rateSchema = z.object({
   cod_fee_pct: z.number(),
   min_cod_fee_paise: z.number(),
 });
-const courierSchema = z.object({ carrier: z.string(), enabled: z.boolean(), delivery_rate: z.number().nullable() });
+const courierSchema = z.object({
+  carrier: z.string(),
+  enabled: z.boolean(),
+  running: z.boolean().optional(),
+  delivery_rate: z.number().nullable(),
+});
 const overrideSchema = z.object({
   id: z.string(),
   merchant_id: z.string(),
@@ -52,6 +57,7 @@ const toCourier = (c: z.infer<typeof courierSchema>) => ({
   carrier: c.carrier,
   name: NAMES[c.carrier] ?? c.carrier,
   enabled: c.enabled,
+  running: c.running ?? true,
   deliveryRate: c.delivery_rate ?? 0,
 });
 const toOverride = (o: z.infer<typeof overrideSchema>): PriceOverride => ({

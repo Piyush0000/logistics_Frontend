@@ -20,6 +20,8 @@ export interface CourierSetting {
   carrier: string;
   name: string;
   enabled: boolean;
+  /** Switched on in the server settings (ENABLED_CARRIERS), so it can take bookings at all. */
+  running: boolean;
   /** Share of shipments delivered over the last 30 days, 0 to 100. */
   deliveryRate: number;
 }

@@ -5,7 +5,8 @@
 
 export const ZONES = ['A', 'B', 'C', 'D', 'E'] as const;
 export type Zone = (typeof ZONES)[number];
-export const CARRIERS = ['delhivery', 'ekart', 'bluedart', 'shadowfax', 'dhl'] as const;
+/** The couriers the platform ships with (order-engine PLATFORM_CARRIERS). */
+export const CARRIERS = ['delhivery', 'ekart', 'shadowfax'] as const;
 
 /** What each zone means, matching order-engine resolveZone (Evoc_ships/services/order-engine/src/allocation/zone.ts). */
 export const ZONE_MEANING: Record<Zone, { name: string; rule: string; backend: string }> = {
@@ -13,7 +14,11 @@ export const ZONE_MEANING: Record<Zone, { name: string; rule: string; backend: s
   B: { name: 'Within state', rule: 'Same state postal circle, for example Mumbai (40) to Pune (41).', backend: 'within-state' },
   C: { name: 'Metro to metro', rule: 'Different states, both tier-1 metros: Delhi NCR, Mumbai, Pune, Hyderabad, Bengaluru, Chennai, Kolkata, Ahmedabad.', backend: 'metro-metro' },
   D: { name: 'Rest of India', rule: 'Everything else between states.', backend: 'rest-of-india' },
-  E: { name: 'Special or remote', rule: 'North-east, Jammu and Kashmir, Andaman and Lakshadweep.', backend: 'not in resolveZone yet; priced as rest of India' },
+  E: {
+    name: 'Special or remote',
+    rule: 'Either end in the North-east, Jammu and Kashmir or Ladakh, Andaman and Nicobar, or Lakshadweep (except within one city).',
+    backend: 'special',
+  },
 };
 
 export const MAX_PRICE_PAISE = 10_000 * 100;

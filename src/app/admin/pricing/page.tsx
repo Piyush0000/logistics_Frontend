@@ -50,7 +50,8 @@ export default async function AdminPricingPage({
         {(rows) => (
           <>
             <p className="mb-3 text-sm text-on-surface/70">
-              {rows.filter((courier) => courier.enabled).length} of {rows.length} on. At least one courier must stay on.
+              {rows.filter((courier) => courier.running && courier.enabled).length} of {rows.length} taking bookings. At least one
+              courier must stay on. Set a courier&apos;s prices before switching it on in the server settings.
             </p>
             <ul className="motion-stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               {rows.map((courier) => (
@@ -60,7 +61,13 @@ export default async function AdminPricingPage({
                     Delivered <span className="font-mono text-on-surface">{courier.deliveryRate.toFixed(1)}%</span> in 90 days
                   </p>
                   <div className="mt-2">
-                    <CourierSwitch courier={courier} />
+                    {courier.running ? (
+                      <CourierSwitch courier={courier} />
+                    ) : (
+                      <p className="text-xs text-on-surface/70" data-testid="courier-not-running">
+                        Not switched on yet. Add it to ENABLED_CARRIERS in the server settings once its account is ready.
+                      </p>
+                    )}
                   </div>
                 </li>
               ))}

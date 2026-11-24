@@ -40,7 +40,7 @@ describe('mock rate card', () => {
     expect(ZONE_LABELS.B.description).toBe('Pickup and delivery are in the same state, but not in the same city or district area.');
     expect(ZONE_LABELS.C.description).toBe('Pickup and delivery are in different states, and both pincodes are in a major metro area.');
     expect(ZONE_LABELS.D.description).toBe('Any other route within India.');
-    expect(ZONE_LABELS.E.description).toBe("A sample zone for remote areas. The courier network doesn't define it yet.");
+    expect(ZONE_LABELS.E.description).toMatch(/North-east.*Lakshadweep/);
   });
 
   it('describes every zone', () => {
