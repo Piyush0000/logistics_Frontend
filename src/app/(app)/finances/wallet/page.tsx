@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: 'Wallet Transactions | Evoc Ships' };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** What happened to the recharge the merchant just paid (or didn't) on Razorpay. */
+/** What happened to the recharge the merchant just paid (or didn't) on Cashfree. */
 function RechargeNotice({ result }: { result: DataResult<RechargeStatus> }) {
   const tone = {
     good: 'border-success/40 bg-success/10',
@@ -84,7 +84,7 @@ export default async function WalletPage({
   const params = await searchParams;
   const { filters, error } = parseWalletFilters(params);
   const service = walletService();
-  // Back from Razorpay: confirm first, so the balance below already includes the money.
+  // Back from Cashfree: confirm first, so the balance below already includes the money.
   const rechargeId = typeof params.recharge_id === 'string' ? params.recharge_id : null;
   const recharge =
     rechargeId && UUID.test(rechargeId) ? await service.confirmRecharge(rechargeId) : null;

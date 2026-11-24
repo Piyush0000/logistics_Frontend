@@ -95,7 +95,7 @@ export const gatewayWalletService: WalletService = {
     };
   },
 
-  /** Opens a Razorpay payment page. The wallet is credited only after Razorpay confirms it. */
+  /** Opens a Cashfree payment page. The wallet is credited only after Cashfree confirms it. */
   async startRecharge(amountPaise) {
     const result = await gatewayFetch('/api/v1/wallet/recharge', {
       method: 'POST',
