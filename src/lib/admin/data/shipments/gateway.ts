@@ -142,6 +142,26 @@ export const gatewayAdminShipmentsService: AdminShipmentsService = {
     return mapResult(result, toDetail);
   },
 
+  async refundCancelled(awb) {
+    const result = await gatewayFetch(
+      `/api/v1/admin/shipments/${encodeURIComponent(awb)}/refund-cancelled`,
+      {
+        method: 'POST',
+        schema: z.object({
+          refunded: z.boolean(),
+          amount_paise: z.number().int().optional(),
+          reason: z.string().optional(),
+        }),
+        token: adminToken(),
+      },
+    );
+    return mapResult(result, (r) => ({
+      refunded: r.refunded,
+      amountPaise: r.amount_paise ?? null,
+      reason: r.reason ?? null,
+    }));
+  },
+
   // Carriers' NDR (failed delivery attempt) events are not tracked as their own status yet.
   async listNdrShipments({ q, page = 1 } = {}) {
     const result = await gatewayFetch('/api/v1/admin/ndr', {

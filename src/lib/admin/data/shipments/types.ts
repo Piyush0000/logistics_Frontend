@@ -60,4 +60,13 @@ export interface AdminShipmentsService {
   getShipment(awb: string): Promise<DataResult<AdminShipmentDetail>>;
   listNdrShipments(query?: { q?: string; page?: number }): Promise<DataResult<Page<AdminNdrShipment>>>;
   listRtoShipments(query?: { q?: string; page?: number }): Promise<DataResult<Page<AdminRtoShipment>>>;
+  /** Gives back what a cancelled shipment held or was charged; once only. */
+  refundCancelled(awb: string): Promise<DataResult<RefundResult>>;
+}
+
+export interface RefundResult {
+  refunded: boolean;
+  amountPaise: number | null;
+  /** Why nothing was refunded, when nothing was. */
+  reason: string | null;
 }

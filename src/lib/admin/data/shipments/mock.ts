@@ -231,6 +231,14 @@ const RTO_SHIPMENTS: AdminRtoShipment[] = SHIPMENTS_RAW
   }));
 
 export const mockAdminShipmentsService: AdminShipmentsService = {
+  // Sample data holds no money, so there is nothing to give back.
+  async refundCancelled() {
+    return {
+      ok: false,
+      source: 'mock',
+      error: { kind: 'unavailable', status: 503, message: 'Refunds need live data.' },
+    };
+  },
   async listShipments({ q, status, merchantId, stuck, page, pageSize }) {
     const rows = SHIPMENTS_RAW.filter(
       (shipment) =>

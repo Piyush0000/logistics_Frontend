@@ -85,3 +85,25 @@ describe('adminShipmentsService', () => {
     expect(result.data.items[0]!.rtoReason).toBeTruthy();
   });
 });
+
+describe('refunding a cancelled shipment', () => {
+  it('posts to the admin route and reads the amount given back', async () => {
+    const { vi } = await import('vitest');
+    const { gatewayAdminShipmentsService } = await import('./gateway');
+    process.env.ADMIN_API_KEY = 'a'.repeat(40);
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+      Response.json({ refunded: true, amount_paise: 7000 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await gatewayAdminShipmentsService.refundCancelled('EVS8516979039')).toMatchObject({
+      ok: true,
+      data: { refunded: true, amountPaise: 7000, reason: null },
+    });
+    expect(String(fetchMock.mock.calls[0]![0])).toContain(
+      '/api/v1/admin/shipments/EVS8516979039/refund-cancelled',
+    );
+    expect(fetchMock.mock.calls[0]![1]).toMatchObject({ method: 'POST' });
+    vi.unstubAllGlobals();
+    delete process.env.ADMIN_API_KEY;
+  });
+});

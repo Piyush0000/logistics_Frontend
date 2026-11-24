@@ -16,6 +16,7 @@ import { notFound } from 'next/navigation';
 import { StatusChip } from '@/components/admin/status-chip';
 import { CarrierBadge } from '@/components/orders/carrier-badge';
 import { StatusBadge } from '@/components/orders/status-badge';
+import { RefundCancelledButton } from './refund-button';
 import { DataCard } from '@/components/ui/data-card';
 import { adminShipmentsService } from '@/lib/admin/data/shipments';
 import { requireAdminSession } from '@/lib/admin/session';
@@ -97,6 +98,7 @@ export default async function AdminShipmentDetailPage({
             {shipment.stuck ? (
               <StatusChip tone="warning">Stuck in transit</StatusChip>
             ) : null}
+            {shipment.status === 'CANCELLED' ? <RefundCancelledButton awb={shipment.awb} /> : null}
           </div>
         </div>
       </section>
