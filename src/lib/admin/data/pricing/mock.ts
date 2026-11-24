@@ -2,8 +2,8 @@ import 'server-only';
 
 import { fromMock, type DataResult } from '../../../data/source';
 import { mockNotFound } from '../not-found';
-import { daysAgo, SEED_CARRIERS, seedMerchant } from '../seed';
-import { cleanText, isCodMinimum, isCodPercent, isDiscount, isPrice, ZONES } from './pricing-rules';
+import { daysAgo, seedMerchant } from '../seed';
+import { cleanText, isCodMinimum, isCodPercent, isDiscount, isPrice, ZONES, CARRIERS } from './pricing-rules';
 import type { AdminPricingService, CourierSetting, PriceOverride, RateCardRow } from './types';
 
 const NAMES: Record<string, string> = {
@@ -26,22 +26,22 @@ const failure = (kind: 'validation' | 'conflict', message: string): DataResult<n
 
 /** A fresh sample service. Changes last until the server restarts. */
 export function createMockAdminPricingService(): AdminPricingService {
-  const rateCard: RateCardRow[] = SEED_CARRIERS.flatMap((carrier) =>
+  const rateCard: RateCardRow[] = CARRIERS.flatMap((carrier) =>
     ZONES.map((zone, index) => ({
       carrier,
       zone,
       basePaise: BASE[carrier]! + ZONE_STEP[index]!,
       extraPer500gPaise: Math.round((BASE[carrier]! + ZONE_STEP[index]!) * 0.6),
-      codPercent: carrier === 'dhl' ? 2.5 : 1.75,
-      codMinimumPaise: carrier === 'dhl' ? 5_000 : 3_500,
+      codPercent: 1.75,
+      codMinimumPaise: 3_500,
     })),
   );
-  const couriers: CourierSetting[] = SEED_CARRIERS.map((carrier, index) => ({
+  const couriers: CourierSetting[] = CARRIERS.map((carrier, index) => ({
     carrier,
     name: NAMES[carrier]!,
-    enabled: carrier !== 'dhl',
+    enabled: true,
     running: true,
-    deliveryRate: [94.2, 91.8, 96.1, 89.4, 97.3][index]!,
+    deliveryRate: [94.2, 91.8, 96.1][index]!,
   }));
   const overrides: PriceOverride[] = [
     {

@@ -42,7 +42,7 @@ test.describe('couriers', () => {
     await expect(courierSwitch(page, 'Ekart')).toBeChecked();
 
     // Turn the others off, leaving one courier on.
-    for (const name of ['Delhivery', 'Ekart', 'Blue Dart']) {
+    for (const name of ['Delhivery', 'Ekart']) {
       await courierSwitch(page, name).click({ force: true });
       await page.getByRole('dialog', { name: `Turn off ${name}?` }).getByRole('button', { name: 'Turn off' }).click();
       await expect(courierSwitch(page, name)).not.toBeChecked();
@@ -57,7 +57,7 @@ test.describe('couriers', () => {
     await expect(courierSwitch(page, 'Shadowfax')).toBeChecked();
 
     // Turning on needs no confirmation. Put them back.
-    for (const name of ['Delhivery', 'Ekart', 'Blue Dart']) {
+    for (const name of ['Delhivery', 'Ekart']) {
       await courierSwitch(page, name).click({ force: true });
       await expect(courierSwitch(page, name)).toBeChecked();
     }
@@ -120,12 +120,12 @@ test.describe('rate card', () => {
 
   test('filters by courier and zone, and ignores unknown filters', async ({ page }, testInfo) => {
     const rowKind = isPhone(testInfo) ? 'admin-rate-card-item' : 'admin-rate-row';
-    await open(page, `${PRICING}?carrier=bluedart`);
+    await open(page, `${PRICING}?carrier=ekart`);
     await expect(page.getByTestId(rowKind)).toHaveCount(5);
 
     await page.goto(`${PRICING}?carrier=acme&zone=Q`, { waitUntil: 'networkidle' });
-    await expect(page.getByTestId(rowKind)).toHaveCount(25);
-    if (isPhone(testInfo)) await expect(page.getByTestId('admin-rate-group')).toHaveCount(5);
+    await expect(page.getByTestId(rowKind)).toHaveCount(15);
+    if (isPhone(testInfo)) await expect(page.getByTestId('admin-rate-group')).toHaveCount(3);
   });
 
   test('explains what each zone means', async ({ page }) => {

@@ -101,19 +101,19 @@ describe('mock courier switch', () => {
   it('turns couriers off and on', async () => {
     const service = createMockAdminPricingService();
     expect(data(await service.setCourierEnabled('ekart', false)).enabled).toBe(false);
-    expect(data(await service.setCourierEnabled('dhl', true)).enabled).toBe(true);
     expect(data(await service.listCouriers()).find((courier) => courier.carrier === 'ekart')!.enabled).toBe(false);
+    expect(data(await service.setCourierEnabled('ekart', true)).enabled).toBe(true);
   });
 
   it('refuses to turn off the last courier, with a clear message', async () => {
     const service = createMockAdminPricingService();
-    for (const carrier of ['delhivery', 'ekart', 'bluedart']) await service.setCourierEnabled(carrier, false);
+    for (const carrier of ['delhivery', 'ekart']) await service.setCourierEnabled(carrier, false);
     const last = await service.setCourierEnabled('shadowfax', false);
     expect(errorKind(last)).toBe('conflict');
     expect(last.ok ? '' : last.error.message).toContain('At least one courier must stay on');
     expect(data(await service.listCouriers()).filter((courier) => courier.enabled).map((courier) => courier.carrier)).toEqual(['shadowfax']);
     // Turning off an already-off courier is not "the last one".
-    expect(errorKind(await service.setCourierEnabled('dhl', false))).toBeNull();
+    expect(errorKind(await service.setCourierEnabled('ekart', false))).toBeNull();
   });
 
   it('answers not_found for an unknown courier', async () => {
