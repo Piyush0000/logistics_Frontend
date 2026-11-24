@@ -44,6 +44,8 @@ export interface RateQuote {
   estimatedDays: number | null;
   chargePaise: number | null;
   chargeableWeightKg: number;
+  /** Why the courier can't take it: NO_RATE_CARD, WEIGHT_LIMIT, NOT_SERVICEABLE, COD_NOT_OFFERED and so on. */
+  reason?: string | null;
 }
 
 export interface RatesService {

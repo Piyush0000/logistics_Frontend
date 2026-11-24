@@ -6,6 +6,7 @@ import { SampleBadge } from '@/components/sample-badge';
 import { PRIMARY_BUTTON } from '@/components/ui/dialog';
 import { splitTwoTone, StatTile } from '@/components/ui/stat-tile';
 import { formatPaise } from '@/lib/format/money';
+import type { RateQuote } from '@/lib/data/rates/types';
 import type { QuoteActionResult } from './actions';
 
 const formatKg = (value: number) => `${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })} kg`;
@@ -23,6 +24,24 @@ function Price({ paise }: { paise: number }) {
 }
 
 /** The courier quotes, cheapest first, or what to do next when there are none. */
+/** Why a courier can't take this parcel, in words. */
+function unavailableReason(quote: RateQuote, paymentType: string): string {
+  const name = carrierLabel(quote.carrier);
+  switch (quote.reason) {
+    case 'NO_RATE_CARD':
+      return `No price is set for ${name} on this route yet.`;
+    case 'WEIGHT_LIMIT':
+      return `Too heavy for ${name}.`;
+    case 'COD_NOT_OFFERED':
+    case 'COD_NOT_SERVICEABLE':
+      return `${name} does not offer cash on delivery here.`;
+    default:
+      return paymentType === 'COD' && !quote.codAvailable
+        ? `${name} does not offer cash on delivery.`
+        : `${name} does not deliver to this pincode.`;
+  }
+}
+
 export function QuoteList({
   result,
   paymentType,
@@ -105,9 +124,7 @@ export function QuoteList({
                   </p>
                 ) : (
                   <p className="mt-2 text-sm text-on-surface/70">
-                    {paymentType === 'COD' && !quote.codAvailable
-                      ? `${carrierLabel(quote.carrier)} does not offer cash on delivery. `
-                      : 'This courier does not deliver to this pincode. '}
+                    {unavailableReason(quote, paymentType)}{' '}
                     Chargeable weight {formatKg(quote.chargeableWeightKg)}
                   </p>
                 )}

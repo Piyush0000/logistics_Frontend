@@ -39,6 +39,7 @@ const quoteSchema = z.object({
       estimated_days: z.number().nullable(),
       chargeable_weight_kg: z.number(),
       total_paise: z.number().nullable(),
+      reason: z.string().nullable().optional(),
     }),
   ),
 });
@@ -94,6 +95,7 @@ export const gatewayRatesService: RatesService = {
         estimatedDays: q.estimated_days,
         chargePaise: q.total_paise,
         chargeableWeightKg: q.chargeable_weight_kg,
+        reason: q.reason ?? null,
       })),
     });
   },
