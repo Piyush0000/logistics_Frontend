@@ -21,6 +21,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3100 HOSTNAME=0.0.0.0
 WORKDIR /app
 COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+# Standalone output leaves public/ out; without it the bulk template and icons answer 404.
+COPY --from=builder --chown=node:node /app/public ./public
 USER node
 EXPOSE 3100
 HEALTHCHECK --interval=15s --timeout=3s --start-period=20s \
