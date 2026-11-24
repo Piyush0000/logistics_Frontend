@@ -6,15 +6,13 @@ export const TRANSACTION_TYPES = [
   { value: 'debit', label: 'Debit' },
 ] as const;
 
+/** The kinds of debit the ledger records; the gateway filters by them on the server. */
 export const DEBIT_TYPES = [
-  { value: 'b2c-prepaid', label: 'B2C Prepaid Charges' },
-  { value: 'b2c-cod', label: 'B2C COD Charges' },
-  { value: 'rto-freight', label: 'RTO Freight' },
-  { value: 'reverse-shipment', label: 'Reverse Shipment' },
-  { value: 'invoice-payment', label: 'Invoice Payment' },
-  { value: 'invoice-credits', label: 'Invoice Credits/Waivers' },
-  { value: 'weight-discrepancy', label: 'Weight Discrepancy' },
-  { value: 'dispute-rejected', label: 'Dispute Rejected' },
+  { value: 'shipping', label: 'Shipping charges' },
+  { value: 'rto', label: 'RTO charges' },
+  { value: 'weight', label: 'Weight charges' },
+  { value: 'whatsapp', label: 'WhatsApp messages' },
+  { value: 'adjustment', label: 'Adjustments' },
 ] as const;
 
 export type TransactionType = (typeof TRANSACTION_TYPES)[number]['value'];

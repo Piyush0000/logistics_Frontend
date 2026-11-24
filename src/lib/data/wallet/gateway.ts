@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { merchantCredential } from '../../auth/credentials';
 import { gatewayFetch } from '../../gateway/client';
 import { fromGateway } from '../source';
-import type { DebitType } from './filters';
+import { DEBIT_TYPES, type DebitType } from './filters';
 import { PAGE_SIZE } from './mock';
 import type { WalletService, WalletTransaction } from './types';
 
@@ -24,6 +24,8 @@ const TransactionsSchema = z.object({
       direction: z.enum(['credit', 'debit']),
       amount_paise: z.number().int(),
       reason: z.string(),
+      kind: z.string().optional(),
+      awb: z.string().nullable().optional(),
     }),
   ),
   page: z.number().int(),
@@ -47,9 +49,11 @@ export async function fetchWalletBalance(token: string | null) {
   );
 }
 
-/** Ledger reasons are plain text from ledger-engine; RTO fees name it, other debits are freight. */
-function debitTypeOf(reason: string): DebitType {
-  return /rto/i.test(reason) ? 'rto-freight' : 'b2c-prepaid';
+const DEBIT_KINDS = new Set<string>(DEBIT_TYPES.map((t) => t.value));
+
+/** The ledger's kind for a debit line; anything new or unknown counts as an adjustment. */
+function debitTypeOf(kind: string | undefined): DebitType {
+  return kind && DEBIT_KINDS.has(kind) ? (kind as DebitType) : 'adjustment';
 }
 
 export const gatewayWalletService: WalletService = {
@@ -65,6 +69,7 @@ export const gatewayWalletService: WalletService = {
         page: filters.page,
         limit: PAGE_SIZE,
         direction: filters.type === 'all' ? undefined : filters.type,
+        kind: filters.debitType === 'all' ? undefined : filters.debitType,
         from: filters.from || undefined,
         to: filters.to || undefined,
       },
@@ -74,15 +79,19 @@ export const gatewayWalletService: WalletService = {
       .map((line): WalletTransaction => ({
         id: line.id,
         direction: line.direction,
-        debitType: line.direction === 'debit' ? debitTypeOf(line.reason) : null,
+        debitType: line.direction === 'debit' ? debitTypeOf(line.kind) : null,
         title: line.reason,
-        orderRef: null,
+        orderRef: line.awb ?? null,
         amountPaise: line.amount_paise,
-        breakdown: null,
+        // Freight is what moves the parcel (shipping and returns); the rest is other charges.
+        breakdown:
+          line.direction === 'debit'
+            ? line.kind === 'shipping' || line.kind === 'rto'
+              ? { freightPaise: line.amount_paise, otherPaise: 0, codPaise: 0 }
+              : { freightPaise: 0, otherPaise: line.amount_paise, codPaise: 0 }
+            : null,
         occurredAt: line.at,
-      }))
-      // The ledger does not store debit types; this narrows the page that was fetched.
-      .filter((entry) => filters.debitType === 'all' || entry.debitType === filters.debitType);
+      }));
     return {
       ok: true,
       source: 'gateway',

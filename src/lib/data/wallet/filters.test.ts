@@ -15,7 +15,7 @@ describe('parseWalletFilters', () => {
   it('reads valid filters', () => {
     const { filters, error } = parseWalletFilters({
       type: 'debit',
-      debitType: 'weight-discrepancy',
+      debitType: 'weight',
       from: '2026-10-01',
       to: '2026-10-31',
       page: '3',
@@ -24,7 +24,7 @@ describe('parseWalletFilters', () => {
     expect(error).toBeNull();
     expect(filters).toEqual({
       type: 'debit',
-      debitType: 'weight-discrepancy',
+      debitType: 'weight',
       from: '2026-10-01',
       to: '2026-10-31',
       page: 3,
@@ -48,7 +48,7 @@ describe('parseWalletFilters', () => {
   });
 
   it('drops the debit type for credit-only views, because they cannot both apply', () => {
-    const { filters } = parseWalletFilters({ type: 'credit', debitType: 'invoice-payment' });
+    const { filters } = parseWalletFilters({ type: 'credit', debitType: 'adjustment' });
 
     expect(filters.debitType).toBe('all');
   });

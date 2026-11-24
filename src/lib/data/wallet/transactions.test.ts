@@ -80,10 +80,10 @@ describe('listTransactions', () => {
   });
 
   it('filters by debit type', async () => {
-    const data = await list({ debitType: 'weight-discrepancy' });
+    const data = await list({ debitType: 'weight' });
 
     expect(data.entries.length).toBeGreaterThan(0);
-    expect(data.entries.every(({ debitType }) => debitType === 'weight-discrepancy')).toBe(true);
+    expect(data.entries.every(({ debitType }) => debitType === 'weight')).toBe(true);
   });
 
   it('includes both ends of a date range, using Indian days', async () => {
@@ -111,6 +111,8 @@ describe('gateway wallet service', () => {
             direction: 'debit',
             amount_paise: 7200,
             reason: 'Charge RTO handling fee',
+            kind: 'rto',
+            awb: 'EVS8516979039',
           },
           {
             id: 'e2',
@@ -118,6 +120,7 @@ describe('gateway wallet service', () => {
             direction: 'credit',
             amount_paise: 500,
             reason: 'Release shipment reservation',
+            kind: 'shipping',
           },
         ],
         page: 1,
@@ -144,8 +147,10 @@ describe('gateway wallet service', () => {
     if (!result.ok) return;
     expect(result.data.entries[0]).toMatchObject({
       direction: 'debit',
-      debitType: 'rto-freight',
+      debitType: 'rto',
       amountPaise: 7200,
+      orderRef: 'EVS8516979039',
+      breakdown: { freightPaise: 7200, otherPaise: 0, codPaise: 0 },
     });
     expect(result.data.entries[1]).toMatchObject({ direction: 'credit', debitType: null });
   });

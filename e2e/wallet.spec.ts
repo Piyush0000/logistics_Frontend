@@ -84,15 +84,15 @@ test.describe('filters', () => {
     await open(page);
 
     await picker(page, 'Debit Type').click();
-    await page.getByRole('option', { name: 'Weight Discrepancy' }).click();
+    await page.getByRole('option', { name: 'Weight charges' }).click();
     await apply(page).click();
 
-    await expect(page).toHaveURL(/debitType=weight-discrepancy/);
-    await expect(rows(page)).toHaveCount(2);
+    await expect(page).toHaveURL(/debitType=weight/);
+    await expect(rows(page)).toHaveCount(3);
   });
 
   test('turns the debit type off for credits and clears its choice', async ({ page }) => {
-    await open(page, `${WALLET}?debitType=invoice-payment`);
+    await open(page, `${WALLET}?debitType=adjustment`);
 
     await picker(page, 'Transaction Type').click();
     await page.getByRole('option', { name: 'Credit' }).click();
@@ -187,7 +187,7 @@ test.describe('filters', () => {
   });
 
   test('clears every filter', async ({ page }) => {
-    await open(page, `${WALLET}?type=debit&debitType=b2c-cod&from=2026-10-01&page=1`);
+    await open(page, `${WALLET}?type=debit&debitType=shipping&from=2026-10-01&page=1`);
 
     await page.getByRole('link', { name: 'Clear' }).click();
 
