@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
       <div className="grid gap-6">
         <PageHeader
           title="Buyer notifications"
-          description="Choose which messages your buyers get about their parcels. WhatsApp updates are sent and charged from your wallet per message; SMS and email go out once those providers are connected."
+          description="Choose which messages your buyers get about their parcels. WhatsApp updates are charged from your wallet per message. Emails are free and go to buyers who gave an email address. SMS goes out once an SMS provider is connected."
         />
 
         <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
