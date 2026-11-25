@@ -9,7 +9,8 @@ import type { AdminOnboardingService, ApplicationStatus, OnboardingApplication }
 // A KYC application is the merchant itself: identity keeps one KYC status per merchant, so the
 // application id is the merchant id. The detail adds what the merchant submitted.
 const KYC_BY_STATUS: Record<ApplicationStatus, string> = {
-  pending: 'NOT_STARTED,PENDING',
+  // Sent for review. Merchants who have not sent anything yet have nothing to review.
+  pending: 'PENDING',
   approved: 'VERIFIED',
   rejected: 'REJECTED',
 };

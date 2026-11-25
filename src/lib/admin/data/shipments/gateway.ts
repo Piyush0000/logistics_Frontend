@@ -162,7 +162,6 @@ export const gatewayAdminShipmentsService: AdminShipmentsService = {
     }));
   },
 
-  // Carriers' NDR (failed delivery attempt) events are not tracked as their own status yet.
   async listNdrShipments({ q, page = 1 } = {}) {
     const result = await gatewayFetch('/api/v1/admin/ndr', {
       schema: adminNdrSchema,
