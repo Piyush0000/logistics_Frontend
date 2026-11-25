@@ -23,6 +23,7 @@ const walletSchema = z.object({
   available: z.number(),
   reserved: z.number(),
   pending_cod: z.number(),
+  last_recharge_at: z.string().nullable().optional(),
 });
 const walletsSchema = z.object({ items: z.array(walletSchema) });
 
@@ -152,8 +153,8 @@ function toWallet(w: z.infer<typeof walletSchema>): MerchantWallet {
     merchantName: w.merchant_name,
     balancePaise: w.available,
     holdPaise: w.reserved,
-    // Recharges come from the Orbit wallet, which does not report them here yet.
-    lastRechargeAt: null,
+    // The latest Cashfree recharge or admin credit, from the ledger.
+    lastRechargeAt: w.last_recharge_at ?? null,
   };
 }
 
