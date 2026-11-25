@@ -55,7 +55,11 @@ export default async function AdminSystemPage({
                 <li key={entry.service} data-testid="admin-service" className="rounded-control border border-secondary p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-sm font-semibold">{entry.service}</span>
-                    <StatusChip tone={tone}>{label}</StatusChip>
+                    {entry.testMode && entry.status === 'up' ? (
+                      <StatusChip tone="info">Test mode</StatusChip>
+                    ) : (
+                      <StatusChip tone={tone}>{label}</StatusChip>
+                    )}
                   </div>
                   <p className="mt-2 text-xs text-on-surface/65">
                     {entry.latencyMs === null ? (

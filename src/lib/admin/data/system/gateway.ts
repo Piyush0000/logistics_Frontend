@@ -20,6 +20,7 @@ const healthSchema = z.object({
       status: z.enum(['up', 'degraded', 'down']),
       latencyMs: z.number().nonnegative().nullable(),
       checkedAt: z.string(),
+      test_mode: z.boolean().optional(),
     }),
   ),
 });
@@ -68,7 +69,17 @@ export const gatewayAdminSystemService: AdminSystemService = {
       token: adminToken(),
       timeoutMs: HEALTH_TIMEOUT_MS,
     });
-    return fromGateway(result.ok ? { ...result, data: result.data.services } : result);
+    return fromGateway(
+      result.ok
+        ? {
+            ...result,
+            data: result.data.services.map(({ test_mode, ...service }) => ({
+              ...service,
+              ...(test_mode ? { testMode: true } : {}),
+            })),
+          }
+        : result,
+    );
   },
   async listAuditLog(filters) {
     const result = await gatewayFetch('/api/v1/admin/audit', {

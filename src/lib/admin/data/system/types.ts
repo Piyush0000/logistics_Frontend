@@ -12,6 +12,8 @@ export interface ServiceHealth {
   latencyMs: number | null;
   /** ISO timestamp. */
   checkedAt: string;
+  /** A courier connector in test mode: it answers, but makes no real courier calls. */
+  testMode?: boolean;
 }
 
 /**
