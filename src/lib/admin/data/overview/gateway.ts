@@ -27,6 +27,18 @@ const overviewSchema = z.object({
     charged_30d_paise: z.number(),
   }),
   shipments_by_day: z.array(z.object({ date: z.string(), count: z.number() })),
+  // Couriers refusing bookings because of our own courier account (empty wallet, blocked).
+  courier_alerts: z
+    .array(
+      z.object({
+        carrier: z.string(),
+        failures: z.number(),
+        last_at: z.string(),
+        last_error: z.string().nullable(),
+      }),
+    )
+    .optional()
+    .default([]),
   pipeline: z.object({
     to_process: z.number(),
     in_transit: z.number(),
@@ -38,9 +50,30 @@ type Overview = z.infer<typeof overviewSchema>;
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
+const COURIER_NAMES: Record<string, string> = {
+  delhivery: 'Delhivery',
+  ekart: 'Ekart',
+  shadowfax: 'Shadowfax',
+};
+const courierName = (carrier: string) =>
+  COURIER_NAMES[carrier] ?? carrier.charAt(0).toUpperCase() + carrier.slice(1);
+const clip = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max - 1)}…` : text;
+
 /** What needs the admin now, worked out from the live figures. */
-export function attentionFor(o: Overview): AttentionItem[] {
+export function attentionFor(o: z.input<typeof overviewSchema>): AttentionItem[] {
   const items: AttentionItem[] = [];
+  // First: while a courier account is out of balance or blocked, every booking with it fails.
+  for (const alert of o.courier_alerts ?? []) {
+    const name = courierName(alert.carrier);
+    items.push({
+      id: `courier-${alert.carrier}`,
+      title: `${name} refused ${plural(alert.failures, 'booking')} in the last day: check your ${name} account`,
+      detail: `Top up its wallet or contact ${name}. ${name} said: "${clip(alert.last_error ?? 'no reason given', 160)}"`,
+      href: '/admin/shipments?status=FAILED',
+      tone: 'error',
+    });
+  }
   if (o.merchants.pending_kyc > 0) {
     items.push({
       id: 'kyc',

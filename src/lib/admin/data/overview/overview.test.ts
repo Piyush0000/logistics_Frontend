@@ -35,3 +35,31 @@ describe('mockAdminOverviewService', () => {
   });
 });
 
+
+describe('courier account alerts', () => {
+  it('puts a courier refusing bookings for our account first, with what it said', async () => {
+    const { attentionFor } = await import('./gateway');
+    const items = attentionFor({
+      merchants: { total: 1, active: 1, pending_kyc: 1, suspended: 0 },
+      shipments: { today: 0, in_transit: 0, delivered_30d: 0, rto_30d: 0, stuck: 0, failed: 2 },
+      money: { wallet_float_paise: 0, negative_wallets: 0, cod_outstanding_paise: 0, charged_30d_paise: 0 },
+      shipments_by_day: [],
+      courier_alerts: [
+        {
+          carrier: 'delhivery',
+          failures: 2,
+          last_at: '2026-11-25T17:21:50.000Z',
+          last_error: 'Prepaid client manifest charge API failed due to insufficient balance',
+        },
+      ],
+      pipeline: { to_process: 0, in_transit: 0, out_for_delivery: 0, returning: 0 },
+    });
+    expect(items[0]).toMatchObject({
+      id: 'courier-delhivery',
+      tone: 'error',
+      title: 'Delhivery refused 2 bookings in the last day: check your Delhivery account',
+    });
+    expect(items[0]?.detail).toContain('insufficient balance');
+    expect(items.map((i) => i.id)).toContain('kyc');
+  });
+});
