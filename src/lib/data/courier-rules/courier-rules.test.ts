@@ -1,4 +1,5 @@
-import { CARRIERS } from '@logicore/contracts';
+import type { CarrierName } from '@logicore/contracts';
+import { COURIERS as CARRIERS } from './input';
 import { describe, expect, it, vi } from 'vitest';
 import { gatewayCourierRulesService } from './gateway';
 import { courierRulesService } from './index';
@@ -33,7 +34,7 @@ const everyOnce = (priority: readonly string[]) =>
 
 describe('moveCourier', () => {
   it('keeps every courier exactly once after reordering', () => {
-    let priority = [...CARRIERS];
+    let priority: CarrierName[] = [...CARRIERS];
     for (const step of [0, 1, 2, 3, 4, 0, 4, 2, 1, 3, 3, 0]) {
       priority = moveCourier(priority, at(step % CARRIERS.length), step % 2 ? 'up' : 'down');
       expect(everyOnce(priority)).toBe(true);

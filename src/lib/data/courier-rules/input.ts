@@ -1,5 +1,9 @@
-import { CARRIERS, type CarrierName } from '@logicore/contracts';
+import type { CarrierName } from '@logicore/contracts';
 import { isPreference, type AllocationPreference, type CourierRules } from './types';
+
+/** The couriers the platform ships with (order-engine PLATFORM_CARRIERS), in default order. */
+export const COURIERS = ['delhivery', 'shadowfax', 'ekart'] as const satisfies readonly CarrierName[];
+const CARRIERS = COURIERS;
 
 export const LAST_COURIER_MESSAGE = 'At least one courier must stay on. Switch another one on first.';
 

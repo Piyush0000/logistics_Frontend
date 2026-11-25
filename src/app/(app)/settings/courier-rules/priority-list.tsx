@@ -25,7 +25,9 @@ export function PriorityList({
   onMove: (carrier: Carrier, direction: 'up' | 'down') => void;
   onToggle: (carrier: Carrier, enabled: boolean) => void;
 }) {
-  const on = rules.priority.filter((carrier) => !rules.disabled.includes(carrier));
+  const canBook = (carrier: Carrier) => !rules.available || rules.available.includes(carrier);
+  // At least one courier that can book must stay on.
+  const on = rules.priority.filter((carrier) => !rules.disabled.includes(carrier) && canBook(carrier));
 
   return (
     <div className="min-w-0">
@@ -39,7 +41,7 @@ export function PriorityList({
         {rules.priority.map((carrier, index) => {
           const name = carrierLabel(carrier);
           const enabled = !rules.disabled.includes(carrier);
-          const lastOn = enabled && on.length === 1;
+          const lastOn = enabled && canBook(carrier) && on.length === 1;
           return (
             <li
               key={carrier}
@@ -53,6 +55,11 @@ export function PriorityList({
                 </span>
                 <span className={`min-w-0 text-sm font-medium break-words ${enabled ? '' : 'text-on-surface/50'}`}>
                   {name}
+                  {canBook(carrier) ? null : (
+                    <span data-testid="courier-coming-soon" className="block text-xs font-normal text-on-surface/60">
+                      Not available yet: kept in your order for when it is.
+                    </span>
+                  )}
                 </span>
               </p>
               <div className="flex items-center gap-2">

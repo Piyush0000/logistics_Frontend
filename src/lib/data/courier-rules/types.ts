@@ -25,6 +25,8 @@ export interface CourierRules {
   priority: CarrierName[];
   /** Carriers switched off. At least one carrier always stays on. */
   disabled: CarrierName[];
+  /** Couriers that can take bookings right now; the others are not switched on by Evoc yet. */
+  available?: CarrierName[];
 }
 
 export interface CourierRulesService {

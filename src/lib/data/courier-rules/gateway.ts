@@ -11,11 +11,13 @@ const rulesSchema = z.object({
   preference: z.enum(PREFERENCES),
   priority: z.array(z.string()),
   disabled: z.array(z.string()),
+  available: z.array(z.string()).optional(),
 });
 const toRules = (r: z.infer<typeof rulesSchema>) => ({
   preference: r.preference,
   priority: r.priority as CarrierName[],
   disabled: r.disabled as CarrierName[],
+  ...(r.available ? { available: r.available as CarrierName[] } : {}),
 });
 
 /** Courier rules from /api/v1/courier-rules: booking follows them for this merchant. */
@@ -33,7 +35,7 @@ export const gatewayCourierRulesService: CourierRulesService = {
       method: 'PUT',
       schema: rulesSchema,
       token: await merchantCredential('shipments'),
-      body: rules,
+      body: { preference: rules.preference, priority: rules.priority, disabled: rules.disabled },
     });
     return fromGateway(result.ok ? { ...result, data: toRules(result.data) } : result);
   },

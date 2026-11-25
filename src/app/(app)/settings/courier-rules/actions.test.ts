@@ -1,4 +1,4 @@
-import { CARRIERS } from '@logicore/contracts';
+import { COURIERS as CARRIERS } from '@/lib/data/courier-rules/input';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const session = vi.hoisted(() => ({ current: { email: 'ops@example.com' } as { email: string } | null }));

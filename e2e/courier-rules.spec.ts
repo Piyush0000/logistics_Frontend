@@ -12,7 +12,7 @@ const ROUTE = '/settings/courier-rules';
 // finds on the page instead of assuming one. Each change is saved on its own, never as a whole set.
 const projectOf = (testInfo: { project: { name: string } }) =>
   testInfo.project.name === 'phone' ? 'phone' : 'desktop';
-const COURIER = { desktop: 'Shadowfax', phone: 'Blue Dart' } as const;
+const COURIER = { desktop: 'Shadowfax', phone: 'Ekart' } as const;
 const PREFERENCE = { desktop: 'Fastest', phone: 'Lowest cost' } as const;
 
 async function openRules(page: Page) {
@@ -69,7 +69,7 @@ test.describe('courier rules', () => {
     const names = await order(page);
     expect(names).toHaveLength(5);
     expect(new Set(names).size).toBe(5);
-    expect([...names].sort()).toEqual(['Blue Dart', 'DHL', 'Delhivery', 'Ekart', 'Shadowfax']);
+    expect([...names].sort()).toEqual(['Delhivery', 'Ekart', 'Shadowfax']);
     await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
   });
 
