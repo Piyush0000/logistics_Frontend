@@ -93,7 +93,11 @@ describe('parsePickupInput', () => {
     });
     const tooMany = Array.from({ length: 101 }, (_, index) => `A${index}`);
     expect(parsePickupInput({ ...good, awbs: tooMany }, NOW)).toMatchObject({ ok: false });
-    expect(parsePickupInput({ ...good, pickupAddressId: '' }, NOW)).toMatchObject({ ok: false });
+    // No saved address is fine: the booking's own pickup address is used.
+    expect(parsePickupInput({ ...good, pickupAddressId: '' }, NOW)).toMatchObject({
+      ok: true,
+      data: { pickupAddressId: undefined },
+    });
     expect(parsePickupInput(null, NOW)).toMatchObject({ ok: false });
     expect(parsePickupInput({ ...good, window: 'soon' }, NOW)).toMatchObject({ ok: false });
   });

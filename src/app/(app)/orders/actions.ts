@@ -4,6 +4,7 @@ import { StandardShipmentRequestSchema } from '@logicore/contracts';
 import { redirect } from 'next/navigation';
 import { getDemoSession } from '@/lib/auth/session';
 import { ordersService } from '@/lib/data/orders';
+import { pickupAddressService } from '@/lib/data/pickup-addresses';
 import { bookingErrorMessage } from '@/lib/data/orders/booking-message';
 
 export interface CreateShipmentFormState {
@@ -15,6 +16,8 @@ export interface CreateShipmentFormState {
   createdAwb?: string | null;
   /** The shipment id, for a booking that has no AWB yet. */
   createdShipmentId?: string;
+  /** The pickup address was saved (or was already saved) for later. */
+  addressSaved?: boolean;
 }
 
 export async function createShipmentAction(
@@ -93,10 +96,43 @@ export async function createShipmentAction(
     return { ok: false, message: bookingErrorMessage(result.error), values };
   }
 
+  // Asked to keep the pickup address: saved for future bookings and pickups. Never fails the
+  // booking, which has already happened.
+  let addressSaved = false;
+  if (formData.get('save_pickup_address') === 'on') {
+    addressSaved = await savePickupAddress(
+      parsed.data.origin,
+      String(formData.get('pickup_address_label') ?? ''),
+    ).catch(() => false);
+  }
+
   return {
     ok: true,
     createdAwb: result.data.awb,
     createdShipmentId: result.data.shipment_id,
+    addressSaved,
   };
 }
 
+
+/**
+ * Saves a pickup address unless the same one (same first line and pincode) is already saved. The
+ * first saved address becomes the default.
+ */
+async function savePickupAddress(
+  origin: { name: string; line1: string; pincode: string } & Record<string, unknown>,
+  label: string,
+): Promise<boolean> {
+  const service = pickupAddressService();
+  const existing = await service.list();
+  if (!existing.ok) return false;
+  const same = (a: { line1: string; pincode: string }) =>
+    a.line1.trim().toLowerCase() === origin.line1.trim().toLowerCase() && a.pincode === origin.pincode;
+  if (existing.data.some((entry) => same(entry.address))) return true;
+  const saved = await service.save({
+    label: (label.trim() || origin.name).slice(0, 60),
+    address: origin as never,
+    isDefault: existing.data.length === 0,
+  });
+  return saved.ok;
+}
