@@ -17,12 +17,14 @@ export async function schedulePickupAction(input: unknown): Promise<SchedulePick
   const parsed = parsePickupInput(input);
   if (!parsed.ok) return { ok: false, message: parsed.message };
 
-  const addresses = await pickupAddressService().list();
-  if (!addresses.ok) {
-    return { ok: false, message: 'Saved pickup addresses are not available yet. Try again later.' };
-  }
-  if (!addresses.data.some((entry) => entry.id === parsed.data.pickupAddressId)) {
-    return { ok: false, message: 'Choose one of your saved pickup addresses.' };
+  if (parsed.data.pickupAddressId) {
+    const addresses = await pickupAddressService().list();
+    if (!addresses.ok) {
+      return { ok: false, message: 'Saved pickup addresses are not available yet. Try again later.' };
+    }
+    if (!addresses.data.some((entry) => entry.id === parsed.data.pickupAddressId)) {
+      return { ok: false, message: 'Choose one of your saved pickup addresses.' };
+    }
   }
 
   const result = await pickupsService().schedulePickup(parsed.data);

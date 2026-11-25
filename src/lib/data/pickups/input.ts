@@ -63,8 +63,9 @@ export function parsePickupInput(input: unknown, now: Date = new Date()): Parsed
     return { ok: false, message: `Select at most ${MAX_AWBS_PER_PICKUP} shipments per pickup.` };
   }
 
-  const pickupAddressId = typeof value.pickupAddressId === 'string' ? value.pickupAddressId : '';
-  if (!pickupAddressId) return { ok: false, message: 'Choose a pickup address.' };
+  // Optional: without one, the courier collects from the address the shipments were booked with.
+  const pickupAddressId =
+    typeof value.pickupAddressId === 'string' && value.pickupAddressId ? value.pickupAddressId : undefined;
 
   return { ok: true, data: { pickupDate, window, awbs, pickupAddressId } };
 }

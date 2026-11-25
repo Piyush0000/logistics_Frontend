@@ -125,10 +125,9 @@ export function ScheduleDialog({
             onChange={setAddressId}
           />
         ) : (
-          <p className="rounded-control bg-muted p-3 text-sm">
-            {addresses === null
-              ? 'Saved pickup addresses are not available yet. Try again later.'
-              : 'You have no saved pickup address. Add one in Settings, then try again.'}
+          <p className="rounded-control bg-muted p-3 text-sm" data-testid="pickup-booking-address">
+            The courier collects from the pickup address these shipments were booked with. Save
+            addresses in Settings, Pickup addresses, to choose between them here.
           </p>
         )}
 
@@ -142,7 +141,7 @@ export function ScheduleDialog({
           <button type="button" onClick={onClose} className={`${SECONDARY_BUTTON} max-lg:h-11`}>
             Cancel
           </button>
-          <button type="submit" disabled={pending || options.length === 0} className={`${PRIMARY_BUTTON} max-lg:h-11`}>
+          <button type="submit" disabled={pending} className={`${PRIMARY_BUTTON} max-lg:h-11`}>
             Confirm pickup
           </button>
         </div>

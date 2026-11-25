@@ -20,7 +20,8 @@ export interface PickupInput {
   pickupDate: string;
   window: PickupWindow | null;
   awbs: string[];
-  pickupAddressId: string;
+  /** A saved pickup address; without one, the shipments' own booking address is used. */
+  pickupAddressId?: string;
 }
 
 export interface PickupService {

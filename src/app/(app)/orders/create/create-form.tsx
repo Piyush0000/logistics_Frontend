@@ -65,7 +65,7 @@ export function CreateShipmentForm({
         </h2>
         <p className="mt-1 text-sm text-on-surface/70">
           {state.createdAwb
-            ? "Your shipment manifest has been generated (Sample Simulation)."
+            ? "The courier has the booking. Schedule a pickup so it collects the parcel."
             : "The booking request was accepted."}
         </p>
 
@@ -82,7 +82,19 @@ export function CreateShipmentForm({
           )}
         </div>
 
+        {state.addressSaved ? (
+          <p className="mb-4 text-sm text-on-surface/70" data-testid="address-saved">
+            The pickup address is saved for your next shipments and pickups.
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap justify-center gap-3">
+          <Link
+            href="/orders/pickups"
+            className="inline-flex h-control min-h-[44px] items-center rounded-control border border-secondary bg-surface px-4 text-sm font-medium text-on-surface hover:border-primary"
+          >
+            Schedule pickup
+          </Link>
           <Link
             href={state.createdAwb ? `/orders/${state.createdAwb}` : "/orders"}
             className="inline-flex h-control min-h-[44px] items-center gap-1.5 rounded-control bg-primary px-5 text-sm font-medium text-on-primary hover:bg-primary/90"
@@ -246,6 +258,32 @@ export function CreateShipmentForm({
               </div>
             </div>
             </div>
+            {savedId === '' ? (
+              <div className="grid gap-2 rounded-control border border-secondary bg-tertiary/40 p-3" data-testid="save-pickup-address">
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    name="save_pickup_address"
+                    defaultChecked={(state.values?.['save_pickup_address'] ?? 'on') === 'on'}
+                    className="size-4 accent-[var(--color-primary)]"
+                  />
+                  Save this pickup address for future shipments and pickups
+                </label>
+                <div>
+                  <label htmlFor="pickup_address_label" className="block text-xs font-medium text-on-surface/70">
+                    Name it (optional)
+                  </label>
+                  <input
+                    id="pickup_address_label"
+                    name="pickup_address_label"
+                    maxLength={60}
+                    placeholder="e.g. Main warehouse"
+                    defaultValue={v("pickup_address_label", "")}
+                    className="mt-1 h-control min-h-[44px] w-full rounded-control border border-secondary bg-surface px-3 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 

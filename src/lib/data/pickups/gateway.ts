@@ -66,7 +66,7 @@ export const gatewayPickupsService: PickupService = {
         pickup_date: input.pickupDate,
         ...(input.window ? { window: input.window } : {}),
         awbs: input.awbs,
-        pickup_address_id: input.pickupAddressId,
+        ...(input.pickupAddressId ? { pickup_address_id: input.pickupAddressId } : {}),
       },
     });
     return fromGateway(result.ok ? { ...result, data: toPickup(result.data) } : result);
